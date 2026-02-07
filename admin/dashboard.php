@@ -601,6 +601,67 @@ if ($invoices_result) {
             display: flex;
             gap: 10px;
         }
+        
+        /* Main Tasks Section */
+        .task-item {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .task-item:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .task-item.completed {
+            opacity: 0.6;
+            background: #f8f9fa;
+        }
+        
+        .task-left {
+            flex: 1;
+        }
+        
+        .task-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .task-title.completed {
+            text-decoration: line-through;
+            color: #999;
+        }
+        
+        .task-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .task-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 13px;
+            color: #999;
+        }
+        
+        .task-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
@@ -1465,6 +1526,11 @@ if ($invoices_result) {
             // Load HTML files if switching to that section
             if (sectionName === 'html-files') {
                 loadHtmlFiles();
+            }
+            
+            // Load tasks if switching to tasks section
+            if (sectionName === 'tasks') {
+                loadTasks();
             }
         }
 
@@ -2751,6 +2817,181 @@ if ($invoices_result) {
                 console.error('Error:', err);
                 alert('Error deleting task');
             });
+        }
+        
+        // ==================== Main Tasks Section Functions ====================
+        
+        function loadTasks(status = '') {
+            let url = 'api/tasks.php';
+            if (status) {
+                url += `?status=${status}`;
+            }
+            
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('tasks-list');
+                    if (data.success && data.tasks && data.tasks.length > 0) {
+                        // Update statistics
+                        const stats = {
+                            pending: data.tasks.filter(t => t.status === 'pending').length,
+                            overdue: data.tasks.filter(t => t.due_date && new Date(t.due_date) < new Date() && t.status !== 'completed').length,
+                            urgent: data.tasks.filter(t => t.priority === 'urgent' && t.status !== 'completed').length
+                        };
+                        document.querySelector('.stat-card:nth-child(1) .stat-number').textContent = stats.pending;
+                        document.querySelector('.stat-card:nth-child(2) .stat-number').textContent = stats.overdue;
+                        document.querySelector('.stat-card:nth-child(3) .stat-number').textContent = stats.urgent;
+                        
+                        const priorityColors = {
+                            urgent: '#dc3545',
+                            high: '#fd7e14',
+                            medium: '#ffc107',
+                            low: '#28a745'
+                        };
+                        const statusBadges = {
+                            pending: '⏳ Pending',
+                            in_progress: '🔄 In Progress',
+                            completed: '✅ Completed',
+                            cancelled: '❌ Cancelled'
+                        };
+                        
+                        container.innerHTML = data.tasks.map(task => `
+                            <div class="task-item ${task.status === 'completed' || task.status === 'cancelled' ? 'completed' : ''}">
+                                <div class="task-left">
+                                    <div class="task-title ${task.status === 'completed' ? 'completed' : ''}">${task.title}</div>
+                                    ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+                                    <div class="task-meta">
+                                        <span style="color: ${priorityColors[task.priority]}">● ${task.priority.toUpperCase()}</span>
+                                        <span>${statusBadges[task.status]}</span>
+                                        ${task.client_name ? `<span>👤 ${task.client_name}</span>` : ''}
+                                        ${task.due_date ? `<span>📅 Due: ${new Date(task.due_date).toLocaleDateString()}</span>` : ''}
+                                    </div>
+                                </div>
+                                <div class="task-actions">
+                                    <button class="btn btn-sm btn-secondary" onclick="editTask(${task.id})">Edit</button>
+                                    ${task.status !== 'completed' ? `<button class="btn btn-sm btn-primary" onclick="markTaskComplete(${task.id})">✓ Complete</button>` : ''}
+                                    <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})">Delete</button>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        container.innerHTML = '<div class="empty-state"><h3>No Tasks Found</h3><p>Create your first task to get started.</p></div>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading tasks:', err);
+                });
+        }
+        
+        function filterTasks() {
+            const status = document.getElementById('taskStatusFilter').value;
+            loadTasks(status);
+        }
+        
+        function openAddTaskModal() {
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskId').value = '';
+            document.getElementById('taskModalTitle').textContent = 'Add New Task';
+            document.getElementById('taskModal').style.display = 'flex';
+            loadClientOptions();
+        }
+        
+        function openTaskModal() {
+            openAddTaskModal();
+        }
+        
+        function editTask(taskId) {
+            fetch(`api/tasks.php?id=${taskId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.task) {
+                        const task = data.task;
+                        document.getElementById('taskId').value = task.id;
+                        document.getElementById('taskTitle').value = task.title;
+                        document.getElementById('taskDescription').value = task.description || '';
+                        document.getElementById('taskClientId').value = task.client_id || '';
+                        document.getElementById('taskPriority').value = task.priority;
+                        document.getElementById('taskDueDate').value = task.due_date || '';
+                        document.getElementById('taskStatus').value = task.status;
+                        document.getElementById('taskModalTitle').textContent = 'Edit Task';
+                        document.getElementById('taskModal').style.display = 'flex';
+                        loadClientOptions();
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading task:', err);
+                });
+        }
+        
+        function closeTaskModal() {
+            document.getElementById('taskModal').style.display = 'none';
+        }
+        
+        function saveTask(event) {
+            event.preventDefault();
+            
+            const taskId = document.getElementById('taskId').value;
+            const formData = {
+                title: document.getElementById('taskTitle').value,
+                description: document.getElementById('taskDescription').value,
+                client_id: document.getElementById('taskClientId').value || null,
+                priority: document.getElementById('taskPriority').value,
+                due_date: document.getElementById('taskDueDate').value || null,
+                status: document.getElementById('taskStatus').value
+            };
+            
+            const method = taskId ? 'PUT' : 'POST';
+            const url = taskId ? `api/tasks.php?id=${taskId}` : 'api/tasks.php';
+            
+            fetch(url, {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    closeTaskModal();
+                    loadTasks();
+                    if (currentClientId) {
+                        loadClientTasks(currentClientId);
+                    }
+                    showNotification(taskId ? 'Task updated successfully' : 'Task created successfully', 'success');
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to save task'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error saving task');
+            });
+        }
+        
+        function loadClientOptions() {
+            fetch('api/quotes.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.quotes) {
+                        const select = document.getElementById('taskClientId');
+                        const currentValue = select.value;
+                        
+                        // Extract unique clients
+                        const clientsMap = new Map();
+                        data.quotes.forEach(quote => {
+                            if (quote.client_id && quote.client_name) {
+                                clientsMap.set(quote.client_id, quote.client_name);
+                            }
+                        });
+                        
+                        select.innerHTML = '<option value="">-- Select Client (Optional) --</option>';
+                        clientsMap.forEach((name, id) => {
+                            select.innerHTML += `<option value="${id}" ${id == currentValue ? 'selected' : ''}>${name}</option>`;
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading clients:', err);
+                });
         }
         
         // Helper notification function
