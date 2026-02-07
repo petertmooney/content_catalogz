@@ -2656,9 +2656,58 @@ if ($invoices_result) {
             // Load initial data
             loadHtmlFiles();
             loadQuotes();
+            loadDashboardStats();
             
             console.log('Initial data loading started');
         });
+        
+        // Load all dashboard stats
+        function loadDashboardStats() {
+            // Load task stats
+            fetch('api/tasks.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.tasks) {
+                        const pending = data.tasks.filter(t => t.status === 'pending').length;
+                        const today = new Date().toISOString().split('T')[0];
+                        const overdue = data.tasks.filter(t => t.due_date && t.due_date < today && t.status !== 'completed' && t.status !== 'cancelled').length;
+                        const urgent = data.tasks.filter(t => t.priority === 'urgent' && t.status !== 'completed' && t.status !== 'cancelled').length;
+                        
+                        document.getElementById('dash-tasks-pending').textContent = pending;
+                        document.getElementById('dash-tasks-overdue').textContent = overdue;
+                        document.getElementById('dash-tasks-urgent').textContent = urgent;
+                    }
+                })
+                .catch(err => console.error('Error loading task stats:', err));
+            
+            // Load invoice stats
+            fetch('api/invoice_stats.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('dash-invoices-outstanding').textContent = data.outstanding_count || 0;
+                        document.getElementById('dash-invoices-outstanding-amount').textContent = '£' + (parseFloat(data.outstanding_amount) || 0).toFixed(2);
+                        document.getElementById('dash-invoices-overdue').textContent = data.overdue_count || 0;
+                        document.getElementById('dash-invoices-overdue-amount').textContent = '£' + (parseFloat(data.overdue_amount) || 0).toFixed(2);
+                        document.getElementById('dash-invoices-collected').textContent = '£' + (parseFloat(data.total_collected) || 0).toFixed(0);
+                    }
+                })
+                .catch(err => console.error('Error loading invoice stats:', err));
+            
+            // Load quote stats for dashboard
+            fetch('api/get_quotes.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.quotes) {
+                        const newQuotes = data.quotes.filter(q => q.status === 'new').length;
+                        const inProgress = data.quotes.filter(q => q.status === 'in_progress' || q.status === 'contacted').length;
+                        
+                        document.getElementById('dash-quotes-new').textContent = newQuotes;
+                        document.getElementById('dash-quotes-progress').textContent = inProgress;
+                    }
+                })
+                .catch(err => console.error('Error loading quote stats:', err));
+        }
         
         // ==================== CRM Functions ====================
         
