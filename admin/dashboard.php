@@ -2248,9 +2248,19 @@ if ($invoices_result) {
             })
             .then(data => {
                 if (data.success) {
-                    alert('Quote updated successfully!');
                     closeQuoteModal();
                     loadQuotes();
+                    loadExistingClients();
+                    loadDashboardStats();
+                    
+                    if (data.client_created) {
+                        // A new client was created
+                        if (confirm('Client "' + data.client_name + '" created successfully!\n\nWould you like to view the client details?')) {
+                            viewClientDetails(data.client_id);
+                        }
+                    } else {
+                        alert('Quote updated successfully!');
+                    }
                 } else {
                     alert('Error updating quote: ' + (data.message || 'Unknown error'));
                 }

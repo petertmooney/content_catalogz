@@ -39,14 +39,47 @@ if (empty($status) || !in_array($status, $valid_statuses)) {
     exit;
 }
 
+// Get the current status before updating
+$checkStmt = $conn->prepare("SELECT status, name FROM quotes WHERE id = ?");
+$checkStmt->bind_param("i", $quote_id);
+$checkStmt->execute();
+$result = $checkStmt->get_result();
+$currentData = $result->fetch_assoc();
+$oldStatus = $currentData['status'] ?? '';
+$clientName = $currentData['name'] ?? '';
+$checkStmt->close();
+
+$clientCreated = false;
+
+// Check if status is changing to in_progress (creating a new client)
+if ($status === 'in_progress' && $oldStatus !== 'in_progress' && $oldStatus !== 'completed') {
+    $clientCreated = true;
+}
+
 $sql = "UPDATE quotes SET status = ?, notes = ?, services = ?, total_cost = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("sssdi", $status, $notes, $services, $total_cost, $quote_id);
 
 if ($stmt->execute()) {
+    // If a new client was created, log the activity
+    if ($clientCreated) {
+        $userId = $_SESSION['user_id'] ?? null;
+        $activityType = 'note';
+        $activitySubject = 'Client created from quote';
+        $activityDescription = "Quote converted to active client. Status changed to In Progress.";
+        
+        $actStmt = $conn->prepare("INSERT INTO activities (client_id, type, subject, description, created_by) VALUES (?, ?, ?, ?, ?)");
+        $actStmt->bind_param("isssi", $quote_id, $activityType, $activitySubject, $activityDescription, $userId);
+        $actStmt->execute();
+        $actStmt->close();
+    }
+    
     echo json_encode([
         'success' => true,
-        'message' => 'Quote updated successfully'
+        'message' => $clientCreated ? 'Quote updated and client created successfully' : 'Quote updated successfully',
+        'client_created' => $clientCreated,
+        'client_id' => $clientCreated ? $quote_id : null,
+        'client_name' => $clientCreated ? $clientName : null
     ]);
 } else {
     echo json_encode([
