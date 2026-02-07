@@ -344,21 +344,60 @@ if ($pages_result) {
 
     <div class="container">
         <div class="sidebar">
-            <a href="dashboard.php" class="active">📋 Dashboard</a>
-            <a href="#" onclick="openAddPageModal(); return false;">➕ New Page</a>
-            <a href="#" onclick="document.getElementById('pages-section').scrollIntoView(); return false;">📄 All Pages</a>
+            <a href="#" onclick="showSection('dashboard'); return false;" id="nav-dashboard" class="active">📋 Dashboard</a>
+            <a href="#" onclick="showSection('html-files'); return false;" id="nav-html-files">📝 Edit Pages</a>
+            <a href="#" onclick="openAddPageModal(); return false;">➕ New Database Page</a>
+            <a href="#" onclick="showSection('database-pages'); return false;" id="nav-database-pages">📄 Database Pages</a>
             <a href="api/logout.php">🚪 Logout</a>
         </div>
 
         <div class="main-content">
-            <div class="page-header">
-                <h2>Dashboard</h2>
-                <p>Manage your website content and pages</p>
+            <!-- Dashboard Section -->
+            <div id="section-dashboard" class="content-section active">
+                <div class="page-header">
+                    <h2>Dashboard</h2>
+                    <p>Manage your website content and pages</p>
+                </div>
+
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h3 style="color: #667eea; margin-bottom: 10px;">HTML Pages</h3>
+                        <p class="stat-number" id="html-count" style="font-size: 32px; font-weight: bold; color: #333;">0</p>
+                        <small style="color: #666;">Editable HTML files</small>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h3 style="color: #764ba2; margin-bottom: 10px;">Database Pages</h3>
+                        <p class="stat-number" style="font-size: 32px; font-weight: bold; color: #333;"><?php echo count($pages); ?></p>
+                        <small style="color: #666;">Pages in database</small>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="showSection('html-files')">Edit HTML Pages</button>
+                    <button class="btn btn-primary" onclick="openAddPageModal()">+ Add Database Page</button>
+                </div>
             </div>
 
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="openAddPageModal()">+ Add New Page</button>
+            <!-- HTML Files Section -->
+            <div id="section-html-files" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h2>Edit HTML Pages</h2>
+                    <p>Edit your website's HTML files directly</p>
+                </div>
+
+                <div id="html-files-list"></div>
             </div>
+
+            <!-- Database Pages Section -->
+            <div id="section-database-pages" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h2>Database Pages</h2>
+                    <p>Manage pages stored in the database</p>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="openAddPageModal()">+ Add New Page</button>
+                </div>
 
             <div id="pages-section" class="table-container" style="margin-top: 30px;">
                 <?php if (count($pages) > 0): ?>
@@ -401,6 +440,31 @@ if ($pages_result) {
                     </div>
                 <?php endif; ?>
             </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HTML File Editor Modal -->
+    <div id="htmlEditorModal" class="modal">
+        <div class="modal-content" style="max-width: 90%; max-height: 90vh;">
+            <div class="modal-header">
+                <h3 id="editorModalTitle">Edit HTML File</h3>
+                <button class="close-btn" onclick="closeHtmlEditorModal()">&times;</button>
+            </div>
+            <div style="margin-bottom: 15px; padding: 15px; background: #f0f0f0; border-radius: 4px;">
+                <strong id="editingFilename"></strong>
+                <span style="margin-left: 20px; color: #666;">Make sure to save your changes!</span>
+            </div>
+            <form id="htmlEditorForm" onsubmit="saveHtmlFile(event)">
+                <input type="hidden" id="htmlFilename" name="filename">
+                <div class="form-group">
+                    <textarea id="htmlContent" name="content" style="font-family: 'Courier New', monospace; height: 500px; white-space: pre; overflow: auto;"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeHtmlEditorModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
 
