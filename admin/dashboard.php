@@ -1267,6 +1267,7 @@ if ($invoices_result) {
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
                     <button type="button" class="btn btn-secondary" onclick="closeClientModal()">Close</button>
                     <button type="button" class="btn btn-secondary" onclick="printInvoice()">🖨️ Print Invoice</button>
+                    <button type="button" class="btn btn-secondary" onclick="emailInvoice()">📧 Email Invoice</button>
                     <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
             </form>
@@ -2549,6 +2550,59 @@ if ($invoices_result) {
             const invoiceWindow = window.open('', '_blank');
             invoiceWindow.document.write(invoiceHTML);
             invoiceWindow.document.close();
+        }
+
+        // Email invoice as PDF
+        function emailInvoice() {
+            const clientName = document.getElementById('clientName').value;
+            const clientEmail = document.getElementById('clientEmail').value;
+            const invoiceNumber = document.getElementById('invoiceNumber').value;
+            const totalCost = document.getElementById('totalCost').value;
+            const totalPaid = document.getElementById('totalPaid').value;
+            const totalRemaining = document.getElementById('totalRemaining').value;
+            
+            if (!clientEmail) {
+                alert('No email address found for this client.');
+                return;
+            }
+            
+            // Collect services
+            const services = [];
+            document.querySelectorAll('.service-row').forEach(row => {
+                const name = row.querySelector('input[name="service_name[]"]').value;
+                const cost = row.querySelector('input[name="service_cost[]"]').value;
+                if (name && cost) {
+                    services.push({ name, cost: parseFloat(cost) });
+                }
+            });
+            
+            // Send to server to generate PDF and email
+            fetch('api/email_invoice.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    client_id: currentClientId,
+                    client_name: clientName,
+                    client_email: clientEmail,
+                    invoice_number: invoiceNumber,
+                    services: services,
+                    total_cost: totalCost,
+                    total_paid: totalPaid,
+                    total_remaining: totalRemaining
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Invoice sent successfully to ' + clientEmail);
+                } else {
+                    alert('Error sending invoice: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error sending invoice. Please try again.');
+            });
         }
 
         // Placeholder for add client modal
