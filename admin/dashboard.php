@@ -767,7 +767,7 @@ if ($pages_result) {
                 <!-- Services and Costs -->
                 <div style="background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h4 style="margin: 0; color: #333;">Services & Costs</h4>
+                        <h4 style="margin: 0; color: #333;">Services & Costs (GBP)</h4>
                         <button type="button" class="btn btn-primary btn-sm" onclick="addServiceRow()">+ Add Service</button>
                     </div>
                     
@@ -778,24 +778,36 @@ if ($pages_result) {
                     <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #ddd;">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                             <div class="form-group">
-                                <label for="totalCost">Total Cost</label>
-                                <input type="number" id="totalCost" name="total_cost" class="form-control" step="0.01" min="0" readonly style="background:#f8f9fa; font-weight: bold; font-size: 18px;">
+                                <label for="totalCost">Total Cost (£)</label>
+                                <div style="position: relative;">
+                                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 18px; color: #333;">£</span>
+                                    <input type="number" id="totalCost" name="total_cost" class="form-control" step="0.01" min="0" readonly style="background:#f8f9fa; font-weight: bold; font-size: 18px; padding-left: 28px;">
+                                </div>
                             </div>
                             <div class="form-group">
-                                <label for="totalPaid">Total Paid</label>
-                                <input type="number" id="totalPaid" name="total_paid" class="form-control" step="0.01" min="0" oninput="calculateRemaining()">
+                                <label for="totalPaid">Total Paid (£)</label>
+                                <div style="position: relative;">
+                                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 16px; color: #333;">£</span>
+                                    <input type="number" id="totalPaid" name="total_paid" class="form-control" step="0.01" min="0" oninput="calculateRemaining()" style="padding-left: 28px;">
+                                </div>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="totalRemaining">Total Remaining</label>
-                            <input type="number" id="totalRemaining" name="total_remaining" class="form-control" step="0.01" readonly style="background:#f8f9fa; font-weight: bold; font-size: 18px; color: #dc3545;">
+                            <label for="totalRemaining">Total Remaining (£)</label>
+                            <div style="position: relative;">
+                                <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 18px; color: #dc3545;">£</span>
+                                <input type="number" id="totalRemaining" name="total_remaining" class="form-control" step="0.01" readonly style="background:#f8f9fa; font-weight: bold; font-size: 18px; color: #dc3545; padding-left: 28px;">
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" class="btn btn-secondary" onclick="closeClientModal()">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                <div style="display: flex; gap: 10px; justify-content: space-between;">
+                    <button type="button" class="btn btn-secondary" onclick="printInvoice()">🖨️ Print Invoice</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeClientModal()">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -1285,6 +1297,7 @@ if ($pages_result) {
                     <td>${clientDate}</td>
                     <td>
                         <button class="btn btn-primary btn-sm" onclick="viewClientDetails(${client.id})">View</button>
+                        <button class="btn btn-secondary btn-sm" onclick="viewClientDetails(${client.id})">Edit</button>
                         <a href="mailto:${escapeHtml(client.email)}" class="btn btn-secondary btn-sm">Email</a>
                     </td>
                 </tr>`;
@@ -1360,8 +1373,11 @@ if ($pages_result) {
                     <input type="text" class="form-control service-name" placeholder="e.g., Website Design" value="${escapeHtml(serviceName)}" oninput="calculateTotalCost()">
                 </div>
                 <div class="form-group" style="margin: 0;">
-                    <label>Cost ($)</label>
-                    <input type="number" class="form-control service-cost" step="0.01" min="0" placeholder="0.00" value="${serviceCost}" oninput="calculateTotalCost()">
+                    <label>Cost (£)</label>
+                    <div style="position: relative;">
+                        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 500; color: #333;">£</span>
+                        <input type="number" class="form-control service-cost" step="0.01" min="0" placeholder="0.00" value="${serviceCost}" oninput="calculateTotalCost()" style="padding-left: 28px;">
+                    </div>
                 </div>
                 <button type="button" class="btn btn-danger btn-sm" onclick="removeServiceRow('${rowId}')" style="height: 38px;">Remove</button>
             `;
