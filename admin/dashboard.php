@@ -684,6 +684,7 @@ if ($invoices_result) {
             <div class="submenu" id="clients-submenu">
                 <a href="#" onclick="showSection('clients'); return false;" id="nav-clients">📝 Quote Requests</a>
                 <a href="#" onclick="showSection('existing-clients'); return false;" id="nav-existing-clients">👤 Existing Clients</a>
+                <a href="#" onclick="openAddClientModal(); return false;" id="nav-add-client">➕ Add New Client</a>
             </div>
             
             <a href="#" onclick="showSection('tasks'); return false;" id="nav-tasks">✅ Tasks & To-Do</a>
