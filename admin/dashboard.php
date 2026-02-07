@@ -1,3 +1,21 @@
+<?php
+session_start();
+include 'config/db.php';
+include 'config/auth.php';
+
+requireLogin();
+$user = getCurrentUser();
+
+// Get all pages
+$pages_sql = "SELECT * FROM pages ORDER BY updated_at DESC";
+$pages_result = $conn->query($pages_sql);
+$pages = [];
+if ($pages_result) {
+    while ($row = $pages_result->fetch_assoc()) {
+        $pages[] = $row;
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -311,25 +329,7 @@
     </style>
 </head>
 <body>
-    <?php
-    session_start();
-    include '../config/db.php';
-    include '../config/auth.php';
-
-    requireLogin();
-    $user = getCurrentUser();
-
-    // Get all pages
-    $pages_sql = "SELECT * FROM pages ORDER BY updated_at DESC";
-    $pages_result = $conn->query($pages_sql);
-    $pages = [];
-    if ($pages_result) {
-        while ($row = $pages_result->fetch_assoc()) {
-            $pages[] = $row;
-        }
-    }
-    ?>
-
+    
     <div class="navbar">
         <h1>📊 Content Catalogz Admin</h1>
         <div class="user-info">
