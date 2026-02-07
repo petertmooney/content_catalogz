@@ -2489,8 +2489,20 @@ if ($invoices_result) {
 
         // Load HTML files count and quotes on page load
         window.addEventListener('DOMContentLoaded', function() {
+            console.log('Dashboard loaded');
+            
+            // Ensure dashboard section is visible
+            const dashboardSection = document.getElementById('section-dashboard');
+            if (dashboardSection && !dashboardSection.classList.contains('active')) {
+                dashboardSection.classList.add('active');
+                dashboardSection.style.display = 'block';
+            }
+            
+            // Load initial data
             loadHtmlFiles();
             loadQuotes();
+            
+            console.log('Initial data loading started');
         });
         
         // ==================== CRM Functions ====================
