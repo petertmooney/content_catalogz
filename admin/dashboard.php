@@ -2554,8 +2554,12 @@ if ($invoices_result) {
 
         // Email invoice as PDF
         function emailInvoice() {
+            console.log('emailInvoice called');
+            alert('Email invoice function triggered - checking data...');
+            
             const clientName = document.getElementById('clientName').textContent;
             const clientEmail = document.getElementById('clientEmail').textContent;
+            console.log('Client:', clientName, 'Email:', clientEmail);
             const invoiceNumber = 'INV-' + Date.now();
             const totalCost = document.getElementById('totalCost').value;
             const totalPaid = document.getElementById('totalPaid').value;
