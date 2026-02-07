@@ -353,6 +353,7 @@ if ($pages_result) {
     <div class="container">
         <div class="sidebar">
             <a href="#" onclick="showSection('dashboard'); return false;" id="nav-dashboard" class="active">📋 Dashboard</a>
+            <a href="#" onclick="showSection('clients'); return false;" id="nav-clients">👥 Clients</a>
             <a href="#" onclick="showSection('html-files'); return false;" id="nav-html-files">📝 Edit Pages</a>
             <a href="#" onclick="openAddPageModal(); return false;">➕ New Database Page</a>
             <a href="#" onclick="showSection('database-pages'); return false;" id="nav-database-pages">📄 Database Pages</a>
