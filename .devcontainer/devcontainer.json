@@ -48,13 +48,17 @@
 	},
 	"portsAttributes": {
 		"3306": {
-			"label": "mysql"
+			"label": "mysql",
+			"onAutoForward": "ignore"
 		},
 		"8083": {
-			"label": "web server"
+			"label": "web server",
+			"onAutoForward": "notify",
+			"visibility": "public"
 		},
 		"8081": {
-			"label": "phpMyAdmin"
+			"label": "phpMyAdmin",
+			"visibility": "public"
 		}
 	}
 
