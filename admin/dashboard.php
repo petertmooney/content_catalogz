@@ -1537,12 +1537,24 @@ if ($invoices_result) {
         // Load HTML files
         function loadHtmlFiles() {
             fetch('api/get_html_files.php')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         displayHtmlFiles(data.files);
                         document.getElementById('html-count').textContent = data.files.length;
+                    } else {
+                        console.error('Failed to load HTML files:', data.message);
+                        document.getElementById('html-count').textContent = '0';
                     }
+                })
+                .catch(error => {
+                    console.error('Error loading HTML files:', error);
+                    document.getElementById('html-count').textContent = '0';
                 });
         }
 
