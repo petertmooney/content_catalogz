@@ -942,12 +942,12 @@ if ($invoices_result) {
                 <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <button class="btn btn-primary" onclick="openAddTaskModal()">+ Add New Task</button>
                     <select id="taskStatusFilter" onchange="loadTasks()" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ddd;">
-                        <option value="">All Tasks</option>
+                        <option value="all">All Tasks</option>
                         <option value="pending" selected>Pending</option>
                         <option value="in_progress">In Progress</option>
                         <option value="completed">Completed</option>
                     </select>
-                    <button class="btn btn-secondary" onclick="loadTasks()">Refresh</button>
+                    <button class="btn btn-secondary" onclick="loadTasks()">🔄 Refresh</button>
                 </div>
 
                 <div id="tasks-list"></div>
@@ -2998,6 +2998,204 @@ if ($invoices_result) {
         function showNotification(message, type) {
             // Simple alert for now - can be enhanced with a toast notification system
             console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // ==================== Main Tasks Section Functions ====================
+        
+        let currentTaskFilter = 'all';
+        let currentEditTaskId = null;
+        
+        function loadTasks() {
+            // Get filter value from dropdown if it exists
+            const filterSelect = document.getElementById('taskStatusFilter');
+            if (filterSelect) {
+                currentTaskFilter = filterSelect.value || 'all';
+            }
+            
+            const statusFilter = currentTaskFilter === '' || currentTaskFilter === 'all' ? '' : `&status=${currentTaskFilter}`;
+            
+            fetch(`api/tasks.php?${statusFilter.substring(1)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.tasks) {
+                        // Update statistics
+                        const pending = data.tasks.filter(t => t.status === 'pending').length;
+                        const today = new Date().toISOString().split('T')[0];
+                        const overdue = data.tasks.filter(t => t.due_date && t.due_date < today && t.status !== 'completed' && t.status !== 'cancelled').length;
+                        const urgent = data.tasks.filter(t => t.priority === 'urgent' && t.status !== 'completed' && t.status !== 'cancelled').length;
+                        
+                        document.getElementById('stat-tasks-pending').textContent = pending;
+                        document.getElementById('stat-tasks-overdue').textContent = overdue;
+                        document.getElementById('stat-tasks-urgent').textContent = urgent;
+                        
+                        // Render tasks list
+                        renderTasksList(data.tasks);
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading tasks:', err);
+                });
+        }
+        
+        function renderTasksList(tasks) {
+            const container = document.getElementById('tasks-list');
+            
+            if (tasks.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>No Tasks Found</h3><p>Create your first task to get started.</p></div>';
+                return;
+            }
+            
+            const priorityColors = {
+                urgent: '#dc3545',
+                high: '#fd7e14',
+                medium: '#ffc107',
+                low: '#28a745'
+            };
+            
+            const statusBadges = {
+                pending: '⏳ Pending',
+                in_progress: '🔄 In Progress',
+                completed: '✅ Completed',
+                cancelled: '❌ Cancelled'
+            };
+            
+            container.innerHTML = tasks.map(task => `
+                <div class="task-item ${task.status === 'completed' || task.status === 'cancelled' ? 'completed' : ''}">
+                    <div class="task-left">
+                        <div class="task-title ${task.status === 'completed' ? 'completed' : ''}">${task.title}</div>
+                        ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+                        <div class="task-meta">
+                            <span style="color: ${priorityColors[task.priority]}; font-weight: 600;">● ${task.priority.toUpperCase()}</span>
+                            <span>${statusBadges[task.status]}</span>
+                            ${task.due_date ? `<span>📅 Due: ${new Date(task.due_date).toLocaleDateString()}</span>` : ''}
+                            ${task.client_name ? `<span>👤 ${task.client_name}</span>` : '<span>👤 General Task</span>'}
+                            ${task.assigned_to_username ? `<span>👷 ${task.assigned_to_username}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn btn-sm btn-secondary" onclick="editTask(${task.id})">Edit</button>
+                        ${task.status !== 'completed' ? `<button class="btn btn-sm btn-primary" onclick="markTaskComplete(${task.id})">✓ Complete</button>` : ''}
+                        <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function filterTasks(status) {
+            currentTaskFilter = status;
+            loadTasks();
+        }
+        
+        function openAddTaskModal() {
+            currentEditTaskId = null;
+            document.getElementById('taskModalTitle').textContent = 'Add New Task';
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskId').value = '';
+            
+            // Load clients for dropdown
+            fetch('api/get_clients.php')
+                .then(res => res.json())
+                .then(data => {
+                    const clientSelect = document.getElementById('taskClientId');
+                    clientSelect.innerHTML = '<option value="">-- General Task --</option>';
+                    if (data.success && data.clients) {
+                        data.clients.forEach(client => {
+                            clientSelect.innerHTML += `<option value="${client.id}">${client.name}${client.company ? ' (' + client.company + ')' : ''}</option>`;
+                        });
+                    }
+                });
+            
+            document.getElementById('taskModal').style.display = 'flex';
+        }
+        
+        function editTask(taskId) {
+            currentEditTaskId = taskId;
+            document.getElementById('taskModalTitle').textContent = 'Edit Task';
+            
+            // Fetch task data
+            fetch(`api/tasks.php?id=${taskId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.task) {
+                        const task = data.task;
+                        document.getElementById('taskId').value = task.id;
+                        document.getElementById('taskTitle').value = task.title;
+                        document.getElementById('taskDescription').value = task.description || '';
+                        document.getElementById('taskPriority').value = task.priority;
+                        document.getElementById('taskDueDate').value = task.due_date || '';
+                        document.getElementById('taskStatus').value = task.status;
+                        
+                        // Load clients and select the right one
+                        fetch('api/get_clients.php')
+                            .then(res => res.json())
+                            .then(clientData => {
+                                const clientSelect = document.getElementById('taskClientId');
+                                clientSelect.innerHTML = '<option value="">-- General Task --</option>';
+                                if (clientData.success && clientData.clients) {
+                                    clientData.clients.forEach(client => {
+                                        const selected = client.id == task.client_id ? 'selected' : '';
+                                        clientSelect.innerHTML += `<option value="${client.id}" ${selected}>${client.name}${client.company ? ' (' + client.company + ')' : ''}</option>`;
+                                    });
+                                }
+                            });
+                        
+                        document.getElementById('taskModal').style.display = 'flex';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading task:', err);
+                    alert('Error loading task');
+                });
+        }
+        
+        function closeTaskModal() {
+            document.getElementById('taskModal').style.display = 'none';
+            currentEditTaskId = null;
+        }
+        
+        function saveTask(event) {
+            event.preventDefault();
+            
+            const taskId = document.getElementById('taskId').value;
+            const formData = {
+                title: document.getElementById('taskTitle').value,
+                description: document.getElementById('taskDescription').value,
+                client_id: document.getElementById('taskClientId').value || null,
+                priority: document.getElementById('taskPriority').value,
+                due_date: document.getElementById('taskDueDate').value || null,
+                status: document.getElementById('taskStatus').value
+            };
+            
+            const method = taskId ? 'PUT' : 'POST';
+            const url = taskId ? `api/tasks.php?id=${taskId}` : 'api/tasks.php';
+            
+            fetch(url, {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    closeTaskModal();
+                    loadTasks();
+                    if (currentClientId) {
+                        loadClientTasks(currentClientId);
+                    }
+                    showNotification(taskId ? 'Task updated successfully' : 'Task created successfully', 'success');
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to save task'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error saving task');
+            });
+        }
+        
+        function openTaskModal() {
+            // This is called from openAddClientTaskModal
+            openAddTaskModal();
         }
     </script>
 </body>
