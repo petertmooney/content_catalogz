@@ -1835,7 +1835,14 @@ if ($invoices_result) {
         }
 
         function openClientModal(client) {
+            // Set current client ID for CRM functions
+            currentClientId = client.id;
+            
             document.getElementById('clientId').value = client.id;
+            
+            // Set client name in modal header
+            document.getElementById('clientModalName').textContent = client.name;
+            
             document.getElementById('clientName').textContent = client.name;
             document.getElementById('clientCompany').textContent = client.company || 'N/A';
             document.getElementById('clientEmail').textContent = client.email;
@@ -1867,6 +1874,20 @@ if ($invoices_result) {
             
             calculateTotalCost();
             calculateRemaining();
+            
+            // Reset to Details tab
+            document.querySelectorAll('.client-tab-content').forEach(tab => {
+                tab.classList.remove('active');
+                tab.style.display = 'none';
+            });
+            document.querySelectorAll('.crm-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show Details tab by default
+            document.getElementById('client-tab-details').style.display = 'block';
+            document.getElementById('client-tab-details').classList.add('active');
+            document.querySelector('.crm-tab[onclick*="details"]').classList.add('active');
             
             document.getElementById('clientModal').classList.add('show');
         }
@@ -2405,6 +2426,338 @@ if ($invoices_result) {
             loadHtmlFiles();
             loadQuotes();
         });
+        
+        // ==================== CRM Functions ====================
+        
+        let currentClientId = null;
+        
+        // Tab Switching
+        function switchClientTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.client-tab-content').forEach(tab => {
+                tab.classList.remove('active');
+                tab.style.display = 'none';
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.crm-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            const selectedTab = document.getElementById('client-tab-' + tabName);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+                selectedTab.style.display = 'block';
+            }
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Load data for the selected tab
+            if (currentClientId) {
+                if (tabName === 'activities') {
+                    loadClientActivities(currentClientId);
+                } else if (tabName === 'notes') {
+                    loadClientNotes(currentClientId);
+                } else if (tabName === 'tasks') {
+                    loadClientTasks(currentClientId);
+                }
+            }
+        }
+        
+        // ==================== Activity Functions ====================
+        
+        function loadClientActivities(clientId) {
+            fetch(`api/activities.php?client_id=${clientId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('client-activities-list');
+                    if (data.success && data.activities && data.activities.length > 0) {
+                        container.innerHTML = data.activities.map(activity => `
+                            <div class="activity-item type-${activity.activity_type}">
+                                <div class="activity-header">
+                                    <span class="activity-type type-${activity.activity_type}">${activity.activity_type}</span>
+                                    <a href="javascript:void(0)" class="activity-delete" onclick="deleteActivity(${activity.id})">Delete</a>
+                                </div>
+                                <div class="activity-subject">${activity.subject || 'No Subject'}</div>
+                                ${activity.description ? `<div class="activity-description">${activity.description}</div>` : ''}
+                                <div class="activity-meta">
+                                    <span>📅 ${new Date(activity.activity_date).toLocaleString()}</span>
+                                    ${activity.duration_minutes ? `<span>⏱️ ${activity.duration_minutes} min</span>` : ''}
+                                    <span>👤 ${activity.created_by_username || 'Unknown'}</span>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        container.innerHTML = '<div class="empty-state"><h3>No Activities Yet</h3><p>Log your first interaction with this client.</p></div>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading activities:', err);
+                });
+        }
+        
+        function openLogActivityModal() {
+            document.getElementById('activityClientId').value = currentClientId;
+            document.getElementById('activityForm').reset();
+            document.getElementById('activityClientId').value = currentClientId;
+            // Set default date to now
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('activityDate').value = now.toISOString().slice(0, 16);
+            document.getElementById('activityModal').style.display = 'flex';
+        }
+        
+        function closeActivityModal() {
+            document.getElementById('activityModal').style.display = 'none';
+        }
+        
+        function saveActivity(event) {
+            event.preventDefault();
+            
+            const formData = {
+                client_id: document.getElementById('activityClientId').value,
+                activity_type: document.getElementById('activityType').value,
+                subject: document.getElementById('activitySubject').value,
+                description: document.getElementById('activityDescription').value,
+                activity_date: document.getElementById('activityDate').value,
+                duration_minutes: document.getElementById('activityDuration').value || null
+            };
+            
+            fetch('api/activities.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    closeActivityModal();
+                    loadClientActivities(currentClientId);
+                    showNotification('Activity logged successfully', 'success');
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to log activity'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error logging activity');
+            });
+        }
+        
+        function deleteActivity(activityId) {
+            if (!confirm('Delete this activity?')) return;
+            
+            fetch(`api/activities.php?id=${activityId}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    loadClientActivities(currentClientId);
+                    showNotification('Activity deleted', 'success');
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to delete activity'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error deleting activity');
+            });
+        }
+        
+        // ==================== Notes Functions ====================
+        
+        function loadClientNotes(clientId) {
+            fetch(`api/notes.php?client_id=${clientId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('client-notes-list');
+                    if (data.success && data.notes && data.notes.length > 0) {
+                        container.innerHTML = data.notes.map(note => `
+                            <div class="note-item ${note.is_important ? 'important' : ''}">
+                                ${note.is_important ? '<span class="note-important-badge">⭐ IMPORTANT</span>' : ''}
+                                <div class="note-text">${note.note_text}</div>
+                                <div class="note-meta">
+                                    <span>📅 ${new Date(note.created_at).toLocaleString()} by ${note.created_by_username || 'Unknown'}</span>
+                                    <a href="javascript:void(0)" class="note-delete" onclick="deleteNote(${note.id})">Delete</a>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        container.innerHTML = '<div class="empty-state"><h3>No Notes Yet</h3><p>Add notes to keep track of important information about this client.</p></div>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading notes:', err);
+                });
+        }
+        
+        function openAddNoteModal() {
+            document.getElementById('noteClientId').value = currentClientId;
+            document.getElementById('noteForm').reset();
+            document.getElementById('noteClientId').value = currentClientId;
+            document.getElementById('noteModal').style.display = 'flex';
+        }
+        
+        function closeNoteModal() {
+            document.getElementById('noteModal').style.display = 'none';
+        }
+        
+        function saveNote(event) {
+            event.preventDefault();
+            
+            const formData = {
+                client_id: document.getElementById('noteClientId').value,
+                note_text: document.getElementById('noteText').value,
+                is_important: document.getElementById('noteImportant').checked ? 1 : 0
+            };
+            
+            fetch('api/notes.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    closeNoteModal();
+                    loadClientNotes(currentClientId);
+                    showNotification('Note added successfully', 'success');
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to add note'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error adding note');
+            });
+        }
+        
+        function deleteNote(noteId) {
+            if (!confirm('Delete this note?')) return;
+            
+            fetch(`api/notes.php?id=${noteId}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    loadClientNotes(currentClientId);
+                    showNotification('Note deleted', 'success');
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to delete note'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error deleting note');
+            });
+        }
+        
+        // ==================== Client Tasks Functions ====================
+        
+        function loadClientTasks(clientId) {
+            fetch(`api/tasks.php?client_id=${clientId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('client-tasks-list');
+                    if (data.success && data.tasks && data.tasks.length > 0) {
+                        container.innerHTML = data.tasks.map(task => {
+                            const priorityColors = {
+                                urgent: '#dc3545',
+                                high: '#fd7e14',
+                                medium: '#ffc107',
+                                low: '#28a745'
+                            };
+                            const statusBadges = {
+                                pending: '⏳ Pending',
+                                in_progress: '🔄 In Progress',
+                                completed: '✅ Completed',
+                                cancelled: '❌ Cancelled'
+                            };
+                            
+                            return `
+                            <div class="client-task-item ${task.status === 'completed' || task.status === 'cancelled' ? 'completed' : ''}">
+                                <div class="client-task-left">
+                                    <div class="client-task-title ${task.status === 'completed' ? 'completed' : ''}">${task.title}</div>
+                                    <div class="client-task-meta">
+                                        <span style="color: ${priorityColors[task.priority]}">● ${task.priority.toUpperCase()}</span>
+                                        <span>${statusBadges[task.status]}</span>
+                                        ${task.due_date ? `<span>📅 Due: ${new Date(task.due_date).toLocaleDateString()}</span>` : ''}
+                                    </div>
+                                </div>
+                                <div class="client-task-actions">
+                                    ${task.status !== 'completed' ? `<button class="btn btn-sm btn-primary" onclick="markTaskComplete(${task.id})">✓ Complete</button>` : ''}
+                                    <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})">Delete</button>
+                                </div>
+                            </div>
+                        `}).join('');
+                    } else {
+                        container.innerHTML = '<div class="empty-state"><h3>No Tasks Yet</h3><p>Create tasks related to this client.</p></div>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading tasks:', err);
+                });
+        }
+        
+        function openAddClientTaskModal() {
+            // Pre-fill client in regular task modal
+            document.getElementById('taskClientId').value = currentClientId;
+            openTaskModal();
+        }
+        
+        function markTaskComplete(taskId) {
+            fetch(`api/tasks.php?id=${taskId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ status: 'completed' })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    loadClientTasks(currentClientId);
+                    loadTasks(); // Refresh main tasks list if visible
+                    showNotification('Task marked as complete', 'success');
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to update task'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error updating task');
+            });
+        }
+        
+        function deleteTask(taskId) {
+            if (!confirm('Delete this task?')) return;
+            
+            fetch(`api/tasks.php?id=${taskId}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    loadClientTasks(currentClientId);
+                    loadTasks(); // Refresh main tasks list if visible
+                    showNotification('Task deleted', 'success');
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to delete task'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error deleting task');
+            });
+        }
+        
+        // Helper notification function
+        function showNotification(message, type) {
+            // Simple alert for now - can be enhanced with a toast notification system
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
     </script>
 </body>
 </html>
