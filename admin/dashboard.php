@@ -687,8 +687,6 @@ if ($invoices_result) {
             </div>
             
             <a href="#" onclick="showSection('html-files'); return false;" id="nav-html-files">📝 Edit Pages</a>
-            <a href="#" onclick="openAddPageModal(); return false;">➕ New Database Page</a>
-            <a href="#" onclick="showSection('database-pages'); return false;" id="nav-database-pages">📄 Database Pages</a>
             <a href="#" onclick="showSection('tasks'); return false;" id="nav-tasks">✅ Tasks & To-Do</a>
             <a href="#" onclick="showSection('invoices'); return false;" id="nav-invoices">📄 Invoices</a>
             <a href="/" target="_blank">🌐 View Site</a>
@@ -710,11 +708,6 @@ if ($invoices_result) {
                         <small style="color: #666;">Editable HTML files</small>
                     </div>
                     <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                        <h3 style="color: #764ba2; margin-bottom: 10px;">Database Pages</h3>
-                        <p class="stat-number" style="font-size: 32px; font-weight: bold; color: #333;"><?php echo count($pages); ?></p>
-                        <small style="color: #666;">Pages in database</small>
-                    </div>
-                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h3 style="color: #28a745; margin-bottom: 10px;">Client Quotes</h3>
                         <p class="stat-number" id="quotes-count" style="font-size: 32px; font-weight: bold; color: #333;">0</p>
                         <small style="color: #666;">Total quote requests</small>
@@ -731,7 +724,6 @@ if ($invoices_result) {
                     <button class="btn btn-primary" onclick="showSection('existing-clients')">Existing Clients</button>
                     <button class="btn btn-primary" onclick="showSection('invoices')">Search Invoices</button>
                     <button class="btn btn-primary" onclick="showSection('html-files')">Edit HTML Pages</button>
-                    <button class="btn btn-primary" onclick="openAddPageModal()">+ Add Database Page</button>
                 </div>
             </div>
 
@@ -830,60 +822,6 @@ if ($invoices_result) {
                 </div>
 
                 <div id="html-files-list"></div>
-            </div>
-
-            <!-- Database Pages Section -->
-            <div id="section-database-pages" class="content-section" style="display: none;">
-                <div class="page-header">
-                    <h2>Database Pages</h2>
-                    <p>Manage pages stored in the database</p>
-                </div>
-
-                <div class="btn-group">
-                    <button class="btn btn-primary" onclick="openAddPageModal()">+ Add New Page</button>
-                </div>
-
-            <div id="pages-section" class="table-container" style="margin-top: 30px;">
-                <?php if (count($pages) > 0): ?>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th>Slug</th>
-                                <th>Type</th>
-                                <th>Status</th>
-                                <th>Updated</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($pages as $page): ?>
-                                <tr>
-                                    <td><strong><?php echo escapeHtml($page['title']); ?></strong></td>
-                                    <td><code><?php echo escapeHtml($page['slug']); ?></code></td>
-                                    <td><?php echo escapeHtml($page['page_type'] ?? 'standard'); ?></td>
-                                    <td>
-                                        <span class="status-badge status-<?php echo escapeHtml($page['status']); ?>">
-                                            <?php echo ucfirst(escapeHtml($page['status'])); ?>
-                                        </span>
-                                    </td>
-                                    <td><?php echo date('M d, Y', strtotime($page['updated_at'])); ?></td>
-                                    <td>
-                                        <button class="btn btn-secondary btn-sm" onclick="openEditPageModal(<?php echo $page['id']; ?>)">Edit</button>
-                                        <button class="btn btn-danger btn-sm" onclick="deletePage(<?php echo $page['id']; ?>)">Delete</button>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                <?php else: ?>
-                    <div class="empty-state">
-                        <h3>No Pages Yet</h3>
-                        <p>Create your first page to get started.</p>
-                        <button class="btn btn-primary" onclick="openAddPageModal()" style="margin-top: 20px;">Create Page</button>
-                    </div>
-                <?php endif; ?>
-            </div>
             </div>
 
             <!-- Invoices Section -->
