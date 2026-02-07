@@ -633,6 +633,98 @@ if ($invoices_result) {
                     </div>
                 </div>
             </div>
+
+            <!-- Tasks Section -->
+            <div id="section-tasks" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h2>Tasks & To-Do List</h2>
+                    <p>Manage tasks, follow-ups, and reminders</p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Pending</h4>
+                        <p id="stat-tasks-pending" style="font-size: 24px; font-weight: bold; color: #ffc107;">0</p>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #dc3545; font-size: 14px; margin-bottom: 5px;">Overdue</h4>
+                        <p id="stat-tasks-overdue" style="font-size: 24px; font-weight: bold; color: #dc3545;">0</p>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #ff69b4; font-size: 14px; margin-bottom: 5px;">Urgent</h4>
+                        <p id="stat-tasks-urgent" style="font-size: 24px; font-weight: bold; color: #ff69b4;">0</p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="openAddTaskModal()">+ Add New Task</button>
+                    <select id="taskStatusFilter" onchange="loadTasks()" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ddd;">
+                        <option value="">All Tasks</option>
+                        <option value="pending" selected>Pending</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="loadTasks()">Refresh</button>
+                </div>
+
+                <div id="tasks-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Task Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="taskModalTitle">Add New Task</h3>
+                <button class="close-btn" onclick="closeTaskModal()">&times;</button>
+            </div>
+            <form id="taskForm" onsubmit="saveTask(event)">
+                <input type="hidden" id="taskId">
+                <div class="form-group">
+                    <label for="taskTitle">Task Title *</label>
+                    <input type="text" id="taskTitle" class="form-control" required placeholder="Follow up with client">
+                </div>
+                <div class="form-group">
+                    <label for="taskDescription">Description</label>
+                    <textarea id="taskDescription" class="form-control" rows="3" placeholder="Task details..."></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="taskClientId">Related Client (Optional)</label>
+                        <select id="taskClientId" class="form-control">
+                            <option value="">No client</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskPriority">Priority</label>
+                        <select id="taskPriority" class="form-control">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="taskDueDate">Due Date</label>
+                        <input type="date" id="taskDueDate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="taskStatus">Status</label>
+                        <select id="taskStatus" class="form-control">
+                            <option value="pending" selected>Pending</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Task</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -774,11 +866,24 @@ if ($invoices_result) {
 
     <!-- Client Details Modal -->
     <div id="clientModal" class="modal">
-        <div class="modal-content" style="max-width: 900px;">
+        <div class="modal-content" style="max-width: 1100px;">
             <div class="modal-header">
-                <h3>Client Details</h3>
+                <h3>Client Details - <span id="clientModalName"></span></h3>
                 <button class="close-btn" onclick="closeClientModal()">&times;</button>
             </div>
+            
+            <!-- CRM Tabs -->
+            <div style="border-bottom: 2px solid #ddd; margin-bottom: 20px;">
+                <div style="display: flex; gap: 5px;">
+                    <button type="button" class="crm-tab active" onclick="switchClientTab('details')" id="tab-details">📋 Details & Billing</button>
+                    <button type="button" class="crm-tab" onclick="switchClientTab('activities')" id="tab-activities">📅 Activity Timeline</button>
+                    <button type="button" class="crm-tab" onclick="switchClientTab('notes')" id="tab-notes">📝 Notes</button>
+                    <button type="button" class="crm-tab" onclick="switchClientTab('tasks')" id="tab-tasks">✅ Tasks</button>
+                </div>
+            </div>
+            
+            <!-- Tab: Details & Billing -->
+            <div id="client-tab-details" class="client-tab-content">
             <form id="clientForm" onsubmit="updateClient(event)">
                 <input type="hidden" id="clientId" name="id">
                 
@@ -878,6 +983,118 @@ if ($invoices_result) {
                     <button type="button" class="btn btn-secondary" onclick="closeClientModal()">Close</button>
                     <button type="button" class="btn btn-secondary" onclick="printInvoice()">🖨️ Print Invoice</button>
                     <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+            </div>
+            
+            <!-- Tab: Activity Timeline -->
+            <div id="client-tab-activities" class="client-tab-content" style="display: none;">
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="openLogActivityModal()">+ Log Activity</button>
+                </div>
+                <div id="client-activities-list">
+                    <div class="empty-state">
+                        <h3>No Activities Yet</h3>
+                        <p>Log your first interaction with this client.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab: Notes -->
+            <div id="client-tab-notes" class="client-tab-content" style="display: none;">
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="openAddNoteModal()">+ Add Note</button>
+                </div>
+                <div id="client-notes-list">
+                    <div class="empty-state">
+                        <h3>No Notes Yet</h3>
+                        <p>Add notes to keep track of important information about this client.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab: Tasks -->
+            <div id="client-tab-tasks" class="client-tab-content" style="display: none;">
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="openAddClientTaskModal()">+ Add Task</button>
+                </div>
+                <div id="client-tasks-list">
+                    <div class="empty-state">
+                        <h3>No Tasks Yet</h3>
+                        <p>Create tasks related to this client.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Log Activity Modal -->
+    <div id="activityModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Log Activity</h3>
+                <button class="close-btn" onclick="closeActivityModal()">&times;</button>
+            </div>
+            <form id="activityForm" onsubmit="saveActivity(event)">
+                <input type="hidden" id="activityClientId">
+                <div class="form-group">
+                    <label for="activityType">Activity Type *</label>
+                    <select id="activityType" class="form-control" required>
+                        <option value="call">Phone Call</option>
+                        <option value="email">Email</option>
+                        <option value="meeting">Meeting</option>
+                        <option value="note">Note</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="activitySubject">Subject *</label>
+                    <input type="text" id="activitySubject" class="form-control" required placeholder="Brief description">
+                </div>
+                <div class="form-group">
+                    <label for="activityDescription">Details</label>
+                    <textarea id="activityDescription" class="form-control" rows="4" placeholder="Activity details..."></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="activityDate">Date & Time</label>
+                        <input type="datetime-local" id="activityDate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="activityDuration">Duration (minutes)</label>
+                        <input type="number" id="activityDuration" class="form-control" min="0" placeholder="0">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeActivityModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Activity</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Add Note Modal -->
+    <div id="noteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Note</h3>
+                <button class="close-btn" onclick="closeNoteModal()">&times;</button>
+            </div>
+            <form id="noteForm" onsubmit="saveNote(event)">
+                <input type="hidden" id="noteClientId">
+                <div class="form-group">
+                    <label for="noteText">Note *</label>
+                    <textarea id="noteText" class="form-control" rows="5" required placeholder="Enter your note..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="noteImportant">
+                        <span>⭐ Mark as Important</span>
+                    </label>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeNoteModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Note</button>
                 </div>
             </form>
         </div>
