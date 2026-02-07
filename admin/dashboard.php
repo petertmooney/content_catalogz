@@ -745,12 +745,12 @@ if ($invoices_result) {
                 <!-- Invoice Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">📄 Invoices</h3>
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                    <div class="stat-card" onclick="showSection('invoices')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
+                    <div class="stat-card" onclick="showFilteredInvoices('outstanding')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Outstanding</h4>
                         <p class="stat-number" id="dash-invoices-outstanding" style="font-size: 28px; font-weight: bold; color: #ffc107;">0</p>
                         <small id="dash-invoices-outstanding-amount" style="color: #666;">£0.00</small>
                     </div>
-                    <div class="stat-card" onclick="showSection('invoices')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
+                    <div class="stat-card" onclick="showFilteredInvoices('overdue')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #dc3545; font-size: 14px; margin-bottom: 5px;">Overdue</h4>
                         <p class="stat-number" id="dash-invoices-overdue" style="font-size: 28px; font-weight: bold; color: #dc3545;">0</p>
                         <small id="dash-invoices-overdue-amount" style="color: #666;">£0.00</small>
@@ -879,12 +879,12 @@ if ($invoices_result) {
                 </div>
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="showFilteredInvoices('outstanding')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Outstanding Invoices</h4>
                         <p id="stat-invoices-outstanding-count" style="font-size: 24px; font-weight: bold; color: #ffc107;">0</p>
                         <p id="stat-invoices-outstanding-amount" style="font-size: 14px; color: #666; margin-top: 5px;">£0.00</p>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="showFilteredInvoices('overdue')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #dc3545; font-size: 14px; margin-bottom: 5px;">Overdue Invoices</h4>
                         <p id="stat-invoices-overdue-count" style="font-size: 24px; font-weight: bold; color: #dc3545;">0</p>
                         <p id="stat-invoices-overdue-amount" style="font-size: 14px; color: #666; margin-top: 5px;">£0.00</p>
@@ -2761,16 +2761,43 @@ if ($invoices_result) {
                     alert('Failed to search invoices');
                 });
         }
+        
+        function showFilteredInvoices(filter) {
+            // Show the invoices section first
+            showSection('invoices');
+            
+            // Then fetch filtered invoices
+            const filterLabels = {
+                'outstanding': 'Outstanding Invoices',
+                'overdue': 'Overdue Invoices',
+                'paid': 'Paid Invoices'
+            };
+            
+            fetch('api/search_invoices.php?filter=' + filter)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayInvoiceResults(data.invoices, filterLabels[filter] || 'Filtered Invoices');
+                    } else {
+                        alert('Error loading invoices: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to load invoices');
+                });
+        }
 
-        function displayInvoiceResults(invoices) {
+        function displayInvoiceResults(invoices, title) {
             const container = document.getElementById('invoices-results');
+            const displayTitle = title || 'Search Results';
 
             if (invoices.length === 0) {
-                container.innerHTML = '<div class="empty-state"><h3>No Invoices Found</h3><p>No invoices match your search criteria.</p></div>';
+                container.innerHTML = '<div class="empty-state"><h3>No Invoices Found</h3><p>No invoices match your criteria.</p></div>';
                 return;
             }
 
-            let html = '<div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;"><h3 style="color: #333; margin-bottom: 10px;">Search Results: ' + invoices.length + ' invoice(s) found</h3></div>';
+            let html = '<div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;"><h3 style="color: #333; margin-bottom: 10px;">' + displayTitle + ': ' + invoices.length + ' invoice(s) found</h3></div>';
             html += '<div class="table-container"><table><thead><tr>';
             html += '<th>Invoice Number</th><th>Client Name</th><th>Company</th><th>Invoice Date</th><th>Total Cost</th><th>Total Paid</th><th>Balance Due</th><th>Actions</th>';
             html += '</tr></thead><tbody>';
