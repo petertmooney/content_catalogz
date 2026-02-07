@@ -24,7 +24,7 @@ INSERT INTO quotes (name, company, email, phone, address_street, address_city, a
 );
 
 -- Client 2: Restaurant Owner - Marco Rossi
-INSERT INTO quotes (name, company, email, phone, address_street, address_city, address_county, address_postcode, address_country, services, total_cost, total_paid, status, lead_source, expected_value, probability, next_follow_up, last_contact_date) VALUES (
+INSERT INTO quotes (name, company, email, phone, address_street, address_city, address_county, address_postcode, address_country, services, total_cost, total_paid, status, message, lead_source, expected_value, probability, next_follow_up, last_contact_date) VALUES (
     'Marco Rossi',
     'La Bella Vista Restaurant',
     'marco@labellavista.co.uk',
@@ -38,6 +38,7 @@ INSERT INTO quotes (name, company, email, phone, address_street, address_city, a
     4950.00,
     4950.00,
     'completed',
+    'Looking for an elegant website for my Italian restaurant with online table booking. Need professional photos of our dishes and dining area. Want to attract more customers through online presence.',
     'Google Search',
     4950.00,
     100,
@@ -46,7 +47,7 @@ INSERT INTO quotes (name, company, email, phone, address_street, address_city, a
 );
 
 -- Client 3: Fitness Business - Amanda Foster
-INSERT INTO quotes (name, company, email, phone, address_street, address_city, address_county, address_postcode, address_country, services, total_cost, total_paid, status, lead_source, expected_value, probability, next_follow_up, last_contact_date) VALUES (
+INSERT INTO quotes (name, company, email, phone, address_street, address_city, address_county, address_postcode, address_country, services, total_cost, total_paid, status, message, lead_source, expected_value, probability, next_follow_up, last_contact_date) VALUES (
     'Amanda Foster',
     'FitLife Gym & Wellness',
     'amanda@fitlifegym.com',
@@ -60,6 +61,7 @@ INSERT INTO quotes (name, company, email, phone, address_street, address_city, a
     13800.00,
     0.00,
     'quoted',
+    'We want to modernize our gym with a website where members can book classes and track their progress. Eventually want a mobile app for workout tracking and nutrition plans. Need help with digital marketing too.',
     'Trade Show',
     13800.00,
     45,
@@ -68,7 +70,7 @@ INSERT INTO quotes (name, company, email, phone, address_street, address_city, a
 );
 
 -- Client 4: Law Firm - James Whitmore
-INSERT INTO quotes (name, company, email, phone, address_street, address_city, address_county, address_postcode, address_country, services, total_cost, total_paid, status, lead_source, expected_value, probability, next_follow_up, last_contact_date) VALUES (
+INSERT INTO quotes (name, company, email, phone, address_street, address_city, address_county, address_postcode, address_country, services, total_cost, total_paid, status, message, lead_source, expected_value, probability, next_follow_up, last_contact_date) VALUES (
     'James Whitmore',
     'Whitmore & Associates Legal',
     'j.whitmore@whitmorelegal.co.uk',
@@ -82,6 +84,7 @@ INSERT INTO quotes (name, company, email, phone, address_street, address_city, a
     10150.00,
     5000.00,
     'in_progress',
+    'Our law firm needs a professional website that complies with Law Society regulations. Require secure client portal for document sharing and case updates. Security and confidentiality are paramount.',
     'Client Referral',
     10150.00,
     90,
@@ -90,7 +93,7 @@ INSERT INTO quotes (name, company, email, phone, address_street, address_city, a
 );
 
 -- Client 5: E-commerce Startup - Olivia Martinez
-INSERT INTO quotes (name, company, email, phone, address_street, address_city, address_county, address_postcode, address_country, services, total_cost, total_paid, status, lead_source, expected_value, probability, next_follow_up, last_contact_date) VALUES (
+INSERT INTO quotes (name, company, email, phone, address_street, address_city, address_county, address_postcode, address_country, services, total_cost, total_paid, status, message, lead_source, expected_value, probability, next_follow_up, last_contact_date) VALUES (
     'Olivia Martinez',
     'EcoThreads Sustainable Fashion',
     'olivia@ecothreads.shop',
@@ -104,6 +107,7 @@ INSERT INTO quotes (name, company, email, phone, address_street, address_city, a
     9700.00,
     2000.00,
     'in_progress',
+    'Starting sustainable fashion brand selling eco-friendly clothing online. Need full e-commerce site with payment processing, beautiful product photos, and email marketing to build customer base. Prefer green hosting if possible.',
     'Instagram Ad',
     9700.00,
     70,
