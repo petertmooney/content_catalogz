@@ -1,0 +1,70 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/php-mariadb
+{
+	"name": "Camups Cuisine Dev Env",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+	"remoteUser": "root",
+	"postCreateCommand": "sudo chmod a+x \"$(pwd)\" && sudo rm -rf /var/www/html && sudo ln -s \"$(pwd)\" /var/www/html",
+
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+
+	// For use with PHP or Apache (e.g.php -S localhost:8080 or apache2ctl start)
+	"forwardPorts": [
+		8080,
+		3306,
+		8081
+	],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"mtxr.sqltools",
+				"mtxr.sqltools-driver-mysql",
+				"xdebug.php-debug",
+				"bmewburn.vscode-intelephense-client"
+			],
+			"settings": {
+				"sqltools.connections": [
+					{
+						"mysqlOptions": {
+							"authProtocol": "default",
+							"enableSsl": "Disabled"
+						},
+						"previewLimit": 50,
+						"server": "localhost",
+						"port": 3306,
+						"driver": "MariaDB",
+						"name": "conn_campus_cuisine",
+						"database": "campus_cuisine",
+						"username": "serc",
+						"password": "cuisine"
+					}
+				]
+			}
+		}
+	},
+	"portsAttributes": {
+		"3306": {
+			"label": "mariadb"
+		},
+		"8080": {
+			"label": "web server"
+		},
+		"8081": {
+			"label": "phpMyAdmin"
+		}
+	}
+
+	
+	// Use 'postCreateCommand' to run commands after the container is created.
+	//"postCreateCommand": "sudo chmod a+x \"$(pwd)\" && sudo rm -rf /var/www/html && sudo ln -s \"$(pwd)\" /var/www/html"
+
+	// Configure tool-specific properties.
+	// "customizations": {},
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	//"remoteUser": "root"
+}
