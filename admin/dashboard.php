@@ -778,27 +778,27 @@ if ($invoices_result) {
                 </div>
 
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="filterQuotesByStatus('all')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #666; font-size: 14px; margin-bottom: 5px;">Total</h4>
                         <p id="stat-total" style="font-size: 24px; font-weight: bold; color: #333;">0</p>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="filterQuotesByStatus('new')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #007bff; font-size: 14px; margin-bottom: 5px;">New</h4>
                         <p id="stat-new" style="font-size: 24px; font-weight: bold; color: #007bff;">0</p>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="filterQuotesByStatus('contacted')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Contacted</h4>
                         <p id="stat-contacted" style="font-size: 24px; font-weight: bold; color: #ffc107;">0</p>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="filterQuotesByStatus('in_progress')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #17a2b8; font-size: 14px; margin-bottom: 5px;">In Progress</h4>
                         <p id="stat-inprogress" style="font-size: 24px; font-weight: bold; color: #17a2b8;">0</p>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="filterQuotesByStatus('completed')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Completed</h4>
                         <p id="stat-completed" style="font-size: 24px; font-weight: bold; color: #28a745;">0</p>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="filterQuotesByStatus('declined')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #dc3545; font-size: 14px; margin-bottom: 5px;">Declined</h4>
                         <p id="stat-declined" style="font-size: 24px; font-weight: bold; color: #dc3545;">0</p>
                     </div>
@@ -1824,6 +1824,12 @@ if ($invoices_result) {
                 console.error('Error:', error);
                 alert('Error creating page');
             });
+        }
+
+        // Filter quotes by clicking on stat cards
+        function filterQuotesByStatus(status) {
+            document.getElementById('statusFilter').value = status;
+            loadQuotes();
         }
 
         // Load quotes from database
