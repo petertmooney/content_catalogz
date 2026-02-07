@@ -711,15 +711,15 @@ if ($invoices_result) {
                 <!-- Client & Quotes Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">📊 Clients & Quotes</h3>
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="showSection('clients')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Total Quotes</h4>
                         <p class="stat-number" id="quotes-count" style="font-size: 28px; font-weight: bold; color: #28a745;">0</p>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="showSection('clients')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #007bff; font-size: 14px; margin-bottom: 5px;">New Quotes</h4>
                         <p class="stat-number" id="dash-quotes-new" style="font-size: 28px; font-weight: bold; color: #007bff;">0</p>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="showSection('clients')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #17a2b8; font-size: 14px; margin-bottom: 5px;">In Progress</h4>
                         <p class="stat-number" id="dash-quotes-progress" style="font-size: 28px; font-weight: bold; color: #17a2b8;">0</p>
                     </div>
@@ -728,15 +728,15 @@ if ($invoices_result) {
                 <!-- Tasks Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">✅ Tasks & To-Do</h3>
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="showSection('tasks')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Pending Tasks</h4>
                         <p class="stat-number" id="dash-tasks-pending" style="font-size: 28px; font-weight: bold; color: #ffc107;">0</p>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="showSection('tasks')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #dc3545; font-size: 14px; margin-bottom: 5px;">Overdue Tasks</h4>
                         <p class="stat-number" id="dash-tasks-overdue" style="font-size: 28px; font-weight: bold; color: #dc3545;">0</p>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="showSection('tasks')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #ff69b4; font-size: 14px; margin-bottom: 5px;">Urgent Tasks</h4>
                         <p class="stat-number" id="dash-tasks-urgent" style="font-size: 28px; font-weight: bold; color: #ff69b4;">0</p>
                     </div>
@@ -745,17 +745,17 @@ if ($invoices_result) {
                 <!-- Invoice Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">📄 Invoices</h3>
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="showSection('invoices')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Outstanding</h4>
                         <p class="stat-number" id="dash-invoices-outstanding" style="font-size: 28px; font-weight: bold; color: #ffc107;">0</p>
                         <small id="dash-invoices-outstanding-amount" style="color: #666;">£0.00</small>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="showSection('invoices')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #dc3545; font-size: 14px; margin-bottom: 5px;">Overdue</h4>
                         <p class="stat-number" id="dash-invoices-overdue" style="font-size: 28px; font-weight: bold; color: #dc3545;">0</p>
                         <small id="dash-invoices-overdue-amount" style="color: #666;">£0.00</small>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="showSection('invoices')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Collected</h4>
                         <p class="stat-number" id="dash-invoices-collected" style="font-size: 28px; font-weight: bold; color: #28a745;">£0</p>
                         <small style="color: #666;">All time</small>
