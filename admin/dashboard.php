@@ -546,7 +546,7 @@ if ($pages_result) {
                 <h3 id="modalTitle">Add New Page</h3>
                 <button class="close-btn" onclick="closePageModal()">&times;</button>
             </div>
-            <form id="pageForm" method="POST" action="api/save_page.php">
+            <form id="pageForm" onsubmit="savePage(event)">
                 <div class="form-group">
                     <label for="pageId">Page ID</label>
                     <input type="hidden" id="pageId" name="id" value="">
@@ -682,6 +682,30 @@ if ($pages_result) {
             document.getElementById('pageModal').classList.remove('show');
         }
 
+        function savePage(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(document.getElementById('pageForm'));
+            
+            fetch('api/save_page.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Page saved successfully!');
+                    closePageModal();
+                    location.reload();
+                } else {
+                    alert('Error saving page: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Network error: ' + error.message);
+            });
+        }
+
         function deletePage(pageId) {
             if (confirm('Are you sure you want to delete this page? This action cannot be undone.')) {
                 fetch('api/delete_page.php', {
@@ -698,6 +722,9 @@ if ($pages_result) {
                     } else {
                         alert('Error deleting page: ' + data.message);
                     }
+                })
+                .catch(error => {
+                    alert('Network error: ' + error.message);
                 });
             }
         }
@@ -846,12 +873,24 @@ if ($pages_result) {
             }
             
             fetch(url)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         displayQuotes(data.quotes);
                         updateQuoteStats(data.stats);
+                    } else {
+                        console.error('Failed to load quotes:', data.message);
+                        document.getElementById('quotes-list').innerHTML = '<div class="empty-state"><h3>Error Loading Quotes</h3><p>' + (data.message || 'Unknown error') + '</p></div>';
                     }
+                })
+                .catch(error => {
+                    console.error('Error loading quotes:', error);
+                    document.getElementById('quotes-list').innerHTML = '<div class="empty-state"><h3>Error Loading Quotes</h3><p>Network error: ' + error.message + '</p></div>';
                 });
         }
 
@@ -920,7 +959,12 @@ if ($pages_result) {
         // Open quote detail modal
         function openQuoteModal(quoteId) {
             fetch('api/get_quotes.php')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         const quote = data.quotes.find(q => q.id === quoteId);
@@ -937,8 +981,15 @@ if ($pages_result) {
                             document.getElementById('quoteNotes').value = quote.notes || '';
                             
                             document.getElementById('quoteModal').classList.add('show');
+                        } else {
+                            alert('Quote not found');
                         }
+                    } else {
+                        alert('Error loading quote: ' + (data.message || 'Unknown error'));
                     }
+                })
+                .catch(error => {
+                    alert('Network error: ' + error.message);
                 });
         }
 
@@ -957,15 +1008,23 @@ if ($pages_result) {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     alert('Quote updated successfully!');
                     closeQuoteModal();
                     loadQuotes();
                 } else {
-                    alert('Error updating quote: ' + data.message);
+                    alert('Error updating quote: ' + (data.message || 'Unknown error'));
                 }
+            })
+            .catch(error => {
+                alert('Network error: ' + error.message);
             });
         }
 
