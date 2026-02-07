@@ -692,6 +692,7 @@ if ($invoices_result) {
             <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'pages-submenu'); return false;">🌐 Website Pages</a>
             <div class="submenu" id="pages-submenu">
                 <a href="#" onclick="showSection('html-files'); return false;" id="nav-html-files">📝 Edit Pages</a>
+                <a href="#" onclick="openNewPageModal(); return false;" id="nav-new-page">➕ Create New Page</a>
             </div>
             
             <a href="/" target="_blank">🌐 View Site</a>
@@ -824,6 +825,10 @@ if ($invoices_result) {
                 <div class="page-header">
                     <h2>Edit HTML Pages</h2>
                     <p>Edit your website's HTML files directly</p>
+                </div>
+
+                <div class="btn-group" style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="openNewPageModal()">➕ Create New Page</button>
                 </div>
 
                 <div id="html-files-list"></div>
@@ -1344,6 +1349,31 @@ if ($invoices_result) {
         </div>
     </div>
 
+    <!-- New Page Modal -->
+    <div id="newPageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Page</h3>
+                <button class="close-btn" onclick="closeNewPageModal()">&times;</button>
+            </div>
+            <form id="newPageForm" onsubmit="createNewPage(event)">
+                <div class="form-group">
+                    <label for="newPageName">Page Name *</label>
+                    <input type="text" id="newPageName" class="form-control" required placeholder="e.g., services, contact, portfolio" pattern="[a-zA-Z0-9_-]+" title="Only letters, numbers, hyphens and underscores allowed">
+                    <small style="color: #666;">Will create: <span id="newPageFilename">pagename.html</span></small>
+                </div>
+                <div class="form-group">
+                    <label for="newPageTitle">Page Title *</label>
+                    <input type="text" id="newPageTitle" class="form-control" required placeholder="e.g., Our Services">
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeNewPageModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Page</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         function toggleSubmenu(event, submenuId) {
             event.preventDefault();
@@ -1596,6 +1626,102 @@ if ($invoices_result) {
                 } else {
                     alert('Error saving file: ' + data.message);
                 }
+            });
+        }
+
+        // New Page functions
+        function openNewPageModal() {
+            document.getElementById('newPageForm').reset();
+            document.getElementById('newPageFilename').textContent = 'pagename.html';
+            document.getElementById('newPageModal').style.display = 'flex';
+        }
+
+        function closeNewPageModal() {
+            document.getElementById('newPageModal').style.display = 'none';
+        }
+
+        // Update filename preview as user types
+        document.addEventListener('DOMContentLoaded', function() {
+            const nameInput = document.getElementById('newPageName');
+            if (nameInput) {
+                nameInput.addEventListener('input', function() {
+                    const filename = this.value.toLowerCase().replace(/[^a-z0-9_-]/g, '') + '.html';
+                    document.getElementById('newPageFilename').textContent = filename || 'pagename.html';
+                });
+            }
+        });
+
+        function createNewPage(event) {
+            event.preventDefault();
+            
+            const pageName = document.getElementById('newPageName').value.toLowerCase().replace(/[^a-z0-9_-]/g, '');
+            const pageTitle = document.getElementById('newPageTitle').value;
+            
+            if (!pageName) {
+                alert('Please enter a valid page name');
+                return;
+            }
+            
+            const filename = pageName + '.html';
+            
+            // Create basic HTML template
+            const htmlTemplate = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${pageTitle} - Content Catalogz</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="about.html">About</a>
+            <a href="${filename}" class="active">${pageTitle}</a>
+            <a href="quote.html">Get a Quote</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>${pageTitle}</h1>
+            <p>Add your content here.</p>
+        </section>
+
+        <section class="content">
+            <p>Edit this page to add your content.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Content Catalogz. All rights reserved.</p>
+    </footer>
+</body>
+</html>`;
+
+            const formData = new FormData();
+            formData.append('filename', filename);
+            formData.append('content', htmlTemplate);
+            
+            fetch('api/save_html_file.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Page created successfully!');
+                    closeNewPageModal();
+                    loadHtmlFiles();
+                    showSection('html-files');
+                } else {
+                    alert('Error creating page: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error creating page');
             });
         }
 
