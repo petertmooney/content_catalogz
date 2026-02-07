@@ -2130,34 +2130,52 @@ if ($invoices_result) {
                 return;
             }
             
-            fetch('api/email_quote.php', {
+            // First, save the quote
+            const formData = new FormData(document.getElementById('quoteForm'));
+            formData.append('services', JSON.stringify(services));
+            formData.append('total_cost', totalCost);
+            
+            fetch('api/update_quote.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    quote_id: quoteId,
-                    services: services,
-                    total_cost: totalCost
-                })
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
+                if (!data.success) {
+                    throw new Error(data.message || 'Failed to save quote');
+                }
+                // Quote saved, now send email
+                return fetch('api/email_quote.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        quote_id: quoteId,
+                        services: services,
+                        total_cost: totalCost
+                    })
+                });
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadQuotes(); // Refresh list
                 if (data.success) {
-                    alert('Quote emailed successfully to ' + clientEmail);
+                    alert('Quote saved and emailed successfully to ' + clientEmail);
                 } else if (data.fallback) {
                     // Server mail not configured - open email client
                     const mailtoLink = 'mailto:' + encodeURIComponent(data.email) + 
                         '?subject=' + encodeURIComponent(data.subject) + 
                         '&body=' + encodeURIComponent(data.body);
                     window.open(mailtoLink, '_blank');
+                    alert('Quote saved. Email client opened.');
                 } else {
-                    alert('Error emailing quote: ' + data.message);
+                    alert('Quote saved but email failed: ' + data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Failed to email quote');
+                alert('Error: ' + error.message);
             });
         }
 
