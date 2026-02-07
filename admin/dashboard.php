@@ -379,6 +379,228 @@ if ($invoices_result) {
             margin-bottom: 10px;
             color: #333;
         }
+        
+        /* CRM Tabs */
+        .crm-tabs {
+            display: flex;
+            gap: 5px;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .crm-tab {
+            background: transparent;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            position: relative;
+            top: 2px;
+        }
+        
+        .crm-tab:hover {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .crm-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: 600;
+        }
+        
+        .client-tab-content {
+            display: none;
+        }
+        
+        .client-tab-content.active {
+            display: block;
+        }
+        
+        /* Activity Timeline */
+        .activity-item {
+            background: white;
+            border-left: 3px solid #667eea;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .activity-item.type-call {
+            border-left-color: #28a745;
+        }
+        
+        .activity-item.type-email {
+            border-left-color: #17a2b8;
+        }
+        
+        .activity-item.type-meeting {
+            border-left-color: #ffc107;
+        }
+        
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .activity-type {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .activity-type.type-call {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .activity-type.type-email {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .activity-type.type-meeting {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .activity-type.type-note {
+            background: #e7e7e7;
+            color: #333;
+        }
+        
+        .activity-subject {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .activity-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .activity-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .activity-delete {
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: none;
+        }
+        
+        .activity-delete:hover {
+            text-decoration: underline;
+        }
+        
+        /* Notes */
+        .note-item {
+            background: #fffef0;
+            border: 1px solid #f0e68c;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            position: relative;
+        }
+        
+        .note-item.important {
+            background: #fff5f5;
+            border-color: #ff6b6b;
+        }
+        
+        .note-important-badge {
+            position: absolute;
+            top: -8px;
+            right: 15px;
+            background: #ff6b6b;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .note-text {
+            color: #333;
+            margin-bottom: 10px;
+            white-space: pre-wrap;
+        }
+        
+        .note-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .note-delete {
+            color: #dc3545;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .note-delete:hover {
+            text-decoration: underline;
+        }
+        
+        /* Client Tasks */
+        .client-task-item {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .client-task-item.completed {
+            opacity: 0.6;
+            background: #f8f9fa;
+        }
+        
+        .client-task-left {
+            flex: 1;
+        }
+        
+        .client-task-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .client-task-title.completed {
+            text-decoration: line-through;
+        }
+        
+        .client-task-meta {
+            display: flex;
+            gap: 10px;
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .client-task-actions {
+            display: flex;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
