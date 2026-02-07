@@ -3094,7 +3094,7 @@ if ($invoices_result) {
                         <div class="task-title ${task.status === 'completed' ? 'completed' : ''}">${task.title}</div>
                         ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
                         <div class="task-meta">
-                            <span style="color: ${priorityColor}; font-weight: 600; margin-right: 10px; display: inline-block;" class="priority-badge">● ${task.priority.toUpperCase()}</span>
+                            <span class="priority-badge" style="font-weight: 600; margin-right: 10px; display: inline-block;">● ${task.priority.toUpperCase()}</span>
                             <span>${statusBadges[task.status]}</span>
                             ${task.due_date ? `<span>📅 Due: ${new Date(task.due_date).toLocaleDateString()}</span>` : ''}
                             ${task.client_name ? `<span>👤 ${task.client_name}</span>` : '<span>👤 General Task</span>'}
