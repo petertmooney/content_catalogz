@@ -17,6 +17,14 @@ if ($pages_result) {
         $pages[] = $row;
     }
 }
+
+// Get invoice count
+$invoices_sql = "SELECT COUNT(*) as count FROM invoices";
+$invoices_result = $conn->query($invoices_sql);
+$invoice_count = 0;
+if ($invoices_result) {
+    $invoice_count = $invoices_result->fetch_assoc()['count'];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -398,6 +406,7 @@ if ($pages_result) {
             <a href="#" onclick="showSection('html-files'); return false;" id="nav-html-files">📝 Edit Pages</a>
             <a href="#" onclick="openAddPageModal(); return false;">➕ New Database Page</a>
             <a href="#" onclick="showSection('database-pages'); return false;" id="nav-database-pages">📄 Database Pages</a>
+            <a href="#" onclick="showSection('invoices'); return false;" id="nav-invoices">📄 Invoices</a>
             <a href="/" target="_blank">🌐 View Site</a>
             <a href="api/logout.php">🚪 Logout</a>
         </div>
@@ -426,11 +435,17 @@ if ($pages_result) {
                         <p class="stat-number" id="quotes-count" style="font-size: 32px; font-weight: bold; color: #333;">0</p>
                         <small style="color: #666;">Total quote requests</small>
                     </div>
+                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h3 style="color: #ff69b4; margin-bottom: 10px;">Invoices</h3>
+                        <p class="stat-number" style="font-size: 32px; font-weight: bold; color: #333;"><?php echo $invoice_count; ?></p>
+                        <small style="color: #666;">Generated invoices</small>
+                    </div>
                 </div>
 
                 <div class="btn-group">
                     <button class="btn btn-primary" onclick="showSection('clients')">Quote Requests</button>
                     <button class="btn btn-primary" onclick="showSection('existing-clients')">Existing Clients</button>
+                    <button class="btn btn-primary" onclick="showSection('invoices')">Search Invoices</button>
                     <button class="btn btn-primary" onclick="showSection('html-files')">Edit HTML Pages</button>
                     <button class="btn btn-primary" onclick="openAddPageModal()">+ Add Database Page</button>
                 </div>
@@ -585,6 +600,37 @@ if ($pages_result) {
                     </div>
                 <?php endif; ?>
             </div>
+            </div>
+
+            <!-- Invoices Section -->
+            <div id="section-invoices" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h2>Invoice Search</h2>
+                    <p>Search and view all generated invoices</p>
+                </div>
+
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 15px; color: #333;">Search Invoices</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: end;">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="invoiceSearch">Invoice Number or Client Name</label>
+                            <input type="text" id="invoiceSearch" class="form-control" placeholder="INV-1234567890 or client name...">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label for="invoiceDateSearch">Invoice Date</label>
+                            <input type="date" id="invoiceDateSearch" class="form-control">
+                        </div>
+                        <button class="btn btn-primary" onclick="searchInvoices()" style="height: 38px;">🔍 Search</button>
+                    </div>
+                    <button class="btn btn-secondary" onclick="clearInvoiceSearch()" style="margin-top: 10px;">Clear Search</button>
+                </div>
+
+                <div id="invoices-results">
+                    <div class="empty-state">
+                        <h3>Search for Invoices</h3>
+                        <p>Use the search form above to find invoices by number or date.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1690,6 +1736,77 @@ if ($pages_result) {
         // Placeholder for add client modal
         function openAddClientModal() {
             alert('Add New Client feature coming soon! For now, clients are automatically added from completed quotes.');
+        }
+
+        // Invoice search functions
+        function searchInvoices() {
+            const searchQuery = document.getElementById('invoiceSearch').value.trim();
+            const searchDate = document.getElementById('invoiceDateSearch').value;
+
+            if (!searchQuery && !searchDate) {
+                alert('Please enter an invoice number, client name, or select a date to search.');
+                return;
+            }
+
+            const params = new URLSearchParams();
+            if (searchQuery) params.append('q', searchQuery);
+            if (searchDate) params.append('date', searchDate);
+
+            fetch('api/search_invoices.php?' + params.toString())
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayInvoiceResults(data.invoices);
+                    } else {
+                        alert('Error searching invoices: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to search invoices');
+                });
+        }
+
+        function displayInvoiceResults(invoices) {
+            const container = document.getElementById('invoices-results');
+
+            if (invoices.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>No Invoices Found</h3><p>No invoices match your search criteria.</p></div>';
+                return;
+            }
+
+            let html = '<div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;"><h3 style="color: #333; margin-bottom: 10px;">Search Results: ' + invoices.length + ' invoice(s) found</h3></div>';
+            html += '<div class="table-container"><table><thead><tr>';
+            html += '<th>Invoice Number</th><th>Client Name</th><th>Company</th><th>Invoice Date</th><th>Total Cost</th><th>Total Paid</th><th>Balance Due</th><th>Actions</th>';
+            html += '</tr></thead><tbody>';
+
+            invoices.forEach(invoice => {
+                const invoiceDate = new Date(invoice.invoice_date).toLocaleDateString('en-GB');
+                const balanceColor = invoice.total_remaining > 0 ? '#dc3545' : '#28a745';
+                
+                html += `<tr>
+                    <td><strong>${escapeHtml(invoice.invoice_number)}</strong></td>
+                    <td>${escapeHtml(invoice.name)}</td>
+                    <td>${invoice.company ? escapeHtml(invoice.company) : '<em>N/A</em>'}</td>
+                    <td>${invoiceDate}</td>
+                    <td>£${parseFloat(invoice.total_cost).toFixed(2)}</td>
+                    <td>£${parseFloat(invoice.total_paid).toFixed(2)}</td>
+                    <td style="color: ${balanceColor}; font-weight: bold;">£${parseFloat(invoice.total_remaining).toFixed(2)}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="viewClientDetails(${invoice.client_id})">View Client</button>
+                        <a href="mailto:${escapeHtml(invoice.email)}" class="btn btn-secondary btn-sm">Email</a>
+                    </td>
+                </tr>`;
+            });
+
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function clearInvoiceSearch() {
+            document.getElementById('invoiceSearch').value = '';
+            document.getElementById('invoiceDateSearch').value = '';
+            document.getElementById('invoices-results').innerHTML = '<div class="empty-state"><h3>Search for Invoices</h3><p>Use the search form above to find invoices by number or date.</p></div>';
         }
 
         // Load HTML files count and quotes on page load
