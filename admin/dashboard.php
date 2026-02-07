@@ -99,6 +99,41 @@ if ($pages_result) {
             color: #667eea;
         }
 
+        .sidebar .menu-parent {
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+
+        .sidebar .menu-parent::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            font-size: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar .menu-parent.open::after {
+            transform: rotate(180deg);
+        }
+
+        .sidebar .submenu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .sidebar .submenu.open {
+            max-height: 200px;
+        }
+
+        .sidebar .submenu a {
+            padding: 12px 20px 12px 45px;
+            font-size: 14px;
+            border-left-width: 3px;
+        }
+
         .main-content {
             flex: 1;
             padding: 30px;
@@ -353,7 +388,12 @@ if ($pages_result) {
     <div class="container">
         <div class="sidebar">
             <a href="#" onclick="showSection('dashboard'); return false;" id="nav-dashboard" class="active">📋 Dashboard</a>
-            <a href="#" onclick="showSection('clients'); return false;" id="nav-clients">👥 Clients</a>
+            
+            <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'clients-submenu'); return false;">👥 Clients</a>
+            <div class="submenu" id="clients-submenu">
+                <a href="#" onclick="showSection('clients'); return false;" id="nav-clients">📝 Quote Requests</a>
+            </div>
+            
             <a href="#" onclick="showSection('html-files'); return false;" id="nav-html-files">📝 Edit Pages</a>
             <a href="#" onclick="openAddPageModal(); return false;">➕ New Database Page</a>
             <a href="#" onclick="showSection('database-pages'); return false;" id="nav-database-pages">📄 Database Pages</a>
@@ -652,6 +692,18 @@ if ($pages_result) {
     </div>
 
     <script>
+        function toggleSubmenu(event, submenuId) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const submenu = document.getElementById(submenuId);
+            const parent = event.currentTarget;
+            
+            // Toggle submenu
+            submenu.classList.toggle('open');
+            parent.classList.toggle('open');
+        }
+
         function openAddPageModal() {
             document.getElementById('pageForm').reset();
             document.getElementById('pageId').value = '';
@@ -759,16 +811,25 @@ if ($pages_result) {
             
             // Show selected section
             document.getElementById('section-' + sectionName).style.display = 'block';
-            document.getElementById('nav-' + sectionName).classList.add('active');
+            const navElement = document.getElementById('nav-' + sectionName);
+            if (navElement) {
+                navElement.classList.add('active');
+            }
+            
+            // Auto-expand submenu if section is in a submenu
+            if (sectionName === 'clients') {
+                const submenu = document.getElementById('clients-submenu');
+                const parent = document.querySelector('.sidebar .menu-parent');
+                if (submenu && !submenu.classList.contains('open')) {
+                    submenu.classList.add('open');
+                    parent.classList.add('open');
+                }
+                loadQuotes();
+            }
             
             // Load HTML files if switching to that section
             if (sectionName === 'html-files') {
                 loadHtmlFiles();
-            }
-            
-            // Load quotes if switching to clients section
-            if (sectionName === 'clients') {
-                loadQuotes();
             }
         }
 
