@@ -146,8 +146,8 @@ $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
 $headers .= "From: Content Catalogz <noreply@contentcatalogz.com>\r\n";
 $headers .= "Reply-To: info@contentcatalogz.com\r\n";
 
-// Send email
-$emailSent = mail($clientEmail, $subject, $htmlMessage, $headers);
+// Try to send email
+$emailSent = @mail($clientEmail, $subject, $htmlMessage, $headers);
 
 if ($emailSent) {
     // Log the activity
@@ -167,9 +167,14 @@ if ($emailSent) {
         'email' => $clientEmail
     ]);
 } else {
+    // Mail server not configured - return email content for mailto fallback
     echo json_encode([
         'success' => false,
-        'message' => 'Failed to send email. Please check server mail configuration.'
+        'fallback' => true,
+        'message' => 'Server mail not configured. Opening email client...',
+        'email' => $clientEmail,
+        'subject' => $subject,
+        'body' => trim($textMessage)
     ]);
 }
 

@@ -2145,6 +2145,12 @@ if ($invoices_result) {
             .then(data => {
                 if (data.success) {
                     alert('Quote emailed successfully to ' + clientEmail);
+                } else if (data.fallback) {
+                    // Server mail not configured - open email client
+                    const mailtoLink = 'mailto:' + encodeURIComponent(data.email) + 
+                        '?subject=' + encodeURIComponent(data.subject) + 
+                        '&body=' + encodeURIComponent(data.body);
+                    window.open(mailtoLink, '_blank');
                 } else {
                     alert('Error emailing quote: ' + data.message);
                 }
