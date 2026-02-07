@@ -2554,12 +2554,8 @@ if ($invoices_result) {
 
         // Email invoice as PDF
         function emailInvoice() {
-            console.log('emailInvoice called');
-            alert('Email invoice function triggered - checking data...');
-            
             const clientName = document.getElementById('clientName').textContent;
             const clientEmail = document.getElementById('clientEmail').textContent;
-            console.log('Client:', clientName, 'Email:', clientEmail);
             const invoiceNumber = 'INV-' + Date.now();
             const totalCost = document.getElementById('totalCost').value;
             const totalPaid = document.getElementById('totalPaid').value;
@@ -2573,10 +2569,14 @@ if ($invoices_result) {
             // Collect services
             const services = [];
             document.querySelectorAll('.service-row').forEach(row => {
-                const name = row.querySelector('input[name="service_name[]"]').value;
-                const cost = row.querySelector('input[name="service_cost[]"]').value;
-                if (name && cost) {
-                    services.push({ name, cost: parseFloat(cost) });
+                const nameInput = row.querySelector('.service-name');
+                const costInput = row.querySelector('.service-cost');
+                if (nameInput && costInput) {
+                    const name = nameInput.value;
+                    const cost = costInput.value;
+                    if (name && cost) {
+                        services.push({ name, cost: parseFloat(cost) });
+                    }
                 }
             });
             
