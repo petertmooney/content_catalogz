@@ -1,8 +1,10 @@
 FROM mcr.microsoft.com/devcontainers/php:1-8.2-bookworm
 
-# Install MariaDB client
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get install -y mariadb-client \ 
+# Install MySQL client
+# Remove problematic Yarn repository to avoid GPG key errors
+RUN rm -f /etc/apt/sources.list.d/yarn.list \
+    && apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get install -y default-mysql-client \ 
     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 # Install php-mysql driver

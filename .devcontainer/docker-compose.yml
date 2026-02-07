@@ -19,17 +19,17 @@ services:
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
   db:
-    image: mariadb:10.4
+    image: mysql:8.0
     restart: unless-stopped
     volumes:
-      - mariadb-data:/var/lib/mysql
+      - mysql-data:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: 68086500aA!
       MYSQL_DATABASE: Content_Catalogz
       MYSQL_USER: petertmooney
       MYSQL_PASSWORD: 68086500aA!
 
-    # Add "forwardPorts": ["3306"] to **devcontainer.json** to forward MariaDB locally.
+    # Add "forwardPorts": ["3306"] to **devcontainer.json** to forward MySQL locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
   phpmyadmin:
@@ -42,4 +42,4 @@ services:
       MYSQL_ROOT_PASSWORD: 68086500aA!
   
 volumes:
-  mariadb-data:
+  mysql-data:

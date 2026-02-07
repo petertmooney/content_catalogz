@@ -12,9 +12,9 @@
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
-	// For use with PHP or Apache (e.g.php -S localhost:8080 or apache2ctl start)
+	// For use with PHP or Apache (e.g.php -S localhost:8083 or apache2ctl start)
 	"forwardPorts": [
-		8080,
+		8083,
 		3306,
 		8081
 	],
@@ -36,7 +36,7 @@
 						"previewLimit": 50,
 						"server": "localhost",
 						"port": 3306,
-						"driver": "MariaDB",
+					"driver": "MySQL",
 						"name": "conn_content_catalogz",
 						"database": "Content_Catalogz",
 						"username": "petertmooney",
@@ -48,9 +48,9 @@
 	},
 	"portsAttributes": {
 		"3306": {
-			"label": "mariadb"
+			"label": "mysql"
 		},
-		"8080": {
+		"8083": {
 			"label": "web server"
 		},
 		"8081": {
