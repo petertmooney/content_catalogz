@@ -104,6 +104,14 @@ if ($pages_result) {
             padding: 30px;
         }
 
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
         .page-header {
             margin-bottom: 30px;
         }
@@ -570,11 +578,127 @@ if ($pages_result) {
 
         // Close modal when clicking outside
         window.onclick = function(event) {
-            const modal = document.getElementById('pageModal');
-            if (event.target === modal) {
+            const pageModal = document.getElementById('pageModal');
+            const htmlModal = document.getElementById('htmlEditorModal');
+            if (event.target === pageModal) {
                 closePageModal();
             }
+            if (event.target === htmlModal) {
+                closeHtmlEditorModal();
+            }
         };
-    </script>
-</body>
+
+        // Section switching
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Remove active class from all nav items
+            document.querySelectorAll('.sidebar a').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById('section-' + sectionName).style.display = 'block';
+            document.getElementById('nav-' + sectionName).classList.add('active');
+            
+            // Load HTML files if switching to that section
+            if (sectionName === 'html-files') {
+                loadHtmlFiles();
+            }
+        }
+
+        // Load HTML files
+        function loadHtmlFiles() {
+            fetch('api/get_html_files.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayHtmlFiles(data.files);
+                        document.getElementById('html-count').textContent = data.files.length;
+                    }
+                });
+        }
+
+        // Display HTML files in a table
+        function displayHtmlFiles(files) {
+            const container = document.getElementById('html-files-list');
+            
+            if (files.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>No HTML files found</h3></div>';
+                return;
+            }
+            
+            let html = '<div class="table-container"><table><thead><tr>';
+            html += '<th>Filename</th><th>Title</th><th>Size</th><th>Last Modified</th><th>Actions</th>';
+            html += '</tr></thead><tbody>';
+            
+            files.forEach(file => {
+                const size = (file.size / 1024).toFixed(2) + ' KB';
+                const modified = new Date(file.modified * 1000).toLocaleString();
+                html += `<tr>
+                    <td><code>${file.filename}</code></td>
+                    <td>${file.title}</td>
+                    <td>${size}</td>
+                    <td>${modified}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="openHtmlEditor('${file.filename}')">Edit</button>
+                        <a href="/${file.filename}" target="_blank" class="btn btn-secondary btn-sm">View</a>
+                    </td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        // Open HTML file editor
+        function openHtmlEditor(filename) {
+            fetch('api/read_html_file.php?filename=' + encodeURIComponent(filename))
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('htmlFilename').value = data.filename;
+                        document.getElementById('editingFilename').textContent = data.filename;
+                        document.getElementById('htmlContent').value = data.content;
+                        document.getElementById('htmlEditorModal').classList.add('show');
+                    } else {
+                        alert('Error loading file: ' + data.message);
+                    }
+                });
+        }
+
+        // Close HTML editor modal
+        function closeHtmlEditorModal() {
+            document.getElementById('htmlEditorModal').classList.remove('show');
+        }
+
+        // Save HTML file
+        function saveHtmlFile(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(document.getElementById('htmlEditorForm'));
+            
+            fetch('api/save_html_file.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('File saved successfully! A backup was created.');
+                    closeHtmlEditorModal();
+                    loadHtmlFiles();
+                } else {
+                    alert('Error saving file: ' + data.message);
+                }
+            });
+        }
+
+        // Load HTML files count on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            loadHtmlFiles();
+        });
 </html>

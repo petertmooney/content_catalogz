@@ -87,6 +87,31 @@ You can also access **phpMyAdmin** at port **8081** with the same credentials.
 
 ## Features
 
+### Dashboard
+- Quick stats overview
+- Access to all management sections
+
+### Edit HTML Pages
+- **NEW!** Direct editing of your website's HTML files
+- Edit index.html, about.html, quote.html, and other HTML files
+- Automatic backup before each save
+- Live preview capability
+- Backups stored in `/backups` directory
+
+### Database Pages
+- Create, edit, and delete database-stored pages
+- Page types: Standard, Blog Post, Service, Testimonial
+- Status management: Draft, Published, Archived
+- Unique slug validation
+- Timestamps tracking
+
+### Security Features
+- Session-based authentication
+- Password hashing with bcrypt
+- Protected configuration files
+- Automatic session management
+- Database prepared statements
+
 ### 🔐 Authentication
 - Secure login system with bcrypt password hashing
 - Session management
