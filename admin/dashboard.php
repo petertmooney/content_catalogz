@@ -495,7 +495,7 @@ if ($pages_result) {
             <div id="section-existing-clients" class="content-section" style="display: none;">
                 <div class="page-header">
                     <h2>Existing Clients</h2>
-                    <p>Manage your active client relationships</p>
+                    <p>Manage your active client relationships and ongoing projects</p>
                 </div>
 
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
@@ -504,7 +504,7 @@ if ($pages_result) {
                         <p id="active-clients-count" style="font-size: 24px; font-weight: bold; color: #28a745;">0</p>
                     </div>
                     <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                        <h4 style="color: #17a2b8; font-size: 14px; margin-bottom: 5px;">Total Projects</h4>
+                        <h4 style="color: #17a2b8; font-size: 14px; margin-bottom: 5px;">Completed Projects</h4>
                         <p id="total-projects-count" style="font-size: 24px; font-weight: bold; color: #17a2b8;">0</p>
                     </div>
                 </div>
@@ -518,7 +518,7 @@ if ($pages_result) {
                 <div id="existing-clients-list">
                     <div class="empty-state">
                         <h3>No Active Clients Yet</h3>
-                        <p>Clients from completed quotes will appear here automatically, or you can add clients manually.</p>
+                        <p>Clients with active quotes will appear here automatically.</p>
                     </div>
                 </div>
             </div>
@@ -1127,17 +1127,12 @@ if ($pages_result) {
             });
         }
 
-        // Load existing clients (from completed quotes)
+        // Load existing clients (from new, in progress, and completed quotes)
         function loadExistingClients() {
             const search = document.getElementById('searchClients').value;
             
-            // Fetch quotes with 'completed' status to show as existing clients
-            let url = 'api/get_quotes.php?status=completed';
-            if (search) {
-                url += '&search=' + encodeURIComponent(search);
-            }
-            
-            fetch(url)
+            // Fetch all quotes except 'contacted' and 'declined' to show as existing clients
+            fetch('api/get_quotes.php')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('HTTP ' + response.status);
@@ -1146,9 +1141,29 @@ if ($pages_result) {
                 })
                 .then(data => {
                     if (data.success) {
-                        displayExistingClients(data.quotes);
-                        document.getElementById('active-clients-count').textContent = data.quotes.length;
-                        document.getElementById('total-projects-count').textContent = data.stats.completed || 0;
+                        // Filter to show only new, in_progress, and completed
+                        let filteredClients = data.quotes.filter(quote => 
+                            quote.status === 'new' || 
+                            quote.status === 'in_progress' || 
+                            quote.status === 'completed'
+                        );
+                        
+                        // Apply search filter if provided
+                        if (search) {
+                            const searchLower = search.toLowerCase();
+                            filteredClients = filteredClients.filter(client =>
+                                client.name.toLowerCase().includes(searchLower) ||
+                                client.email.toLowerCase().includes(searchLower) ||
+                                (client.company && client.company.toLowerCase().includes(searchLower))
+                            );
+                        }
+                        
+                        displayExistingClients(filteredClients);
+                        document.getElementById('active-clients-count').textContent = filteredClients.length;
+                        
+                        // Count total projects (completed only)
+                        const completedCount = data.quotes.filter(q => q.status === 'completed').length;
+                        document.getElementById('total-projects-count').textContent = completedCount;
                     } else {
                         console.error('Failed to load clients:', data.message);
                         document.getElementById('existing-clients-list').innerHTML = '<div class="empty-state"><h3>Error Loading Clients</h3><p>' + (data.message || 'Unknown error') + '</p></div>';
@@ -1165,16 +1180,24 @@ if ($pages_result) {
             const container = document.getElementById('existing-clients-list');
             
             if (clients.length === 0) {
-                container.innerHTML = '<div class="empty-state"><h3>No Active Clients Yet</h3><p>Clients from completed quotes will appear here automatically.</p></div>';
+                container.innerHTML = '<div class="empty-state"><h3>No Active Clients Yet</h3><p>Clients with active quotes will appear here automatically.</p></div>';
                 return;
             }
             
+            const statusColors = {
+                'new': '#007bff',
+                'in_progress': '#17a2b8',
+                'completed': '#28a745'
+            };
+            
             let html = '<div class="table-container"><table><thead><tr>';
-            html += '<th>Name</th><th>Company</th><th>Email</th><th>Phone</th><th>Service</th><th>Completed Date</th><th>Actions</th>';
+            html += '<th>Name</th><th>Company</th><th>Email</th><th>Phone</th><th>Service</th><th>Status</th><th>Date</th><th>Actions</th>';
             html += '</tr></thead><tbody>';
             
             clients.forEach(client => {
-                const completedDate = new Date(client.updated_at || client.created_at).toLocaleDateString();
+                const clientDate = new Date(client.updated_at || client.created_at).toLocaleDateString();
+                const statusColor = statusColors[client.status] || '#666';
+                const statusLabel = client.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
                 
                 html += `<tr>
                     <td><strong>${escapeHtml(client.name)}</strong></td>
@@ -1182,7 +1205,8 @@ if ($pages_result) {
                     <td><a href="mailto:${escapeHtml(client.email)}">${escapeHtml(client.email)}</a></td>
                     <td>${client.phone ? escapeHtml(client.phone) : '<em>N/A</em>'}</td>
                     <td>${escapeHtml(client.service)}</td>
-                    <td>${completedDate}</td>
+                    <td><span style="display: inline-block; padding: 4px 12px; border-radius: 12px; background: ${statusColor}; color: white; font-size: 12px; font-weight: 600;">${statusLabel}</span></td>
+                    <td>${clientDate}</td>
                     <td>
                         <button class="btn btn-primary btn-sm" onclick="viewClientDetails(${client.id})">View</button>
                         <a href="mailto:${escapeHtml(client.email)}" class="btn btn-secondary btn-sm">Email</a>
