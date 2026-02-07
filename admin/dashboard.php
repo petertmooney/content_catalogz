@@ -380,12 +380,73 @@ if ($pages_result) {
                         <p class="stat-number" style="font-size: 32px; font-weight: bold; color: #333;"><?php echo count($pages); ?></p>
                         <small style="color: #666;">Pages in database</small>
                     </div>
+                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h3 style="color: #28a745; margin-bottom: 10px;">Client Quotes</h3>
+                        <p class="stat-number" id="quotes-count" style="font-size: 32px; font-weight: bold; color: #333;">0</p>
+                        <small style="color: #666;">Total quote requests</small>
+                    </div>
                 </div>
 
                 <div class="btn-group">
+                    <button class="btn btn-primary" onclick="showSection('clients')">View Clients</button>
                     <button class="btn btn-primary" onclick="showSection('html-files')">Edit HTML Pages</button>
                     <button class="btn btn-primary" onclick="openAddPageModal()">+ Add Database Page</button>
                 </div>
+            </div>
+
+            <!-- Clients Section -->
+            <div id="section-clients" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h2>Client Quote Requests</h2>
+                    <p>Manage client inquiries and quote requests</p>
+                </div>
+
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #666; font-size: 14px; margin-bottom: 5px;">Total</h4>
+                        <p id="stat-total" style="font-size: 24px; font-weight: bold; color: #333;">0</p>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #007bff; font-size: 14px; margin-bottom: 5px;">New</h4>
+                        <p id="stat-new" style="font-size: 24px; font-weight: bold; color: #007bff;">0</p>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Contacted</h4>
+                        <p id="stat-contacted" style="font-size: 24px; font-weight: bold; color: #ffc107;">0</p>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #17a2b8; font-size: 14px; margin-bottom: 5px;">In Progress</h4>
+                        <p id="stat-inprogress" style="font-size: 24px; font-weight: bold; color: #17a2b8;">0</p>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Completed</h4>
+                        <p id="stat-completed" style="font-size: 24px; font-weight: bold; color: #28a745;">0</p>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #dc3545; font-size: 14px; margin-bottom: 5px;">Declined</h4>
+                        <p id="stat-declined" style="font-size: 24px; font-weight: bold; color: #dc3545;">0</p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                    <div>
+                        <label for="statusFilter" style="margin-right: 8px; font-weight: 500;">Filter by Status:</label>
+                        <select id="statusFilter" onchange="loadQuotes()" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ddd;">
+                            <option value="all">All Quotes</option>
+                            <option value="new" selected>New</option>
+                            <option value="contacted">Contacted</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="declined">Declined</option>
+                        </select>
+                    </div>
+                    <div>
+                        <input type="text" id="searchQuotes" placeholder="Search by name, email, company..." style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ddd; width: 300px;" onkeyup="loadQuotes()">
+                    </div>
+                    <button class="btn btn-secondary" onclick="loadQuotes()">Refresh</button>
+                </div>
+
+                <div id="quotes-list"></div>
             </div>
 
             <!-- HTML Files Section -->
