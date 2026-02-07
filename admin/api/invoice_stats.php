@@ -1,9 +1,15 @@
 <?php
-session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 header('Content-Type: application/json');
 
-require_once '../config/auth.php';
-require_once '../config/db.php';
+include __DIR__ . '/../config/db.php';
+include __DIR__ . '/../config/auth.php';
 
 // Get invoice statistics
 $stats = [];

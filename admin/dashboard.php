@@ -1640,15 +1640,18 @@ if ($invoices_result) {
                 .then(data => {
                     if (data.success) {
                         displayHtmlFiles(data.files);
-                        document.getElementById('html-count').textContent = data.files.length;
+                        const htmlCountEl = document.getElementById('html-count');
+                        if (htmlCountEl) htmlCountEl.textContent = data.files.length;
                     } else {
                         console.error('Failed to load HTML files:', data.message);
-                        document.getElementById('html-count').textContent = '0';
+                        const htmlCountEl = document.getElementById('html-count');
+                        if (htmlCountEl) htmlCountEl.textContent = '0';
                     }
                 })
                 .catch(error => {
                     console.error('Error loading HTML files:', error);
-                    document.getElementById('html-count').textContent = '0';
+                    const htmlCountEl = document.getElementById('html-count');
+                    if (htmlCountEl) htmlCountEl.textContent = '0';
                 });
         }
 
