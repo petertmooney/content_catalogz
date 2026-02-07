@@ -1475,6 +1475,194 @@ if ($pages_result) {
             });
         }
 
+        function printInvoice() {
+            // Get current client data from the form
+            const clientName = document.getElementById('clientName').textContent;
+            const clientCompany = document.getElementById('clientCompany').textContent;
+            const clientEmail = document.getElementById('clientEmail').textContent;
+            const clientPhone = document.getElementById('clientPhone').textContent;
+            const clientAddress = document.getElementById('clientAddress').value || 'N/A';
+            
+            const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
+            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            const totalRemaining = parseFloat(document.getElementById('totalRemaining').value) || 0;
+            
+            // Collect services
+            const services = [];
+            const serviceRows = document.querySelectorAll('.service-row');
+            serviceRows.forEach(row => {
+                const name = row.querySelector('.service-name').value.trim();
+                const cost = parseFloat(row.querySelector('.service-cost').value) || 0;
+                if (name) {
+                    services.push({ name, cost });
+                }
+            });
+            
+            // Generate invoice HTML
+            const invoiceDate = new Date().toLocaleDateString('en-GB');
+            const invoiceNumber = 'INV-' + Date.now();
+            
+            let servicesHTML = '';
+            services.forEach(service => {
+                servicesHTML += `
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">${escapeHtml(service.name)}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #ddd; text-align: right; font-weight: 600;">£${service.cost.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            
+            const invoiceHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Invoice - ${clientName}</title>
+                    <style>
+                        @media print {
+                            body { margin: 0; }
+                            .no-print { display: none; }
+                        }
+                        body {
+                            font-family: Arial, sans-serif;
+                            max-width: 800px;
+                            margin: 20px auto;
+                            padding: 20px;
+                            color: #333;
+                        }
+                        .invoice-header {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: 30px;
+                            padding-bottom: 20px;
+                            border-bottom: 3px solid #667eea;
+                        }
+                        .company-info h1 {
+                            margin: 0;
+                            color: #667eea;
+                            font-size: 28px;
+                        }
+                        .invoice-details {
+                            text-align: right;
+                        }
+                        .invoice-details p {
+                            margin: 5px 0;
+                        }
+                        .client-info {
+                            background: #f8f9fa;
+                            padding: 20px;
+                            border-radius: 8px;
+                            margin-bottom: 30px;
+                        }
+                        .client-info h3 {
+                            margin-top: 0;
+                            color: #333;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 30px;
+                        }
+                        th {
+                            background: #667eea;
+                            color: white;
+                            padding: 12px;
+                            text-align: left;
+                        }
+                        .totals {
+                            margin-left: auto;
+                            width: 300px;
+                        }
+                        .totals tr td {
+                            padding: 8px;
+                            border-bottom: 1px solid #ddd;
+                        }
+                        .totals tr:last-child td {
+                            border-top: 2px solid #333;
+                            font-weight: bold;
+                            font-size: 18px;
+                            color: #dc3545;
+                        }
+                        .print-btn {
+                            background: #667eea;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 16px;
+                            margin-bottom: 20px;
+                        }
+                        .print-btn:hover {
+                            background: #5568d3;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <button class="print-btn no-print" onclick="window.print()">🖨️ Print Invoice</button>
+                    
+                    <div class="invoice-header">
+                        <div class="company-info">
+                            <h1>Content Catalogz</h1>
+                            <p>Professional Content Services</p>
+                        </div>
+                        <div class="invoice-details">
+                            <h2 style="margin: 0; color: #667eea;">INVOICE</h2>
+                            <p><strong>Invoice No:</strong> ${invoiceNumber}</p>
+                            <p><strong>Date:</strong> ${invoiceDate}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="client-info">
+                        <h3>Bill To:</h3>
+                        <p><strong>${clientName}</strong></p>
+                        ${clientCompany !== 'N/A' ? '<p>' + clientCompany + '</p>' : ''}
+                        <p>${clientAddress.replace(/\n/g, '<br>')}</p>
+                        <p>Email: ${clientEmail}</p>
+                        ${clientPhone !== 'N/A' ? '<p>Phone: ' + clientPhone + '</p>' : ''}
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Service Description</th>
+                                <th style="text-align: right;">Amount (GBP)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${servicesHTML}
+                        </tbody>
+                    </table>
+                    
+                    <table class="totals">
+                        <tr>
+                            <td><strong>Total Cost:</strong></td>
+                            <td style="text-align: right;">£${totalCost.toFixed(2)}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Paid:</strong></td>
+                            <td style="text-align: right;">£${totalPaid.toFixed(2)}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Amount Due:</strong></td>
+                            <td style="text-align: right;">£${totalRemaining.toFixed(2)}</td>
+                        </tr>
+                    </table>
+                    
+                    <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666;">
+                        <p>Thank you for your business!</p>
+                        <p style="font-size: 12px;">Payment is due within 30 days of invoice date.</p>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            // Open invoice in new window
+            const invoiceWindow = window.open('', '_blank');
+            invoiceWindow.document.write(invoiceHTML);
+            invoiceWindow.document.close();
+        }
+
         // Placeholder for add client modal
         function openAddClientModal() {
             alert('Add New Client feature coming soon! For now, clients are automatically added from completed quotes.');
