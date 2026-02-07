@@ -41,10 +41,20 @@ if (empty($status) || !in_array($status, $valid_statuses)) {
 
 // Get the current status before updating
 $checkStmt = $conn->prepare("SELECT status, name FROM quotes WHERE id = ?");
+if (!$checkStmt) {
+    echo json_encode(['success' => false, 'message' => 'Database error: ' . $conn->error]);
+    exit;
+}
 $checkStmt->bind_param("i", $quote_id);
 $checkStmt->execute();
 $result = $checkStmt->get_result();
 $currentData = $result->fetch_assoc();
+
+if (!$currentData) {
+    echo json_encode(['success' => false, 'message' => 'Quote not found']);
+    exit;
+}
+
 $oldStatus = $currentData['status'] ?? '';
 $clientName = $currentData['name'] ?? '';
 $checkStmt->close();
@@ -56,9 +66,31 @@ if ($status === 'in_progress' && $oldStatus !== 'in_progress' && $oldStatus !== 
     $clientCreated = true;
 }
 
+// Try full update first (with services and total_cost)
 $sql = "UPDATE quotes SET status = ?, notes = ?, services = ?, total_cost = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("sssdi", $status, $notes, $services, $total_cost, $quote_id);
+$useFullUpdate = true;
+
+if (!$stmt) {
+    // Columns might not exist, try simpler update
+    $sql = "UPDATE quotes SET status = ?, notes = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $useFullUpdate = false;
+    
+    if (!$stmt) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Database error: ' . $conn->error
+        ]);
+        exit;
+    }
+}
+
+if ($useFullUpdate) {
+    $stmt->bind_param("sssdi", $status, $notes, $services, $total_cost, $quote_id);
+} else {
+    $stmt->bind_param("ssi", $status, $notes, $quote_id);
+}
 
 if ($stmt->execute()) {
     // If a new client was created, log the activity
@@ -69,9 +101,11 @@ if ($stmt->execute()) {
         $activityDescription = "Quote converted to active client. Status changed to In Progress.";
         
         $actStmt = $conn->prepare("INSERT INTO activities (client_id, type, subject, description, created_by) VALUES (?, ?, ?, ?, ?)");
-        $actStmt->bind_param("isssi", $quote_id, $activityType, $activitySubject, $activityDescription, $userId);
-        $actStmt->execute();
-        $actStmt->close();
+        if ($actStmt) {
+            $actStmt->bind_param("isssi", $quote_id, $activityType, $activitySubject, $activityDescription, $userId);
+            $actStmt->execute();
+            $actStmt->close();
+        }
     }
     
     echo json_encode([
@@ -84,7 +118,7 @@ if ($stmt->execute()) {
 } else {
     echo json_encode([
         'success' => false,
-        'message' => 'Failed to update quote'
+        'message' => 'Failed to update quote: ' . $stmt->error
     ]);
 }
 
