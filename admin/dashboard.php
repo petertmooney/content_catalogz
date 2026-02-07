@@ -1089,7 +1089,7 @@ if ($invoices_result) {
 
     <!-- Quote Details Modal -->
     <div id="quoteModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 800px;">
             <div class="modal-header">
                 <h3>Quote Request Details</h3>
                 <button class="close-btn" onclick="closeQuoteModal()">&times;</button>
@@ -1113,7 +1113,7 @@ if ($invoices_result) {
                         <span id="quotePhone"></span>
                     </div>
                     <div>
-                        <strong>Service:</strong><br>
+                        <strong>Service Requested:</strong><br>
                         <span id="quoteService"></span>
                     </div>
                     <div>
@@ -1126,6 +1126,29 @@ if ($invoices_result) {
                     <p id="quoteMessage" style="margin-top: 8px; line-height: 1.6; color: #333;"></p>
                 </div>
             </div>
+
+            <!-- Services and Costs Section -->
+            <div style="background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h4 style="margin: 0; color: #333;">Services & Costs (GBP)</h4>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="addQuoteServiceRow()">+ Add Service</button>
+                </div>
+                
+                <div id="quoteServicesContainer">
+                    <!-- Services will be added here dynamically -->
+                </div>
+                
+                <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #ddd;">
+                    <div class="form-group">
+                        <label for="quoteTotalCost">Total Cost (£)</label>
+                        <div style="position: relative;">
+                            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 18px; color: #333;">£</span>
+                            <input type="number" id="quoteTotalCost" name="total_cost" class="form-control" step="0.01" min="0" readonly style="background:#f8f9fa; font-weight: bold; font-size: 18px; padding-left: 28px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <form id="quoteForm" onsubmit="updateQuote(event)">
                 <input type="hidden" id="quoteId" name="id">
                 <div class="form-group">
@@ -1146,6 +1169,7 @@ if ($invoices_result) {
                     <button type="button" class="btn btn-danger" onclick="confirmDeleteQuote()" title="Delete this quote request">🗑️ Delete Quote</button>
                     <div style="display: flex; gap: 10px;">
                         <button type="button" class="btn btn-secondary" onclick="closeQuoteModal()">Close</button>
+                        <button type="button" class="btn btn-secondary" onclick="emailQuote()">📧 Email Quote</button>
                         <button type="submit" class="btn btn-primary">Update Quote</button>
                     </div>
                 </div>
@@ -2003,6 +2027,21 @@ if ($invoices_result) {
                             document.getElementById('quoteStatus').value = quote.status;
                             document.getElementById('quoteNotes').value = quote.notes || '';
                             
+                            // Load services
+                            const services = quote.services || [];
+                            const servicesContainer = document.getElementById('quoteServicesContainer');
+                            servicesContainer.innerHTML = '';
+                            
+                            if (services.length === 0) {
+                                addQuoteServiceRow();
+                            } else {
+                                services.forEach(service => {
+                                    addQuoteServiceRow(service.name, service.cost);
+                                });
+                            }
+                            
+                            calculateQuoteTotalCost();
+                            
                             document.getElementById('quoteModal').classList.add('show');
                         } else {
                             alert('Quote not found');
@@ -2019,6 +2058,101 @@ if ($invoices_result) {
         // Close quote modal
         function closeQuoteModal() {
             document.getElementById('quoteModal').classList.remove('show');
+        }
+
+        // Add a service row to the quote modal
+        function addQuoteServiceRow(serviceName = '', serviceCost = 0) {
+            const container = document.getElementById('quoteServicesContainer');
+            const rowId = 'quote-service-row-' + Date.now();
+            
+            const row = document.createElement('div');
+            row.id = rowId;
+            row.className = 'quote-service-row';
+            row.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; margin-bottom: 10px; align-items: end;';
+            
+            row.innerHTML = `
+                <div class="form-group" style="margin: 0;">
+                    <label>Service Description</label>
+                    <input type="text" class="form-control quote-service-name" placeholder="e.g., Website Design" value="${escapeHtml(serviceName)}" oninput="calculateQuoteTotalCost()">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label>Cost (£)</label>
+                    <div style="position: relative;">
+                        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 500; color: #333;">£</span>
+                        <input type="number" class="form-control quote-service-cost" step="0.01" min="0" placeholder="0.00" value="${serviceCost}" oninput="calculateQuoteTotalCost()" style="padding-left: 28px;">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeQuoteServiceRow('${rowId}')" style="height: 38px;">Remove</button>
+            `;
+            
+            container.appendChild(row);
+        }
+
+        function removeQuoteServiceRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.remove();
+                calculateQuoteTotalCost();
+            }
+        }
+
+        function calculateQuoteTotalCost() {
+            let total = 0;
+            document.querySelectorAll('#quoteServicesContainer .quote-service-cost').forEach(input => {
+                total += parseFloat(input.value) || 0;
+            });
+            document.getElementById('quoteTotalCost').value = total.toFixed(2);
+        }
+
+        function emailQuote() {
+            const quoteId = document.getElementById('quoteId').value;
+            const clientName = document.getElementById('quoteName').textContent;
+            const clientEmail = document.getElementById('quoteEmail').textContent;
+            
+            // Collect services for the quote
+            const services = [];
+            document.querySelectorAll('#quoteServicesContainer .quote-service-row').forEach(row => {
+                const name = row.querySelector('.quote-service-name').value.trim();
+                const cost = parseFloat(row.querySelector('.quote-service-cost').value) || 0;
+                if (name) {
+                    services.push({ name, cost });
+                }
+            });
+            
+            const totalCost = document.getElementById('quoteTotalCost').value || 0;
+            
+            if (services.length === 0) {
+                alert('Please add at least one service before emailing the quote.');
+                return;
+            }
+            
+            if (!confirm(`Send quote to ${clientName} at ${clientEmail}?`)) {
+                return;
+            }
+            
+            fetch('api/email_quote.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    quote_id: quoteId,
+                    services: services,
+                    total_cost: totalCost
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Quote emailed successfully to ' + clientEmail);
+                } else {
+                    alert('Error emailing quote: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to email quote');
+            });
         }
 
         function confirmDeleteQuote() {
@@ -2064,7 +2198,19 @@ if ($invoices_result) {
         function updateQuote(event) {
             event.preventDefault();
             
+            // Collect services
+            const services = [];
+            document.querySelectorAll('#quoteServicesContainer .quote-service-row').forEach(row => {
+                const name = row.querySelector('.quote-service-name').value.trim();
+                const cost = parseFloat(row.querySelector('.quote-service-cost').value) || 0;
+                if (name) {
+                    services.push({ name, cost });
+                }
+            });
+            
             const formData = new FormData(document.getElementById('quoteForm'));
+            formData.append('services', JSON.stringify(services));
+            formData.append('total_cost', document.getElementById('quoteTotalCost').value || 0);
             
             fetch('api/update_quote.php', {
                 method: 'POST',

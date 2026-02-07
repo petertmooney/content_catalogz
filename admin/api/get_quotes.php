@@ -51,6 +51,15 @@ $result = $stmt->get_result();
 
 $quotes = [];
 while ($row = $result->fetch_assoc()) {
+    // Parse services JSON if it exists
+    if (isset($row['services']) && !empty($row['services'])) {
+        $row['services'] = json_decode($row['services'], true);
+        if ($row['services'] === null) {
+            $row['services'] = [];
+        }
+    } else {
+        $row['services'] = [];
+    }
     $quotes[] = $row;
 }
 

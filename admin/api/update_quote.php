@@ -21,6 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $quote_id = intval($_POST['id'] ?? 0);
 $status = strtolower(trim($_POST['status'] ?? ''));
 $notes = trim($_POST['notes'] ?? '');
+$services = isset($_POST['services']) ? $_POST['services'] : '[]';
+$total_cost = floatval($_POST['total_cost'] ?? 0);
 
 if ($quote_id <= 0) {
     echo json_encode(['success' => false, 'message' => 'Invalid quote ID']);
@@ -37,9 +39,9 @@ if (empty($status) || !in_array($status, $valid_statuses)) {
     exit;
 }
 
-$sql = "UPDATE quotes SET status = ?, notes = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+$sql = "UPDATE quotes SET status = ?, notes = ?, services = ?, total_cost = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("ssi", $status, $notes, $quote_id);
+$stmt->bind_param("sssdi", $status, $notes, $services, $total_cost, $quote_id);
 
 if ($stmt->execute()) {
     echo json_encode([
