@@ -3086,29 +3086,30 @@ if ($invoices_result) {
                 cancelled: '❌ Cancelled'
             };
             
-            container.innerHTML = tasks.map(task => {
-                const priorityColor = priorityColors[task.priority] || '#666';
-                return `
-                <div class="task-item ${task.status === 'completed' || task.status === 'cancelled' ? 'completed' : ''}">
-                    <div class="task-left">
-                        <div class="task-title ${task.status === 'completed' ? 'completed' : ''}">${task.title}</div>
-                        ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
-                        <div class="task-meta">
-                            <span class="priority-badge" style="font-weight: 600; margin-right: 10px; display: inline-block;">● ${task.priority.toUpperCase()}</span>
-                            <span>${statusBadges[task.status]}</span>
-                            ${task.due_date ? `<span>📅 Due: ${new Date(task.due_date).toLocaleDateString()}</span>` : ''}
-                            ${task.client_name ? `<span>👤 ${task.client_name}</span>` : '<span>👤 General Task</span>'}
-                            ${task.assigned_to_username ? `<span>👷 ${task.assigned_to_username}</span>` : ''}
+                container.innerHTML = tasks.map(task => {
+                    const priorityColor = priorityColors[task.priority] || '#666';
+                    return `
+                    <div class="task-item ${task.status === 'completed' || task.status === 'cancelled' ? 'completed' : ''}">
+                        <div class="task-left">
+                            <div class="task-title ${task.status === 'completed' ? 'completed' : ''}">${task.title}</div>
+                            ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+                            <div class="task-meta">
+                                <span class="priority-badge" style="font-weight: 600; margin-right: 10px; display: inline-block;">● ${task.priority.toUpperCase()}</span>
+                                <span>${statusBadges[task.status]}</span>
+                                ${task.due_date ? `<span>📅 Due: ${new Date(task.due_date).toLocaleDateString()}</span>` : ''}
+                                ${task.client_name ? `<span>👤 ${task.client_name}</span>` : '<span>👤 General Task</span>'}
+                                ${task.assigned_to_username ? `<span>👷 ${task.assigned_to_username}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="task-actions">
+                            <button class="btn btn-sm btn-secondary" onclick="editTask(${task.id})">Edit</button>
+                            ${task.status !== 'completed' ? `<button class="btn btn-sm btn-primary" onclick="markTaskComplete(${task.id})">✓ Complete</button>` : ''}
+                            <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})">Delete</button>
                         </div>
                     </div>
-                    <div class="task-actions">
-                        <button class="btn btn-sm btn-secondary" onclick="editTask(${task.id})">Edit</button>
-                        ${task.status !== 'completed' ? `<button class="btn btn-sm btn-primary" onclick="markTaskComplete(${task.id})">✓ Complete</button>` : ''}
-                        <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})">Delete</button>
-                    </div>
-                </div>
-                `;
-            }).join('');
+                    `;
+                }).join('');
+            }
         }
         
         function filterTasks(status) {
