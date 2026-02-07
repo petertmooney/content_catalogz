@@ -2466,7 +2466,7 @@ if ($invoices_result) {
                         <p style="font-size: 12px;">Payment is due within 30 days of invoice date.</p>
                     </div>
                     
-                    <script>
+                    \x3cscript>
                         let isEditMode = false;
                         
                         function toggleEditMode() {
@@ -2504,7 +2504,7 @@ if ($invoices_result) {
                             alert('Invoice changes saved! Note: This is a preview. To permanently update client details, edit them in the Client Details modal and regenerate the invoice.');
                             toggleEditMode();
                         }
-                    <\/script>
+                    \x3c/script>
                 </body>
                 </html>
             `;
