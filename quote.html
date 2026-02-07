@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Catalogz - Get a Quote</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">Content Catalogz</div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="quote.html" class="active">Get a Quote</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Get a Quote</h1>
+                <p class="page-subtitle">Let's discuss how we can help grow your business</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <div class="quote-content">
+                    <div class="quote-intro">
+                        <h2>Request Your Free Consultation</h2>
+                        <p>Fill out the form below and one of our content experts will reach out to you within 24 hours to discuss your needs and provide a customized quote.</p>
+                    </div>
+                    
+                    <form class="quote-form">
+                        <div class="form-group">
+                            <label for="name">Full Name *</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="company">Company Name</label>
+                            <input type="text" id="company" name="company">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="service">Service Interested In *</label>
+                            <select id="service" name="service" required>
+                                <option value="">Select a service</option>
+                                <option value="strategy">Content Strategy</option>
+                                <option value="cataloging">Content Cataloging</option>
+                                <option value="seo">SEO Optimization</option>
+                                <option value="marketing">Content Marketing</option>
+                                <option value="analytics">Analytics & Tracking</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="message">Tell Us About Your Project *</label>
+                            <textarea id="message" name="message" rows="5" required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Submit Request</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section class="newsletter">
+            <div class="container">
+                <h2>Subscribe to Our Newsletter</h2>
+                <p>Get weekly insights, tips, and exclusive content delivered to your inbox.</p>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Enter your email" required>
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Content Catalogz. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
