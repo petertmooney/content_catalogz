@@ -23,7 +23,12 @@ if (!isset($data['id']) || !is_numeric($data['id'])) {
 }
 
 $clientId = intval($data['id']);
-$address = isset($data['address']) ? trim($data['address']) : null;
+$addressStreet = isset($data['address_street']) ? trim($data['address_street']) : null;
+$addressLine2 = isset($data['address_line2']) ? trim($data['address_line2']) : null;
+$addressCity = isset($data['address_city']) ? trim($data['address_city']) : null;
+$addressCounty = isset($data['address_county']) ? trim($data['address_county']) : null;
+$addressPostcode = isset($data['address_postcode']) ? trim($data['address_postcode']) : null;
+$addressCountry = isset($data['address_country']) ? trim($data['address_country']) : 'United Kingdom';
 $services = isset($data['services']) ? $data['services'] : [];
 $totalCost = isset($data['total_cost']) ? floatval($data['total_cost']) : 0.00;
 $totalPaid = isset($data['total_paid']) ? floatval($data['total_paid']) : 0.00;
@@ -35,8 +40,8 @@ $totalRemaining = $totalCost - $totalPaid;
 $servicesJson = json_encode($services);
 
 // Update the client information
-$stmt = $conn->prepare("UPDATE quotes SET address = ?, services = ?, total_cost = ?, total_paid = ?, total_remaining = ? WHERE id = ?");
-$stmt->bind_param("ssdddi", $address, $servicesJson, $totalCost, $totalPaid, $totalRemaining, $clientId);
+$stmt = $conn->prepare("UPDATE quotes SET address_street = ?, address_line2 = ?, address_city = ?, address_county = ?, address_postcode = ?, address_country = ?, services = ?, total_cost = ?, total_paid = ?, total_remaining = ? WHERE id = ?");
+$stmt->bind_param("sssssssdddI", $addressStreet, $addressLine2, $addressCity, $addressCounty, $addressPostcode, $addressCountry, $servicesJson, $totalCost, $totalPaid, $totalRemaining, $clientId);
 
 if ($stmt->execute()) {
     echo json_encode([

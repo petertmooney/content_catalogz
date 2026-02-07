@@ -805,9 +805,34 @@ if ($invoices_result) {
                 </div>
 
                 <!-- Address -->
-                <div class="form-group">
-                    <label for="clientAddress">Address</label>
-                    <textarea id="clientAddress" name="address" class="form-control" rows="3" placeholder="Enter client address..."></textarea>
+                <div style="background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 15px; color: #333;">Address</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="clientAddressStreet">Street Address</label>
+                            <input type="text" id="clientAddressStreet" name="address_street" class="form-control" placeholder="123 Main Street">
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="clientAddressLine2">Address Line 2 (Optional)</label>
+                            <input type="text" id="clientAddressLine2" name="address_line2" class="form-control" placeholder="Apartment, suite, unit, etc.">
+                        </div>
+                        <div class="form-group">
+                            <label for="clientAddressCity">Town/City</label>
+                            <input type="text" id="clientAddressCity" name="address_city" class="form-control" placeholder="London">
+                        </div>
+                        <div class="form-group">
+                            <label for="clientAddressCounty">County</label>
+                            <input type="text" id="clientAddressCounty" name="address_county" class="form-control" placeholder="Greater London">
+                        </div>
+                        <div class="form-group">
+                            <label for="clientAddressPostcode">Postcode</label>
+                            <input type="text" id="clientAddressPostcode" name="address_postcode" class="form-control" placeholder="SW1A 1AA" style="text-transform: uppercase;">
+                        </div>
+                        <div class="form-group">
+                            <label for="clientAddressCountry">Country</label>
+                            <input type="text" id="clientAddressCountry" name="address_country" class="form-control" value="United Kingdom">
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Services and Costs -->
@@ -1375,7 +1400,15 @@ if ($invoices_result) {
             document.getElementById('clientCompany').textContent = client.company || 'N/A';
             document.getElementById('clientEmail').textContent = client.email;
             document.getElementById('clientPhone').textContent = client.phone || 'N/A';
-            document.getElementById('clientAddress').value = client.address || '';
+            
+            // Load address fields
+            document.getElementById('clientAddressStreet').value = client.address_street || '';
+            document.getElementById('clientAddressLine2').value = client.address_line2 || '';
+            document.getElementById('clientAddressCity').value = client.address_city || '';
+            document.getElementById('clientAddressCounty').value = client.address_county || '';
+            document.getElementById('clientAddressPostcode').value = client.address_postcode || '';
+            document.getElementById('clientAddressCountry').value = client.address_country || 'United Kingdom';
+            
             document.getElementById('totalPaid').value = client.total_paid || 0.00;
             
             // Load services
@@ -1472,7 +1505,12 @@ if ($invoices_result) {
             event.preventDefault();
             
             const clientId = document.getElementById('clientId').value;
-            const address = document.getElementById('clientAddress').value;
+            const addressStreet = document.getElementById('clientAddressStreet').value;
+            const addressLine2 = document.getElementById('clientAddressLine2').value;
+            const addressCity = document.getElementById('clientAddressCity').value;
+            const addressCounty = document.getElementById('clientAddressCounty').value;
+            const addressPostcode = document.getElementById('clientAddressPostcode').value;
+            const addressCountry = document.getElementById('clientAddressCountry').value;
             const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
             const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
             
@@ -1490,7 +1528,12 @@ if ($invoices_result) {
             
             const data = {
                 id: clientId,
-                address: address,
+                address_street: addressStreet,
+                address_line2: addressLine2,
+                address_city: addressCity,
+                address_county: addressCounty,
+                address_postcode: addressPostcode,
+                address_country: addressCountry,
                 services: services,
                 total_cost: totalCost,
                 total_paid: totalPaid
