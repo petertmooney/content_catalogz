@@ -88,4 +88,26 @@ if ($conn->query($users_sql) === TRUE) {
 } else {
     die("Error creating users table: " . $conn->error);
 }
-?>
+
+// Create quotes table for client quote requests
+$quotes_sql = "CREATE TABLE IF NOT EXISTS quotes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    company VARCHAR(255),
+    phone VARCHAR(50),
+    service VARCHAR(100),
+    message TEXT NOT NULL,
+    status VARCHAR(50) DEFAULT 'new',
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_email (email),
+    INDEX idx_status (status),
+    INDEX idx_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+
+if ($conn->query($quotes_sql) !== TRUE) {
+    // Non-fatal error - log it but don't die
+    error_log("Error creating quotes table: " . $conn->error);
+}
