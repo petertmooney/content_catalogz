@@ -162,8 +162,20 @@ elseif ($method === 'PUT') {
 
 // DELETE - Remove task
 elseif ($method === 'DELETE') {
-    parse_str(file_get_contents("php://input"), $data);
-    $taskId = isset($data['id']) ? intval($data['id']) : null;
+    // Check query parameter first, then body
+    $taskId = isset($_GET['id']) ? intval($_GET['id']) : null;
+    
+    if (!$taskId) {
+        // Fallback: try JSON body
+        $data = json_decode(file_get_contents("php://input"), true);
+        $taskId = isset($data['id']) ? intval($data['id']) : null;
+    }
+    
+    if (!$taskId) {
+        // Fallback: try form-urlencoded body
+        parse_str(file_get_contents("php://input"), $data);
+        $taskId = isset($data['id']) ? intval($data['id']) : null;
+    }
     
     if (!$taskId) {
         http_response_code(400);
