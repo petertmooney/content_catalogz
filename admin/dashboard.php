@@ -802,12 +802,10 @@ if ($pages_result) {
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 10px; justify-content: space-between;">
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeClientModal()">Close</button>
                     <button type="button" class="btn btn-secondary" onclick="printInvoice()">🖨️ Print Invoice</button>
-                    <div style="display: flex; gap: 10px;">
-                        <button type="button" class="btn btn-secondary" onclick="closeClientModal()">Close</button>
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
-                    </div>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -1535,11 +1533,11 @@ if ($pages_result) {
                             justify-content: space-between;
                             margin-bottom: 30px;
                             padding-bottom: 20px;
-                            border-bottom: 3px solid #667eea;
+                            border-bottom: 3px solid #ff69b4;
                         }
                         .company-info h1 {
                             margin: 0;
-                            color: #667eea;
+                            color: #ff69b4;
                             font-size: 28px;
                         }
                         .invoice-details {
@@ -1564,7 +1562,7 @@ if ($pages_result) {
                             margin-bottom: 30px;
                         }
                         th {
-                            background: #667eea;
+                            background: #ff69b4;
                             color: white;
                             padding: 12px;
                             text-align: left;
@@ -1584,7 +1582,7 @@ if ($pages_result) {
                             color: #dc3545;
                         }
                         .print-btn {
-                            background: #667eea;
+                            background: #ff69b4;
                             color: white;
                             border: none;
                             padding: 12px 24px;
@@ -1594,7 +1592,7 @@ if ($pages_result) {
                             margin-bottom: 20px;
                         }
                         .print-btn:hover {
-                            background: #5568d3;
+                            background: #ff85c1;
                         }
                     </style>
                 </head>
@@ -1607,7 +1605,7 @@ if ($pages_result) {
                             <p>Professional Content Services</p>
                         </div>
                         <div class="invoice-details">
-                            <h2 style="margin: 0; color: #667eea;">INVOICE</h2>
+                            <h2 style="margin: 0; color: #ff69b4;">INVOICE</h2>
                             <p><strong>Invoice No:</strong> ${invoiceNumber}</p>
                             <p><strong>Date:</strong> ${invoiceDate}</p>
                         </div>
