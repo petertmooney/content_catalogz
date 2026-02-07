@@ -686,13 +686,14 @@ if ($invoices_result) {
                 <a href="#" onclick="showSection('existing-clients'); return false;" id="nav-existing-clients">👤 Existing Clients</a>
             </div>
             
+            <a href="#" onclick="showSection('tasks'); return false;" id="nav-tasks">✅ Tasks & To-Do</a>
+            <a href="#" onclick="showSection('invoices'); return false;" id="nav-invoices">📄 Invoices</a>
+            
             <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'pages-submenu'); return false;">🌐 Website Pages</a>
             <div class="submenu" id="pages-submenu">
                 <a href="#" onclick="showSection('html-files'); return false;" id="nav-html-files">📝 Edit Pages</a>
             </div>
             
-            <a href="#" onclick="showSection('tasks'); return false;" id="nav-tasks">✅ Tasks & To-Do</a>
-            <a href="#" onclick="showSection('invoices'); return false;" id="nav-invoices">📄 Invoices</a>
             <a href="/" target="_blank">🌐 View Site</a>
             <a href="api/logout.php">🚪 Logout</a>
         </div>
