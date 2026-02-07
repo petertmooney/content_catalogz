@@ -25,29 +25,43 @@ A complete backend admin system for managing pages and content in the Content Ca
 ### 1. Prerequisites
 
 - PHP 7.4 or higher
-- MySQL 5.7 or higher
-- Web server with PHP support (Apache, Nginx, etc.)
+- MySQL 8.0 or higher
+- Dev container running (with database service)
 
 ### 2. Database Configuration
 
-Edit the database credentials in `config/db.php`:
+The database credentials are already configured in `config/db.php` to match your dev container:
 
 ```php
 define('DB_HOST', 'localhost');
-define('DB_USER', 'admin');
-define('DB_PASS', 'admin_password');
-define('DB_NAME', 'content_catalogz');
+define('DB_USER', 'petertmooney');
+define('DB_PASS', '68086500aA!');
+define('DB_NAME', 'Content_Catalogz');
 ```
 
 ### 3. Initial Setup
 
-The database and tables are created automatically on first access. The system creates:
+**Important:** Make sure your dev container is rebuilt and running:
+1. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
+2. Run: **"Rebuild Container"**
+3. Wait for the container to fully start
+
+Once the container is running, initialize the database:
+
+```bash
+php /workspaces/content_catalogz/admin/setup/init_db.php
+```
+
+This will create:
 - `pages` table - stores all page content
 - `users` table - stores admin credentials
+- Default admin user
 
-Default admin credentials:
+**Default admin credentials:**
 - **Username**: `admin`
-- **Password**: `admin_password`
+- **Password**: `admin123`
+
+**⚠️ IMPORTANT:** Change the default password after your first login!
 
 **IMPORTANT**: Change the default password immediately after first login!
 

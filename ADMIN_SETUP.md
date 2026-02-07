@@ -1,5 +1,9 @@
 # Admin Panel Quick Start Guide
 
+## ⚠️ Current Status: Database Not Running
+
+The errors you're seeing indicate the MySQL database service isn't running yet. Follow the steps below to fix this.
+
 ## What's Been Created
 
 A complete backend admin system for the Content Catalogz website with the following features:
@@ -9,11 +13,13 @@ A complete backend admin system for the Content Catalogz website with the follow
 admin/
 ├── .htaccess           # Security and rewrite rules
 ├── README.md           # Comprehensive documentation
-├── login.php           # Admin login page
+├── login.php           # Admin login page (✅ FIXED)
 ├── dashboard.php       # Admin dashboard with page management
 ├── config/
-│   ├── db.php         # Database configuration and initialization
+│   ├── db.php         # Database configuration (✅ UPDATED)
 │   └── auth.php       # Authentication helpers
+├── setup/
+│   └── init_db.php    # Database initialization script (✅ NEW)
 └── api/
     ├── save_page.php   # Create/update pages
     ├── get_page.php    # Fetch page details
@@ -21,31 +27,63 @@ admin/
     └── logout.php      # Logout functionality
 ```
 
+## 🔧 Fixed Issues
+
+1. ✅ **Session headers error** - Moved session_start() before HTML output
+2. ✅ **Database path error** - Changed from '../config/db.php' to 'config/db.php'
+3. ✅ **Database credentials** - Updated to match your dev container MySQL settings
+
 ## Getting Started
 
-### Step 1: Setup Database Credentials
-Edit `admin/config/db.php` and update if needed:
-```php
-define('DB_HOST', 'localhost');  // Your MySQL host
-define('DB_USER', 'admin');      // Your MySQL username
-define('DB_PASS', 'admin_password'); // Your MySQL password
-define('DB_NAME', 'content_catalogz');
-```
+### Step 1: Rebuild Container (REQUIRED)
 
-### Step 2: Start Your Web Server
+The dev container needs to be rebuilt to start the MySQL database service:
+
+1. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
+2. Type and select: **"Rebuild Container"**
+3. Wait 2-3 minutes for the rebuild to complete
+
+### Step 2: Initialize Database
+
+Once the container is running, open a terminal and run:
+
 ```bash
-# Using PHP built-in server
-php -S localhost:8000
-
-# Or use Apache/Nginx (configured path: /admin/)
+php admin/setup/init_db.php
 ```
 
-### Step 3: Access the Admin Panel
-1. Navigate to: `http://localhost:8000/admin/login.php`
-2. Login with:
+This will:
+- Create the `Content_Catalogz` database
+- Create the `users` and `pages` tables
+- Set up the default admin account
+- Display your login credentials
+
+### Step 3: Start Web Server
+
+If not already running, start the PHP server:
+
+```bash
+php -S 0.0.0.0:8083
+```
+
+### Step 4: Access the Admin Panel
+
+1. Navigate to port 8083 in your Ports tab or go to: `/admin/login.php`
+2. Login with default credentials (shown after running init_db.php):
    - **Username**: `admin`
-   - **Password**: `admin_password`
-3. You'll be redirected to the dashboard
+   - **Password**: `admin123`
+3. **⚠️ IMPORTANT:** Change the password immediately after first login!
+
+## Database Configuration
+
+Your database is configured in `admin/config/db.php`:
+```php
+define('DB_HOST', 'localhost');
+define('DB_USER', 'petertmooney');
+define('DB_PASS', '68086500aA!');
+define('DB_NAME', 'Content_Catalogz');
+```
+
+You can also access **phpMyAdmin** at port **8081** with the same credentials.
 
 ## Features
 

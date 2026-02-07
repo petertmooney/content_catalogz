@@ -1,9 +1,9 @@
 <?php
 // Database configuration
 define('DB_HOST', 'localhost');
-define('DB_USER', 'admin');
-define('DB_PASS', 'admin_password');
-define('DB_NAME', 'content_catalogz');
+define('DB_USER', 'petertmooney');
+define('DB_PASS', '68086500aA!');
+define('DB_NAME', 'Content_Catalogz');
 
 // Create connection
 $conn = new mysqli(DB_HOST, DB_USER, DB_PASS);

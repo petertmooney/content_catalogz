@@ -1,3 +1,40 @@
+<?php
+session_start();
+include 'config/db.php';
+
+$error = '';
+$success = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = trim($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
+
+    if (empty($username) || empty($password)) {
+        $error = 'Please enter both username and password.';
+    } else {
+        // Check credentials against database
+        $stmt = $conn->prepare("SELECT id, username, password FROM users WHERE username = ?");
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows === 1) {
+            $user = $result->fetch_assoc();
+            if (password_verify($password, $user['password'])) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
+                header('Location: dashboard.php');
+                exit();
+            } else {
+                $error = 'Invalid username or password.';
+            }
+        } else {
+            $error = 'Invalid username or password.';
+        }
+        $stmt->close();
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -127,45 +164,6 @@
         </div>
 
         <?php
-        session_start();
-        include '../config/db.php';
-
-        $error = '';
-        $success = '';
-
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $username = trim($_POST['username'] ?? '');
-            $password = $_POST['password'] ?? '';
-
-            if (empty($username) || empty($password)) {
-                $error = 'Please enter both username and password.';
-            } else {
-                // Prepare and execute query
-                $sql = "SELECT id, username, password FROM users WHERE username = ?";
-                $stmt = $conn->prepare($sql);
-                $stmt->bind_param("s", $username);
-                $stmt->execute();
-                $result = $stmt->get_result();
-
-                if ($result->num_rows === 1) {
-                    $user = $result->fetch_assoc();
-                    
-                    if (password_verify($password, $user['password'])) {
-                        // Login successful
-                        $_SESSION['user_id'] = $user['id'];
-                        $_SESSION['username'] = $user['username'];
-                        header("Location: /admin/dashboard.php");
-                        exit();
-                    } else {
-                        $error = 'Invalid username or password.';
-                    }
-                } else {
-                    $error = 'Invalid username or password.';
-                }
-                $stmt->close();
-            }
-        }
-
         if (!empty($error)) {
             echo '<div class="error-message">' . htmlspecialchars($error) . '</div>';
         }
