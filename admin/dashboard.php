@@ -2554,14 +2554,14 @@ if ($invoices_result) {
 
         // Email invoice as PDF
         function emailInvoice() {
-            const clientName = document.getElementById('clientName').value;
-            const clientEmail = document.getElementById('clientEmail').value;
-            const invoiceNumber = document.getElementById('invoiceNumber').value;
+            const clientName = document.getElementById('clientName').textContent;
+            const clientEmail = document.getElementById('clientEmail').textContent;
+            const invoiceNumber = 'INV-' + Date.now();
             const totalCost = document.getElementById('totalCost').value;
             const totalPaid = document.getElementById('totalPaid').value;
             const totalRemaining = document.getElementById('totalRemaining').value;
             
-            if (!clientEmail) {
+            if (!clientEmail || clientEmail.trim() === '') {
                 alert('No email address found for this client.');
                 return;
             }
