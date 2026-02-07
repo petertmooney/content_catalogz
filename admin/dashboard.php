@@ -725,6 +725,82 @@ if ($pages_result) {
         </div>
     </div>
 
+    <!-- Client Details Modal -->
+    <div id="clientModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3>Client Details</h3>
+                <button class="close-btn" onclick="closeClientModal()">&times;</button>
+            </div>
+            <form id="clientForm" onsubmit="updateClient(event)">
+                <input type="hidden" id="clientId" name="id">
+                
+                <!-- Client Information -->
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 15px; color: #333;">Contact Information</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <strong>Name:</strong><br>
+                            <span id="clientName"></span>
+                        </div>
+                        <div>
+                            <strong>Company:</strong><br>
+                            <span id="clientCompany"></span>
+                        </div>
+                        <div>
+                            <strong>Email:</strong><br>
+                            <span id="clientEmail"></span>
+                        </div>
+                        <div>
+                            <strong>Phone:</strong><br>
+                            <span id="clientPhone"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address -->
+                <div class="form-group">
+                    <label for="clientAddress">Address</label>
+                    <textarea id="clientAddress" name="address" class="form-control" rows="3" placeholder="Enter client address..."></textarea>
+                </div>
+
+                <!-- Services and Costs -->
+                <div style="background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h4 style="margin: 0; color: #333;">Services & Costs</h4>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="addServiceRow()">+ Add Service</button>
+                    </div>
+                    
+                    <div id="servicesContainer">
+                        <!-- Services will be added here dynamically -->
+                    </div>
+                    
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #ddd;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="form-group">
+                                <label for="totalCost">Total Cost</label>
+                                <input type="number" id="totalCost" name="total_cost" class="form-control" step="0.01" min="0" readonly style="background:#f8f9fa; font-weight: bold; font-size: 18px;">
+                            </div>
+                            <div class="form-group">
+                                <label for="totalPaid">Total Paid</label>
+                                <input type="number" id="totalPaid" name="total_paid" class="form-control" step="0.01" min="0" oninput="calculateRemaining()">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="totalRemaining">Total Remaining</label>
+                            <input type="number" id="totalRemaining" name="total_remaining" class="form-control" step="0.01" readonly style="background:#f8f9fa; font-weight: bold; font-size: 18px; color: #dc3545;">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeClientModal()">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         function toggleSubmenu(event, submenuId) {
             event.preventDefault();
@@ -1220,7 +1296,167 @@ if ($pages_result) {
 
         // View client details (reuse quote modal)
         function viewClientDetails(clientId) {
-            openQuoteModal(clientId);
+            // Fetch client data
+            fetch('api/get_client.php?id=' + clientId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        openClientModal(data.client);
+                    } else {
+                        alert('Error loading client details: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to load client details');
+                });
+        }
+
+        function openClientModal(client) {
+            document.getElementById('clientId').value = client.id;
+            document.getElementById('clientName').textContent = client.name;
+            document.getElementById('clientCompany').textContent = client.company || 'N/A';
+            document.getElementById('clientEmail').textContent = client.email;
+            document.getElementById('clientPhone').textContent = client.phone || 'N/A';
+            document.getElementById('clientAddress').value = client.address || '';
+            document.getElementById('totalPaid').value = client.total_paid || 0.00;
+            
+            // Load services
+            const services = client.services || [];
+            const servicesContainer = document.getElementById('servicesContainer');
+            servicesContainer.innerHTML = '';
+            
+            if (services.length === 0) {
+                // Add one empty row by default
+                addServiceRow();
+            } else {
+                services.forEach(service => {
+                    addServiceRow(service.name, service.cost);
+                });
+            }
+            
+            calculateTotalCost();
+            calculateRemaining();
+            
+            document.getElementById('clientModal').classList.add('show');
+        }
+
+        function closeClientModal() {
+            document.getElementById('clientModal').classList.remove('show');
+        }
+
+        function addServiceRow(serviceName = '', serviceCost = 0) {
+            const container = document.getElementById('servicesContainer');
+            const rowId = 'service-row-' + Date.now();
+            
+            const row = document.createElement('div');
+            row.id = rowId;
+            row.className = 'service-row';
+            row.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; margin-bottom: 10px; align-items: end;';
+            
+            row.innerHTML = `
+                <div class="form-group" style="margin: 0;">
+                    <label>Service Description</label>
+                    <input type="text" class="form-control service-name" placeholder="e.g., Website Design" value="${escapeHtml(serviceName)}" oninput="calculateTotalCost()">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label>Cost ($)</label>
+                    <input type="number" class="form-control service-cost" step="0.01" min="0" placeholder="0.00" value="${serviceCost}" oninput="calculateTotalCost()">
+                </div>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeServiceRow('${rowId}')" style="height: 38px;">Remove</button>
+            `;
+            
+            container.appendChild(row);
+        }
+
+        function removeServiceRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.remove();
+                calculateTotalCost();
+            }
+        }
+
+        function calculateTotalCost() {
+            const serviceCosts = document.querySelectorAll('.service-cost');
+            let total = 0;
+            
+            serviceCosts.forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                total += value;
+            });
+            
+            document.getElementById('totalCost').value = total.toFixed(2);
+            calculateRemaining();
+        }
+
+        function calculateRemaining() {
+            const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
+            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            const remaining = totalCost - totalPaid;
+            
+            document.getElementById('totalRemaining').value = remaining.toFixed(2);
+            
+            // Color code the remaining amount
+            const remainingInput = document.getElementById('totalRemaining');
+            if (remaining > 0) {
+                remainingInput.style.color = '#dc3545'; // Red
+            } else if (remaining < 0) {
+                remainingInput.style.color = '#ffc107'; // Yellow/warning
+            } else {
+                remainingInput.style.color = '#28a745'; // Green
+            }
+        }
+
+        function updateClient(event) {
+            event.preventDefault();
+            
+            const clientId = document.getElementById('clientId').value;
+            const address = document.getElementById('clientAddress').value;
+            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
+            
+            // Collect services
+            const services = [];
+            const serviceRows = document.querySelectorAll('.service-row');
+            serviceRows.forEach(row => {
+                const name = row.querySelector('.service-name').value.trim();
+                const cost = parseFloat(row.querySelector('.service-cost').value) || 0;
+                
+                if (name) {  // Only add if service has a name
+                    services.push({ name, cost });
+                }
+            });
+            
+            const data = {
+                id: clientId,
+                address: address,
+                services: services,
+                total_cost: totalCost,
+                total_paid: totalPaid
+            };
+            
+            fetch('api/update_client.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Client information updated successfully!');
+                    closeClientModal();
+                    loadExistingClients(); // Refresh the clients list
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to update client information');
+            });
         }
 
         // Placeholder for add client modal
