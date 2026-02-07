@@ -406,6 +406,7 @@ if ($invoices_result) {
             <a href="#" onclick="showSection('html-files'); return false;" id="nav-html-files">📝 Edit Pages</a>
             <a href="#" onclick="openAddPageModal(); return false;">➕ New Database Page</a>
             <a href="#" onclick="showSection('database-pages'); return false;" id="nav-database-pages">📄 Database Pages</a>
+            <a href="#" onclick="showSection('tasks'); return false;" id="nav-tasks">✅ Tasks & To-Do</a>
             <a href="#" onclick="showSection('invoices'); return false;" id="nav-invoices">📄 Invoices</a>
             <a href="/" target="_blank">🌐 View Site</a>
             <a href="api/logout.php">🚪 Logout</a>
