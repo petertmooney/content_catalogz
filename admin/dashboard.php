@@ -2474,19 +2474,19 @@ if ($invoices_result) {
                 const invoiceDate = new Date(invoice.invoice_date).toLocaleDateString('en-GB');
                 const balanceColor = invoice.total_remaining > 0 ? '#dc3545' : '#28a745';
                 
-                html += `<tr>
-                    <td><strong>${escapeHtml(invoice.invoice_number)}</strong></td>
-                    <td>${escapeHtml(invoice.name)}</td>
-                    <td>${invoice.company ? escapeHtml(invoice.company) : '<em>N/A</em>'}</td>
-                    <td>${invoiceDate}</td>
-                    <td>£${parseFloat(invoice.total_cost).toFixed(2)}</td>
-                    <td>£${parseFloat(invoice.total_paid).toFixed(2)}</td>
-                    <td style="color: ${balanceColor}; font-weight: bold;">£${parseFloat(invoice.total_remaining).toFixed(2)}</td>
-                    <td>
-                        <button class="btn btn-primary btn-sm" onclick="viewClientDetails(${invoice.client_id})">View Client</button>
-                        <a href="mailto:${escapeHtml(invoice.email)}" class="btn btn-secondary btn-sm">Email</a>
-                    </td>
-                </tr>`;
+                html += '<tr>';
+                html += '<td><strong>' + escapeHtml(invoice.invoice_number) + '</strong></td>';
+                html += '<td>' + escapeHtml(invoice.name) + '</td>';
+                html += '<td>' + (invoice.company ? escapeHtml(invoice.company) : '<em>N/A</em>') + '</td>';
+                html += '<td>' + invoiceDate + '</td>';
+                html += '<td>£' + parseFloat(invoice.total_cost).toFixed(2) + '</td>';
+                html += '<td>£' + parseFloat(invoice.total_paid).toFixed(2) + '</td>';
+                html += '<td style="color: ' + balanceColor + '; font-weight: bold;">£' + parseFloat(invoice.total_remaining).toFixed(2) + '</td>';
+                html += '<td>';
+                html += '<button class="btn btn-primary btn-sm" onclick="viewClientDetails(' + invoice.client_id + ')">View Client</button>';
+                html += '<a href="mailto:' + escapeHtml(invoice.email) + '" class="btn btn-secondary btn-sm">Email</a>';
+                html += '</td>';
+                html += '</tr>';
             });
 
             html += '</tbody></table></div>';
@@ -2769,15 +2769,15 @@ if ($invoices_result) {
                             };
                             
                             return `
-                            <div class="client-task-item ${task.status === 'completed' || task.status === 'cancelled' ? 'completed' : ''}">
-                                <div class="client-task-left">
-                                    <div class="client-task-title ${task.status === 'completed' ? 'completed' : ''}">${task.title}</div>
-                                    <div class="client-task-meta">
-                                        <span style="color: ${priorityColors[task.priority]}">● ${task.priority.toUpperCase()}</span>
-                                        <span>${statusBadges[task.status]}</span>
-                                        ${task.due_date ? `<span>📅 Due: ${new Date(task.due_date).toLocaleDateString()}</span>` : ''}
-                                    </div>
+                                <div class="client-task-item ${task.status === 'completed' || task.status === 'cancelled' ? 'completed' : ''}">
+                            <div class="client-task-left">
+                                <div class="client-task-title ${task.status === 'completed' ? 'completed' : ''}">${task.title}</div>
+                                <div class="client-task-meta">
+                                    <span class="priority-badge" data-priority="${task.priority}">● ${task.priority.toUpperCase()}</span>
+                                    <span>${statusBadges[task.status]}</span>
+                                    ${task.due_date ? `<span>📅 Due: ${new Date(task.due_date).toLocaleDateString()}</span>` : ''}
                                 </div>
+                            </div>
                                 <div class="client-task-actions">
                                     ${task.status !== 'completed' ? `<button class="btn btn-sm btn-primary" onclick="markTaskComplete(${task.id})">✓ Complete</button>` : ''}
                                     <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})">Delete</button>
@@ -2885,7 +2885,10 @@ if ($invoices_result) {
                                     <div class="task-title ${task.status === 'completed' ? 'completed' : ''}">${task.title}</div>
                                     ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
                                     <div class="task-meta">
-                                        <span style="color: ${priorityColors[task.priority]}">● ${task.priority.toUpperCase()}</span>
+                                        <span style="color: #666;" id="priority-${task.id}">● ${task.priority.toUpperCase()}</span>
+                                        <script>
+                                            document.getElementById('priority-${task.id}').style.color = '${priorityColors[task.priority] || '#666'}';
+                                        </script>
                                         <span>${statusBadges[task.status]}</span>
                                         ${task.client_name ? `<span>👤 ${task.client_name}</span>` : ''}
                                         ${task.due_date ? `<span>📅 Due: ${new Date(task.due_date).toLocaleDateString()}</span>` : ''}
@@ -3083,13 +3086,15 @@ if ($invoices_result) {
                 cancelled: '❌ Cancelled'
             };
             
-            container.innerHTML = tasks.map(task => `
+            container.innerHTML = tasks.map(task => {
+                const priorityColor = priorityColors[task.priority] || '#666';
+                return `
                 <div class="task-item ${task.status === 'completed' || task.status === 'cancelled' ? 'completed' : ''}">
                     <div class="task-left">
                         <div class="task-title ${task.status === 'completed' ? 'completed' : ''}">${task.title}</div>
                         ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
                         <div class="task-meta">
-                            <span style="color: ${priorityColors[task.priority]}; font-weight: 600;">● ${task.priority.toUpperCase()}</span>
+                            <span style="color: ${priorityColor}; font-weight: 600; margin-right: 10px; display: inline-block;" class="priority-badge">● ${task.priority.toUpperCase()}</span>
                             <span>${statusBadges[task.status]}</span>
                             ${task.due_date ? `<span>📅 Due: ${new Date(task.due_date).toLocaleDateString()}</span>` : ''}
                             ${task.client_name ? `<span>👤 ${task.client_name}</span>` : '<span>👤 General Task</span>'}
@@ -3102,7 +3107,8 @@ if ($invoices_result) {
                         <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})">Delete</button>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
         
         function filterTasks(status) {
