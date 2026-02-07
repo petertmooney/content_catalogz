@@ -24,10 +24,10 @@ services:
     volumes:
       - mariadb-data:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: cuisine
-      MYSQL_DATABASE: campus_cuisine
-      MYSQL_USER: serc
-      MYSQL_PASSWORD: cuisine
+      MYSQL_ROOT_PASSWORD: 68086500aA!
+      MYSQL_DATABASE: Content_Catalogz
+      MYSQL_USER: petertmooney
+      MYSQL_PASSWORD: 68086500aA!
 
     # Add "forwardPorts": ["3306"] to **devcontainer.json** to forward MariaDB locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
@@ -39,7 +39,7 @@ services:
       - 8081:80
     environment:
       PMA_HOST: db
-      MYSQL_ROOT_PASSWORD: cuisine
+      MYSQL_ROOT_PASSWORD: 68086500aA!
   
 volumes:
   mariadb-data:

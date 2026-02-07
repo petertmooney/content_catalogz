@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/php-mariadb
 {
-	"name": "Camups Cuisine Dev Env",
+	"name": "Content Catalogz Dev Env",
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "app",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
@@ -37,10 +37,10 @@
 						"server": "localhost",
 						"port": 3306,
 						"driver": "MariaDB",
-						"name": "conn_campus_cuisine",
-						"database": "campus_cuisine",
-						"username": "serc",
-						"password": "cuisine"
+						"name": "conn_content_catalogz",
+						"database": "Content_Catalogz",
+						"username": "petertmooney",
+						"password": "68086500aA!"
 					}
 				]
 			}
