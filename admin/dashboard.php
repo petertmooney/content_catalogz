@@ -893,6 +893,24 @@ if ($invoices_result) {
                     <p>Search and view all generated invoices</p>
                 </div>
 
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Outstanding Invoices</h4>
+                        <p id="stat-invoices-outstanding-count" style="font-size: 24px; font-weight: bold; color: #ffc107;">0</p>
+                        <p id="stat-invoices-outstanding-amount" style="font-size: 14px; color: #666; margin-top: 5px;">£0.00</p>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #dc3545; font-size: 14px; margin-bottom: 5px;">Overdue Invoices</h4>
+                        <p id="stat-invoices-overdue-count" style="font-size: 24px; font-weight: bold; color: #dc3545;">0</p>
+                        <p id="stat-invoices-overdue-amount" style="font-size: 14px; color: #666; margin-top: 5px;">£0.00</p>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Total Collected</h4>
+                        <p id="stat-invoices-collected" style="font-size: 24px; font-weight: bold; color: #28a745;">£0.00</p>
+                        <p style="font-size: 14px; color: #666; margin-top: 5px;">All time</p>
+                    </div>
+                </div>
+
                 <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px;">
                     <h3 style="margin-bottom: 15px; color: #333;">Search Invoices</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: end;">
@@ -1531,6 +1549,11 @@ if ($invoices_result) {
             // Load tasks if switching to tasks section
             if (sectionName === 'tasks') {
                 loadTasks();
+            }
+            
+            // Load invoice stats if switching to invoices section
+            if (sectionName === 'invoices') {
+                loadInvoiceStats();
             }
         }
 
@@ -2412,7 +2435,7 @@ if ($invoices_result) {
                             alert('Invoice changes saved! Note: This is a preview. To permanently update client details, edit them in the Client Details modal and regenerate the invoice.');
                             toggleEditMode();
                         }
-                    </script>
+                    <\/script>
                 </body>
                 </html>
             `;
@@ -2428,7 +2451,22 @@ if ($invoices_result) {
             alert('Add New Client feature coming soon! For now, clients are automatically added from completed quotes.');
         }
 
-        // Invoice search functions
+        // Invoice stats and search functions
+        function loadInvoiceStats() {
+            fetch('api/invoice_stats.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('stat-invoices-outstanding-count').textContent = data.outstanding_count || 0;
+                        document.getElementById('stat-invoices-outstanding-amount').textContent = '£' + (parseFloat(data.outstanding_amount) || 0).toFixed(2);
+                        document.getElementById('stat-invoices-overdue-count').textContent = data.overdue_count || 0;
+                        document.getElementById('stat-invoices-overdue-amount').textContent = '£' + (parseFloat(data.overdue_amount) || 0).toFixed(2);
+                        document.getElementById('stat-invoices-collected').textContent = '£' + (parseFloat(data.total_collected) || 0).toFixed(2);
+                    }
+                })
+                .catch(err => console.error('Error loading invoice stats:', err));
+        }
+
         function searchInvoices() {
             const searchQuery = document.getElementById('invoiceSearch').value.trim();
             const searchDate = document.getElementById('invoiceDateSearch').value;
