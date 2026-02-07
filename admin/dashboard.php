@@ -588,6 +588,69 @@ if ($pages_result) {
         </div>
     </div>
 
+    <!-- Quote Details Modal -->
+    <div id="quoteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Quote Request Details</h3>
+                <button class="close-btn" onclick="closeQuoteModal()">&times;</button>
+            </div>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <strong>Name:</strong><br>
+                        <span id="quoteName"></span>
+                    </div>
+                    <div>
+                        <strong>Company:</strong><br>
+                        <span id="quoteCompany"></span>
+                    </div>
+                    <div>
+                        <strong>Email:</strong><br>
+                        <span id="quoteEmail"></span>
+                    </div>
+                    <div>
+                        <strong>Phone:</strong><br>
+                        <span id="quotePhone"></span>
+                    </div>
+                    <div>
+                        <strong>Service:</strong><br>
+                        <span id="quoteService"></span>
+                    </div>
+                    <div>
+                        <strong>Received:</strong><br>
+                        <span id="quoteReceived"></span>
+                    </div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <strong>Message:</strong><br>
+                    <p id="quoteMessage" style="margin-top: 8px; line-height: 1.6; color: #333;"></p>
+                </div>
+            </div>
+            <form id="quoteForm" onsubmit="updateQuote(event)">
+                <input type="hidden" id="quoteId" name="id">
+                <div class="form-group">
+                    <label for="quoteStatus">Status</label>
+                    <select id="quoteStatus" name="status" class="form-control">
+                        <option value="new">New</option>
+                        <option value="contacted">Contacted</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="declined">Declined</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="quoteNotes">Admin Notes</label>
+                    <textarea id="quoteNotes" name="notes" class="form-control" rows="4" placeholder="Add internal notes about this quote request..."></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeQuoteModal()">Close</button>
+                    <button type="submit" class="btn btn-primary">Update Quote</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         function openAddPageModal() {
             document.getElementById('pageForm').reset();
@@ -643,11 +706,15 @@ if ($pages_result) {
         window.onclick = function(event) {
             const pageModal = document.getElementById('pageModal');
             const htmlModal = document.getElementById('htmlEditorModal');
+            const quoteModal = document.getElementById('quoteModal');
             if (event.target === pageModal) {
                 closePageModal();
             }
             if (event.target === htmlModal) {
                 closeHtmlEditorModal();
+            }
+            if (event.target === quoteModal) {
+                closeQuoteModal();
             }
         };
 
@@ -670,6 +737,11 @@ if ($pages_result) {
             // Load HTML files if switching to that section
             if (sectionName === 'html-files') {
                 loadHtmlFiles();
+            }
+            
+            // Load quotes if switching to clients section
+            if (sectionName === 'clients') {
+                loadQuotes();
             }
         }
 
@@ -760,8 +832,146 @@ if ($pages_result) {
             });
         }
 
-        // Load HTML files count on page load
+        // Load quotes from database
+        function loadQuotes() {
+            const status = document.getElementById('statusFilter').value;
+            const search = document.getElementById('searchQuotes').value;
+            
+            let url = 'api/get_quotes.php?';
+            if (status !== 'all') {
+                url += 'status=' + status + '&';
+            }
+            if (search) {
+                url += 'search=' + encodeURIComponent(search);
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayQuotes(data.quotes);
+                        updateQuoteStats(data.stats);
+                    }
+                });
+        }
+
+        // Update statistics display
+        function updateQuoteStats(stats) {
+            document.getElementById('stat-total').textContent = stats.total || 0;
+            document.getElementById('stat-new').textContent = stats.new || 0;
+            document.getElementById('stat-contacted').textContent = stats.contacted || 0;
+            document.getElementById('stat-inprogress').textContent = stats.in_progress || 0;
+            document.getElementById('stat-completed').textContent = stats.completed || 0;
+            document.getElementById('stat-declined').textContent = stats.declined || 0;
+            document.getElementById('quotes-count').textContent = stats.total || 0;
+        }
+
+        // Display quotes in table
+        function displayQuotes(quotes) {
+            const container = document.getElementById('quotes-list');
+            
+            if (quotes.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>No quotes found</h3><p>No quote requests match your filter criteria.</p></div>';
+                return;
+            }
+            
+            const statusColors = {
+                'new': '#007bff',
+                'contacted': '#ffc107',
+                'in_progress': '#17a2b8',
+                'completed': '#28a745',
+                'declined': '#dc3545'
+            };
+            
+            let html = '<div class="table-container"><table><thead><tr>';
+            html += '<th>Name</th><th>Company</th><th>Email</th><th>Phone</th><th>Service</th><th>Status</th><th>Received</th><th>Actions</th>';
+            html += '</tr></thead><tbody>';
+            
+            quotes.forEach(quote => {
+                const statusColor = statusColors[quote.status] || '#666';
+                const statusLabel = quote.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                const receivedDate = new Date(quote.created_at).toLocaleDateString();
+                
+                html += `<tr>
+                    <td><strong>${escapeHtml(quote.name)}</strong></td>
+                    <td>${quote.company ? escapeHtml(quote.company) : '<em>N/A</em>'}</td>
+                    <td><a href="mailto:${escapeHtml(quote.email)}">${escapeHtml(quote.email)}</a></td>
+                    <td>${quote.phone ? escapeHtml(quote.phone) : '<em>N/A</em>'}</td>
+                    <td>${escapeHtml(quote.service)}</td>
+                    <td><span style="display: inline-block; padding: 4px 12px; border-radius: 12px; background: ${statusColor}; color: white; font-size: 12px; font-weight: 600;">${statusLabel}</span></td>
+                    <td>${receivedDate}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="openQuoteModal(${quote.id})">View</button>
+                    </td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        // HTML escape helper
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Open quote detail modal
+        function openQuoteModal(quoteId) {
+            fetch('api/get_quotes.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const quote = data.quotes.find(q => q.id === quoteId);
+                        if (quote) {
+                            document.getElementById('quoteId').value = quote.id;
+                            document.getElementById('quoteName').textContent = quote.name;
+                            document.getElementById('quoteCompany').textContent = quote.company || 'N/A';
+                            document.getElementById('quoteEmail').textContent = quote.email;
+                            document.getElementById('quotePhone').textContent = quote.phone || 'N/A';
+                            document.getElementById('quoteService').textContent = quote.service;
+                            document.getElementById('quoteMessage').textContent = quote.message;
+                            document.getElementById('quoteReceived').textContent = new Date(quote.created_at).toLocaleString();
+                            document.getElementById('quoteStatus').value = quote.status;
+                            document.getElementById('quoteNotes').value = quote.notes || '';
+                            
+                            document.getElementById('quoteModal').classList.add('show');
+                        }
+                    }
+                });
+        }
+
+        // Close quote modal
+        function closeQuoteModal() {
+            document.getElementById('quoteModal').classList.remove('show');
+        }
+
+        // Update quote status and notes
+        function updateQuote(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(document.getElementById('quoteForm'));
+            
+            fetch('api/update_quote.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Quote updated successfully!');
+                    closeQuoteModal();
+                    loadQuotes();
+                } else {
+                    alert('Error updating quote: ' + data.message);
+                }
+            });
+        }
+
+        // Load HTML files count and quotes on page load
         window.addEventListener('DOMContentLoaded', function() {
             loadHtmlFiles();
+            loadQuotes();
         });
 </html>
