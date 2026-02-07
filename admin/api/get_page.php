@@ -2,8 +2,8 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-include '../config/db.php';
-include '../config/auth.php';
+include __DIR__ . '/../config/db.php';
+include __DIR__ . '/../config/auth.php';
 
 requireLogin();
 

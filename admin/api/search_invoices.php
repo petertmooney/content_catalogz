@@ -5,8 +5,8 @@ ini_set('display_errors', 1);
 session_start();
 header('Content-Type: application/json');
 
-require_once '../config/auth.php';
-require_once '../config/db.php';
+include __DIR__ . '/../config/auth.php';
+include __DIR__ . '/../config/db.php';
 
 $searchQuery = isset($_GET['q']) ? trim($_GET['q']) : '';
 $searchDate = isset($_GET['date']) ? trim($_GET['date']) : '';

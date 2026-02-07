@@ -2,7 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-include '../config/auth.php';
+include __DIR__ . '/../config/auth.php';
 
 logout();
 ?>
