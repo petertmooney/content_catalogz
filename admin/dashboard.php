@@ -704,32 +704,68 @@ if ($invoices_result) {
             <div id="section-dashboard" class="content-section active">
                 <div class="page-header">
                     <h2>Dashboard</h2>
-                    <p>Manage your website content and pages</p>
+                    <p>Overview of your business at a glance</p>
                 </div>
 
-                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                <!-- Client & Quotes Stats -->
+                <h3 style="color: #333; margin-bottom: 15px;">📊 Clients & Quotes</h3>
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
                     <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                        <h3 style="color: #667eea; margin-bottom: 10px;">HTML Pages</h3>
-                        <p class="stat-number" id="html-count" style="font-size: 32px; font-weight: bold; color: #333;">0</p>
-                        <small style="color: #666;">Editable HTML files</small>
+                        <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Total Quotes</h4>
+                        <p class="stat-number" id="quotes-count" style="font-size: 28px; font-weight: bold; color: #28a745;">0</p>
                     </div>
                     <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                        <h3 style="color: #28a745; margin-bottom: 10px;">Client Quotes</h3>
-                        <p class="stat-number" id="quotes-count" style="font-size: 32px; font-weight: bold; color: #333;">0</p>
-                        <small style="color: #666;">Total quote requests</small>
+                        <h4 style="color: #007bff; font-size: 14px; margin-bottom: 5px;">New Quotes</h4>
+                        <p class="stat-number" id="dash-quotes-new" style="font-size: 28px; font-weight: bold; color: #007bff;">0</p>
                     </div>
                     <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                        <h3 style="color: #ff69b4; margin-bottom: 10px;">Invoices</h3>
-                        <p class="stat-number" style="font-size: 32px; font-weight: bold; color: #333;"><?php echo $invoice_count; ?></p>
-                        <small style="color: #666;">Generated invoices</small>
+                        <h4 style="color: #17a2b8; font-size: 14px; margin-bottom: 5px;">In Progress</h4>
+                        <p class="stat-number" id="dash-quotes-progress" style="font-size: 28px; font-weight: bold; color: #17a2b8;">0</p>
+                    </div>
+                </div>
+
+                <!-- Tasks Stats -->
+                <h3 style="color: #333; margin-bottom: 15px;">✅ Tasks & To-Do</h3>
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Pending Tasks</h4>
+                        <p class="stat-number" id="dash-tasks-pending" style="font-size: 28px; font-weight: bold; color: #ffc107;">0</p>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #dc3545; font-size: 14px; margin-bottom: 5px;">Overdue Tasks</h4>
+                        <p class="stat-number" id="dash-tasks-overdue" style="font-size: 28px; font-weight: bold; color: #dc3545;">0</p>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #ff69b4; font-size: 14px; margin-bottom: 5px;">Urgent Tasks</h4>
+                        <p class="stat-number" id="dash-tasks-urgent" style="font-size: 28px; font-weight: bold; color: #ff69b4;">0</p>
+                    </div>
+                </div>
+
+                <!-- Invoice Stats -->
+                <h3 style="color: #333; margin-bottom: 15px;">📄 Invoices</h3>
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Outstanding</h4>
+                        <p class="stat-number" id="dash-invoices-outstanding" style="font-size: 28px; font-weight: bold; color: #ffc107;">0</p>
+                        <small id="dash-invoices-outstanding-amount" style="color: #666;">£0.00</small>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #dc3545; font-size: 14px; margin-bottom: 5px;">Overdue</h4>
+                        <p class="stat-number" id="dash-invoices-overdue" style="font-size: 28px; font-weight: bold; color: #dc3545;">0</p>
+                        <small id="dash-invoices-overdue-amount" style="color: #666;">£0.00</small>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Collected</h4>
+                        <p class="stat-number" id="dash-invoices-collected" style="font-size: 28px; font-weight: bold; color: #28a745;">£0</p>
+                        <small style="color: #666;">All time</small>
                     </div>
                 </div>
 
                 <div class="btn-group">
                     <button class="btn btn-primary" onclick="showSection('clients')">Quote Requests</button>
                     <button class="btn btn-primary" onclick="showSection('existing-clients')">Existing Clients</button>
-                    <button class="btn btn-primary" onclick="showSection('invoices')">Search Invoices</button>
-                    <button class="btn btn-primary" onclick="showSection('html-files')">Edit HTML Pages</button>
+                    <button class="btn btn-primary" onclick="showSection('tasks')">Tasks & To-Do</button>
+                    <button class="btn btn-primary" onclick="showSection('invoices')">Invoices</button>
                 </div>
             </div>
 
