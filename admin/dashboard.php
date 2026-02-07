@@ -1499,6 +1499,32 @@ if ($pages_result) {
             // Generate invoice HTML
             const invoiceDate = new Date().toLocaleDateString('en-GB');
             const invoiceNumber = 'INV-' + Date.now();
+            const clientId = document.getElementById('clientId').value;
+            
+            // Save invoice to database
+            const invoiceDateISO = new Date().toISOString().split('T')[0];
+            fetch('api/save_invoice.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    client_id: clientId,
+                    invoice_number: invoiceNumber,
+                    invoice_date: invoiceDateISO,
+                    total_cost: totalCost,
+                    total_paid: totalPaid
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success && !data.exists) {
+                    console.error('Failed to save invoice:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error saving invoice:', error);
+            });
             
             let servicesHTML = '';
             services.forEach(service => {
