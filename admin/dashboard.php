@@ -1142,11 +1142,32 @@ if ($invoices_result) {
                     <label for="quoteNotes">Admin Notes</label>
                     <textarea id="quoteNotes" name="notes" class="form-control" rows="4" placeholder="Add internal notes about this quote request..."></textarea>
                 </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeQuoteModal()">Close</button>
-                    <button type="submit" class="btn btn-primary">Update Quote</button>
+                <div style="display: flex; gap: 10px; justify-content: space-between; margin-top: 15px;">
+                    <button type="button" class="btn btn-danger" onclick="confirmDeleteQuote()" title="Delete this quote request">🗑️ Delete Quote</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeQuoteModal()">Close</button>
+                        <button type="submit" class="btn btn-primary">Update Quote</button>
+                    </div>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Delete Quote Confirmation Modal -->
+    <div id="deleteQuoteModal" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header" style="background: #dc3545; color: white;">
+                <h3>⚠️ Confirm Delete</h3>
+                <button class="close-btn" onclick="closeDeleteQuoteModal()" style="color: white;">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <p style="margin-bottom: 15px;">Are you sure you want to delete this quote request from <strong id="deleteQuoteName"></strong>?</p>
+                <p style="color: #dc3545; font-weight: bold;">This action cannot be undone!</p>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; padding: 15px 20px; border-top: 1px solid #ddd;">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteQuoteModal()">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="deleteQuote()">Delete Quote</button>
+            </div>
         </div>
     </div>
 
@@ -1998,6 +2019,45 @@ if ($invoices_result) {
         // Close quote modal
         function closeQuoteModal() {
             document.getElementById('quoteModal').classList.remove('show');
+        }
+
+        function confirmDeleteQuote() {
+            const quoteName = document.getElementById('quoteName').textContent;
+            document.getElementById('deleteQuoteName').textContent = quoteName;
+            document.getElementById('deleteQuoteModal').classList.add('show');
+        }
+
+        function closeDeleteQuoteModal() {
+            document.getElementById('deleteQuoteModal').classList.remove('show');
+        }
+
+        function deleteQuote() {
+            const quoteId = document.getElementById('quoteId').value;
+            const quoteName = document.getElementById('quoteName').textContent;
+            
+            fetch('api/delete_quote.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ quote_id: quoteId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Quote from "' + quoteName + '" has been deleted.');
+                    closeDeleteQuoteModal();
+                    closeQuoteModal();
+                    loadQuotes(); // Refresh the quotes list
+                    loadDashboardStats(); // Refresh stats
+                } else {
+                    alert('Error deleting quote: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to delete quote');
+            });
         }
 
         // Update quote status and notes
