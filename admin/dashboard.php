@@ -1033,4 +1033,6 @@ if ($pages_result) {
             loadHtmlFiles();
             loadQuotes();
         });
+    </script>
+</body>
 </html>

@@ -3,7 +3,7 @@
 The admin dashboard now includes a powerful HTML page editor that allows you to edit your website's pages directly through the browser.
 
 ## Accessing the Editor
-
+   v
 1. Log in to the admin panel at `/admin/login.php`
 2. Click on **"📝 Edit Pages"** in the sidebar
 3. You'll see a list of all HTML files in your website
