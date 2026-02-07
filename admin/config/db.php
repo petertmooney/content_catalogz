@@ -1,16 +1,31 @@
 <?php
 // Database configuration
-define('DB_HOST', 'localhost');
+define('DB_HOST', '127.0.0.1');  // Use 127.0.0.1 instead of localhost to force TCP
+define('DB_PORT', 3306);
 define('DB_USER', 'petertmooney');
 define('DB_PASS', '68086500aA!');
 define('DB_NAME', 'Content_Catalogz');
 
-// Create connection
-$conn = new mysqli(DB_HOST, DB_USER, DB_PASS);
+// Create connection with explicit port
+$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, '', DB_PORT);
 
 // Check connection
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    $error_msg = "
+    <h2>Database Connection Failed</h2>
+    <p><strong>Error:</strong> " . $conn->connect_error . "</p>
+    <hr>
+    <h3>⚠️ The MySQL database service is not running!</h3>
+    <p>You need to rebuild your dev container to start the database:</p>
+    <ol>
+        <li>Press <code>Ctrl+Shift+P</code> (or <code>Cmd+Shift+P</code> on Mac)</li>
+        <li>Type and select: <strong>\"Rebuild Container\"</strong></li>
+        <li>Wait 2-3 minutes for the rebuild to complete</li>
+        <li>Then run: <code>php admin/setup/init_db.php</code></li>
+    </ol>
+    <p>For detailed instructions, see: <a href='/ADMIN_SETUP.md'>ADMIN_SETUP.md</a></p>
+    ";
+    die($error_msg);
 }
 
 // Create database if it doesn't exist
