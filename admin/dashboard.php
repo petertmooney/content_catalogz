@@ -1568,7 +1568,28 @@ if ($invoices_result) {
             const clientCompany = document.getElementById('clientCompany').textContent;
             const clientEmail = document.getElementById('clientEmail').textContent;
             const clientPhone = document.getElementById('clientPhone').textContent;
-            const clientAddress = document.getElementById('clientAddress').value || 'N/A';
+            
+            // Get structured address
+            const addressStreet = document.getElementById('clientAddressStreet').value || '';
+            const addressLine2 = document.getElementById('clientAddressLine2').value || '';
+            const addressCity = document.getElementById('clientAddressCity').value || '';
+            const addressCounty = document.getElementById('clientAddressCounty').value || '';
+            const addressPostcode = document.getElementById('clientAddressPostcode').value || '';
+            const addressCountry = document.getElementById('clientAddressCountry').value || 'United Kingdom';
+            
+            // Format address
+            let formattedAddress = '';
+            if (addressStreet) formattedAddress += addressStreet + '<br>';
+            if (addressLine2) formattedAddress += addressLine2 + '<br>';
+            if (addressCity || addressCounty || addressPostcode) {
+                let cityLine = '';
+                if (addressCity) cityLine += addressCity;
+                if (addressCounty) cityLine += (cityLine ? ', ' : '') + addressCounty;
+                if (addressPostcode) cityLine += (cityLine ? ', ' : '') + addressPostcode;
+                formattedAddress += cityLine + '<br>';
+            }
+            if (addressCountry) formattedAddress += addressCountry;
+            if (!formattedAddress) formattedAddress = 'N/A';
             
             const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
             const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
@@ -1709,9 +1730,56 @@ if ($invoices_result) {
                         .print-btn:hover {
                             background: #ff85c1;
                         }
+                        .edit-btn {
+                            background: #667eea;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 16px;
+                            margin-bottom: 20px;
+                            margin-right: 10px;
+                        }
+                        .edit-btn:hover {
+                            background: #5568d3;
+                        }
+                        .save-btn {
+                            background: #28a745;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 16px;
+                            margin-bottom: 20px;
+                            margin-right: 10px;
+                            display: none;
+                        }
+                        .save-btn:hover {
+                            background: #218838;
+                        }
+                        .editable {
+                            border: 2px dashed transparent;
+                            padding: 2px 4px;
+                            min-width: 200px;
+                            display: inline-block;
+                        }
+                        .editable.editing {
+                            border-color: #ff69b4;
+                            background: #fff;
+                        }
+                        input.invoice-edit {
+                            width: 100%;
+                            padding: 4px 8px;
+                            border: 1px solid #ddd;
+                            border-radius: 4px;
+                        }
                     </style>
                 </head>
                 <body>
+                    <button class="edit-btn no-print" onclick="toggleEditMode()">✏️ Edit Invoice</button>
+                    <button class="save-btn no-print" id="saveInvoiceBtn" onclick="saveInvoiceEdits()">💾 Save Changes</button>
                     <button class="print-btn no-print" onclick="window.print()">🖨️ Print Invoice</button>
                     
                     <div class="invoice-header">
@@ -1730,7 +1798,7 @@ if ($invoices_result) {
                         <h3>Bill To:</h3>
                         <p><strong>${clientName}</strong></p>
                         ${clientCompany !== 'N/A' ? '<p>' + clientCompany + '</p>' : ''}
-                        <p>${clientAddress.replace(/\n/g, '<br>')}</p>
+                        <p>${formattedAddress}</p>
                         <p>Email: ${clientEmail}</p>
                         ${clientPhone !== 'N/A' ? '<p>Phone: ' + clientPhone + '</p>' : ''}
                     </div>
@@ -1766,6 +1834,46 @@ if ($invoices_result) {
                         <p>Thank you for your business!</p>
                         <p style="font-size: 12px;">Payment is due within 30 days of invoice date.</p>
                     </div>
+                    
+                    <script>
+                        let isEditMode = false;
+                        
+                        function toggleEditMode() {
+                            isEditMode = !isEditMode;
+                            const editBtn = document.querySelector('.edit-btn');
+                            const saveBtn = document.querySelector('.save-btn');
+                            
+                            if (isEditMode) {
+                                editBtn.style.display = 'none';
+                                saveBtn.style.display = 'inline-block';
+                                enableEditing();
+                            } else {
+                                editBtn.style.display = 'inline-block';
+                                saveBtn.style.display = 'none';
+                                disableEditing();
+                            }
+                        }
+                        
+                        function enableEditing() {
+                            // Make all text content editable
+                            document.querySelectorAll('.client-info p').forEach(el => {
+                                el.contentEditable = true;
+                                el.classList.add('editable', 'editing');
+                            });
+                        }
+                        
+                        function disableEditing() {
+                            document.querySelectorAll('.client-info p').forEach(el => {
+                                el.contentEditable = false;
+                                el.classList.remove('editing');
+                            });
+                        }
+                        
+                        function saveInvoiceEdits() {
+                            alert('Invoice changes saved! Note: This is a preview. To permanently update client details, edit them in the Client Details modal and regenerate the invoice.');
+                            toggleEditMode();
+                        }
+                    </script>
                 </body>
                 </html>
             `;

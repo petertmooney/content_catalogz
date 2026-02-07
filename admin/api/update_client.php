@@ -41,7 +41,7 @@ $servicesJson = json_encode($services);
 
 // Update the client information
 $stmt = $conn->prepare("UPDATE quotes SET address_street = ?, address_line2 = ?, address_city = ?, address_county = ?, address_postcode = ?, address_country = ?, services = ?, total_cost = ?, total_paid = ?, total_remaining = ? WHERE id = ?");
-$stmt->bind_param("sssssssdddI", $addressStreet, $addressLine2, $addressCity, $addressCounty, $addressPostcode, $addressCountry, $servicesJson, $totalCost, $totalPaid, $totalRemaining, $clientId);
+$stmt->bind_param("sssssssdddi", $addressStreet, $addressLine2, $addressCity, $addressCounty, $addressPostcode, $addressCountry, $servicesJson, $totalCost, $totalPaid, $totalRemaining, $clientId);
 
 if ($stmt->execute()) {
     echo json_encode([
