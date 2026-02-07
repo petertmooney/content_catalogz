@@ -3,7 +3,7 @@
 header('Content-Type: application/json');
 
 // Include database only (no auth needed for quote submission)
-include '../admin/config/db.php';
+include __DIR__ . '/../admin/config/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Invalid request method']);
