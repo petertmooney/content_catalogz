@@ -2644,7 +2644,7 @@ if ($invoices_result) {
                         container.innerHTML = data.notes.map(note => `
                             <div class="note-item ${note.is_important ? 'important' : ''}">
                                 ${note.is_important ? '<span class="note-important-badge">⭐ IMPORTANT</span>' : ''}
-                                <div class="note-text">${note.note_text}</div>
+                                <div class="note-text">${note.note}</div>
                                 <div class="note-meta">
                                     <span>📅 ${new Date(note.created_at).toLocaleString()} by ${note.created_by_username || 'Unknown'}</span>
                                     <a href="javascript:void(0)" class="note-delete" onclick="deleteNote(${note.id})">Delete</a>
@@ -2676,7 +2676,7 @@ if ($invoices_result) {
             
             const formData = {
                 client_id: document.getElementById('noteClientId').value,
-                note_text: document.getElementById('noteText').value,
+                note: document.getElementById('noteText').value,
                 is_important: document.getElementById('noteImportant').checked ? 1 : 0
             };
             

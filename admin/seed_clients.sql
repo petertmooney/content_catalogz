@@ -150,7 +150,7 @@ INSERT INTO activities (client_id, activity_type, subject, description, activity
 (5, 'email', 'Platform selection discussion', 'Sent comparison of Shopify vs WooCommerce', '2026-02-04 14:15:00', NULL, 1);
 
 -- Add some notes for the clients
-INSERT INTO client_notes (client_id, note_text, is_important, created_by) VALUES
+INSERT INTO client_notes (client_id, note, is_important, created_by) VALUES
 (1, 'Client prefers communication via email. Available for calls only on Tuesdays and Thursdays after 2pm.', 0, 1),
 (1, 'URGENT: Launch deadline is March 15th for major investor presentation. Team working on tight timeline.', 1, 1),
 (2, 'Very happy with the service. Mentioned he has connections with other restaurant owners who might need websites.', 0, 1),
