@@ -1265,11 +1265,14 @@ if ($invoices_result) {
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" class="btn btn-secondary" onclick="closeClientModal()">Close</button>
-                    <button type="button" class="btn btn-secondary" onclick="printInvoice()">🖨️ Print Invoice</button>
-                    <button type="button" class="btn btn-secondary" onclick="emailInvoice()">📧 Email Invoice</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                <div style="display: flex; gap: 10px; justify-content: space-between;">
+                    <button type="button" class="btn btn-danger" onclick="confirmDeleteClient()" title="Delete this client and all related data">🗑️ Delete Client</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeClientModal()">Close</button>
+                        <button type="button" class="btn btn-secondary" onclick="printInvoice()">🖨️ Print Invoice</button>
+                        <button type="button" class="btn btn-secondary" onclick="emailInvoice()">📧 Email Invoice</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
                 </div>
             </form>
             </div>
@@ -1375,6 +1378,32 @@ if ($invoices_result) {
         </div>
     </div>
     
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteClientModal" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header" style="background: #dc3545; color: white;">
+                <h3>⚠️ Confirm Delete</h3>
+                <button class="close-btn" onclick="closeDeleteClientModal()" style="color: white;">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <p style="margin-bottom: 15px;">Are you sure you want to delete <strong id="deleteClientName"></strong>?</p>
+                <p style="color: #dc3545; font-size: 14px; margin-bottom: 20px;">This will permanently delete:</p>
+                <ul style="margin-left: 20px; margin-bottom: 20px; color: #666;">
+                    <li>All invoices</li>
+                    <li>All activities</li>
+                    <li>All tasks</li>
+                    <li>All notes</li>
+                    <li>All tags</li>
+                </ul>
+                <p style="color: #dc3545; font-weight: bold;">This action cannot be undone!</p>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; padding: 15px 20px; border-top: 1px solid #ddd;">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteClientModal()">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="deleteClient()">Delete Client</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Log Activity Modal -->
     <div id="activityModal" class="modal">
         <div class="modal-content">
@@ -2171,6 +2200,45 @@ if ($invoices_result) {
 
         function closeClientModal() {
             document.getElementById('clientModal').classList.remove('show');
+        }
+
+        function confirmDeleteClient() {
+            const clientName = document.getElementById('clientModalName').textContent;
+            document.getElementById('deleteClientName').textContent = clientName;
+            document.getElementById('deleteClientModal').classList.add('show');
+        }
+
+        function closeDeleteClientModal() {
+            document.getElementById('deleteClientModal').classList.remove('show');
+        }
+
+        function deleteClient() {
+            const clientId = document.getElementById('clientId').value;
+            const clientName = document.getElementById('clientModalName').textContent;
+            
+            fetch('api/delete_client.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ client_id: clientId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Client "' + clientName + '" and all related data have been deleted.');
+                    closeDeleteClientModal();
+                    closeClientModal();
+                    loadQuotes(); // Refresh the clients list
+                    loadDashboardStats(); // Refresh stats
+                } else {
+                    alert('Error deleting client: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to delete client');
+            });
         }
 
         function addServiceRow(serviceName = '', serviceCost = 0) {
