@@ -125,7 +125,7 @@ if ($pages_result) {
         }
 
         .sidebar .submenu.open {
-            max-height: 200px;
+            max-height: 300px;
         }
 
         .sidebar .submenu a {
@@ -392,6 +392,7 @@ if ($pages_result) {
             <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'clients-submenu'); return false;">👥 Clients</a>
             <div class="submenu" id="clients-submenu">
                 <a href="#" onclick="showSection('clients'); return false;" id="nav-clients">📝 Quote Requests</a>
+                <a href="#" onclick="showSection('existing-clients'); return false;" id="nav-existing-clients">👤 Existing Clients</a>
             </div>
             
             <a href="#" onclick="showSection('html-files'); return false;" id="nav-html-files">📝 Edit Pages</a>
@@ -428,7 +429,8 @@ if ($pages_result) {
                 </div>
 
                 <div class="btn-group">
-                    <button class="btn btn-primary" onclick="showSection('clients')">View Clients</button>
+                    <button class="btn btn-primary" onclick="showSection('clients')">Quote Requests</button>
+                    <button class="btn btn-primary" onclick="showSection('existing-clients')">Existing Clients</button>
                     <button class="btn btn-primary" onclick="showSection('html-files')">Edit HTML Pages</button>
                     <button class="btn btn-primary" onclick="openAddPageModal()">+ Add Database Page</button>
                 </div>
@@ -487,6 +489,38 @@ if ($pages_result) {
                 </div>
 
                 <div id="quotes-list"></div>
+            </div>
+
+            <!-- Existing Clients Section -->
+            <div id="section-existing-clients" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h2>Existing Clients</h2>
+                    <p>Manage your active client relationships</p>
+                </div>
+
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Active Clients</h4>
+                        <p id="active-clients-count" style="font-size: 24px; font-weight: bold; color: #28a745;">0</p>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #17a2b8; font-size: 14px; margin-bottom: 5px;">Total Projects</h4>
+                        <p id="total-projects-count" style="font-size: 24px; font-weight: bold; color: #17a2b8;">0</p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                    <input type="text" id="searchClients" placeholder="Search by name, email, company..." style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ddd; width: 300px;" onkeyup="loadExistingClients()">
+                    <button class="btn btn-secondary" onclick="loadExistingClients()">Refresh</button>
+                    <button class="btn btn-primary" onclick="openAddClientModal()">+ Add New Client</button>
+                </div>
+
+                <div id="existing-clients-list">
+                    <div class="empty-state">
+                        <h3>No Active Clients Yet</h3>
+                        <p>Clients from completed quotes will appear here automatically, or you can add clients manually.</p>
+                    </div>
+                </div>
             </div>
 
             <!-- HTML Files Section -->
@@ -817,14 +851,18 @@ if ($pages_result) {
             }
             
             // Auto-expand submenu if section is in a submenu
-            if (sectionName === 'clients') {
+            if (sectionName === 'clients' || sectionName === 'existing-clients') {
                 const submenu = document.getElementById('clients-submenu');
                 const parent = document.querySelector('.sidebar .menu-parent');
                 if (submenu && !submenu.classList.contains('open')) {
                     submenu.classList.add('open');
                     parent.classList.add('open');
                 }
-                loadQuotes();
+                if (sectionName === 'clients') {
+                    loadQuotes();
+                } else if (sectionName === 'existing-clients') {
+                    loadExistingClients();
+                }
             }
             
             // Load HTML files if switching to that section
@@ -1087,6 +1125,83 @@ if ($pages_result) {
             .catch(error => {
                 alert('Network error: ' + error.message);
             });
+        }
+
+        // Load existing clients (from completed quotes)
+        function loadExistingClients() {
+            const search = document.getElementById('searchClients').value;
+            
+            // Fetch quotes with 'completed' status to show as existing clients
+            let url = 'api/get_quotes.php?status=completed';
+            if (search) {
+                url += '&search=' + encodeURIComponent(search);
+            }
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        displayExistingClients(data.quotes);
+                        document.getElementById('active-clients-count').textContent = data.quotes.length;
+                        document.getElementById('total-projects-count').textContent = data.stats.completed || 0;
+                    } else {
+                        console.error('Failed to load clients:', data.message);
+                        document.getElementById('existing-clients-list').innerHTML = '<div class="empty-state"><h3>Error Loading Clients</h3><p>' + (data.message || 'Unknown error') + '</p></div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading clients:', error);
+                    document.getElementById('existing-clients-list').innerHTML = '<div class="empty-state"><h3>Error Loading Clients</h3><p>Network error: ' + error.message + '</p></div>';
+                });
+        }
+
+        // Display existing clients in table
+        function displayExistingClients(clients) {
+            const container = document.getElementById('existing-clients-list');
+            
+            if (clients.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>No Active Clients Yet</h3><p>Clients from completed quotes will appear here automatically.</p></div>';
+                return;
+            }
+            
+            let html = '<div class="table-container"><table><thead><tr>';
+            html += '<th>Name</th><th>Company</th><th>Email</th><th>Phone</th><th>Service</th><th>Completed Date</th><th>Actions</th>';
+            html += '</tr></thead><tbody>';
+            
+            clients.forEach(client => {
+                const completedDate = new Date(client.updated_at || client.created_at).toLocaleDateString();
+                
+                html += `<tr>
+                    <td><strong>${escapeHtml(client.name)}</strong></td>
+                    <td>${client.company ? escapeHtml(client.company) : '<em>N/A</em>'}</td>
+                    <td><a href="mailto:${escapeHtml(client.email)}">${escapeHtml(client.email)}</a></td>
+                    <td>${client.phone ? escapeHtml(client.phone) : '<em>N/A</em>'}</td>
+                    <td>${escapeHtml(client.service)}</td>
+                    <td>${completedDate}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="viewClientDetails(${client.id})">View</button>
+                        <a href="mailto:${escapeHtml(client.email)}" class="btn btn-secondary btn-sm">Email</a>
+                    </td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        // View client details (reuse quote modal)
+        function viewClientDetails(clientId) {
+            openQuoteModal(clientId);
+        }
+
+        // Placeholder for add client modal
+        function openAddClientModal() {
+            alert('Add New Client feature coming soon! For now, clients are automatically added from completed quotes.');
         }
 
         // Load HTML files count and quotes on page load
