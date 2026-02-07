@@ -1314,6 +1314,66 @@ if ($invoices_result) {
         </div>
     </div>
     
+    <!-- Add New Client Modal -->
+    <div id="addClientModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3>Add New Client</h3>
+                <button class="close-btn" onclick="closeAddClientModal()">&times;</button>
+            </div>
+            <form id="addClientForm" onsubmit="saveNewClient(event)">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label for="newClientName">Full Name <span style="color: red;">*</span></label>
+                        <input type="text" id="newClientName" name="name" class="form-control" required placeholder="John Smith">
+                    </div>
+                    <div class="form-group">
+                        <label for="newClientEmail">Email <span style="color: red;">*</span></label>
+                        <input type="email" id="newClientEmail" name="email" class="form-control" required placeholder="john@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="newClientCompany">Company</label>
+                        <input type="text" id="newClientCompany" name="company" class="form-control" placeholder="Company Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="newClientPhone">Phone</label>
+                        <input type="text" id="newClientPhone" name="phone" class="form-control" placeholder="+44 123 456 7890">
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="newClientAddress">Address</label>
+                        <textarea id="newClientAddress" name="address" class="form-control" rows="2" placeholder="Full address"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="newClientService">Service Interested In</label>
+                        <select id="newClientService" name="service_type" class="form-control">
+                            <option value="">-- Select Service --</option>
+                            <option value="starter-pack">Starter Pack</option>
+                            <option value="growth-bundle">Growth Bundle</option>
+                            <option value="premium-suite">Premium Suite</option>
+                            <option value="custom">Custom Package</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="newClientStatus">Status</label>
+                        <select id="newClientStatus" name="status" class="form-control">
+                            <option value="new">New</option>
+                            <option value="contacted">Contacted</option>
+                            <option value="in_progress">In Progress</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="newClientNotes">Notes</label>
+                        <textarea id="newClientNotes" name="notes" class="form-control" rows="3" placeholder="Additional notes about this client..."></textarea>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddClientModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Client</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <!-- Log Activity Modal -->
     <div id="activityModal" class="modal">
         <div class="modal-content">
@@ -2609,9 +2669,49 @@ if ($invoices_result) {
             });
         }
 
-        // Placeholder for add client modal
+        // Add New Client modal functions
         function openAddClientModal() {
-            alert('Add New Client feature coming soon! For now, clients are automatically added from completed quotes.');
+            document.getElementById('addClientForm').reset();
+            document.getElementById('addClientModal').classList.add('show');
+        }
+        
+        function closeAddClientModal() {
+            document.getElementById('addClientModal').classList.remove('show');
+        }
+        
+        function saveNewClient(event) {
+            event.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('newClientName').value,
+                email: document.getElementById('newClientEmail').value,
+                company: document.getElementById('newClientCompany').value,
+                phone: document.getElementById('newClientPhone').value,
+                address: document.getElementById('newClientAddress').value,
+                service_type: document.getElementById('newClientService').value,
+                status: document.getElementById('newClientStatus').value,
+                notes: document.getElementById('newClientNotes').value
+            };
+            
+            fetch('api/add_client.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Client added successfully!');
+                    closeAddClientModal();
+                    loadExistingClients();
+                } else {
+                    alert('Error adding client: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error adding client. Please try again.');
+            });
         }
 
         // Invoice stats and search functions
