@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $quote_id = intval($_POST['id'] ?? 0);
-$status = trim($_POST['status'] ?? '');
+$status = strtolower(trim($_POST['status'] ?? ''));
 $notes = trim($_POST['notes'] ?? '');
 
 if ($quote_id <= 0) {
@@ -27,9 +27,13 @@ if ($quote_id <= 0) {
     exit;
 }
 
+// Normalize status - handle spaces and various formats
+$status = str_replace(' ', '_', $status);
+$status = str_replace('-', '_', $status);
+
 $valid_statuses = ['new', 'contacted', 'in_progress', 'completed', 'declined'];
-if (!in_array($status, $valid_statuses)) {
-    echo json_encode(['success' => false, 'message' => 'Invalid status']);
+if (empty($status) || !in_array($status, $valid_statuses)) {
+    echo json_encode(['success' => false, 'message' => 'Invalid status: "' . $status . '". Valid options: ' . implode(', ', $valid_statuses)]);
     exit;
 }
 
