@@ -4207,21 +4207,51 @@ invoices.forEach(invoice => {
                                         <p>Thank you for your business!</p>
                                         <p style="font-size: 12px;">Payment is due within 30 days of invoice date.</p>
                                     </div>
-                                    <div style="text-align:right; margin-top:20px; display: flex; gap: 10px; justify-content: flex-end;">
-                                        <button class="btn btn-primary" type="submit">Save Changes</button>
-                                        <button class="btn btn-secondary" type="button" onclick="closeInvoiceModal()">Close</button>
-                                        <button class="btn btn-secondary" type="button" onclick="printInvoiceFromModal()">🖨️ Print</button>
-                                        <button class="btn btn-secondary" type="button" onclick="emailInvoiceFromModal()">📧 Email</button>
+                                    <div style="text-align:right; margin-top:20px; display: flex; gap: 8px; justify-content: flex-end;">
+                                        <button class="btn btn-primary btn-sm" type="submit">Save Changes</button>
+                                        <button class="btn btn-secondary btn-sm" type="button" onclick="closeInvoiceModal()">Close</button>
+                                        <button class="btn btn-secondary btn-sm" type="button" onclick="printInvoiceFromModal()">🖨️ Print</button>
+                                        <button class="btn btn-secondary btn-sm" type="button" onclick="emailInvoiceFromModal()">📧 Email</button>
                                     </div>
                                             // Print and Email handlers for modal (attach only once)
                                             if (!window.printInvoiceFromModal) {
                                                 window.printInvoiceFromModal = function() {
+                                                    // Only print the invoice content, not the modal or form controls
                                                     const modal = document.getElementById('invoiceModalBody');
+                                                    // Clone the modal content and remove form controls/buttons
+                                                    const clone = modal.cloneNode(true);
+                                                    // Remove all .btn, input[type=button], input[type=submit], select, textarea, form tags
+                                                    clone.querySelectorAll('button, .btn, input, select, textarea, form').forEach(el => {
+                                                        if (el.tagName.toLowerCase() === 'input' && (el.type === 'text' || el.type === 'number' || el.type === 'date')) {
+                                                            // Replace input with span showing value
+                                                            const span = document.createElement('span');
+                                                            span.textContent = el.value;
+                                                            el.parentNode.replaceChild(span, el);
+                                                        } else if (el.tagName.toLowerCase() === 'select') {
+                                                            const span = document.createElement('span');
+                                                            span.textContent = el.options[el.selectedIndex]?.text || '';
+                                                            el.parentNode.replaceChild(span, el);
+                                                        } else if (el.tagName.toLowerCase() === 'textarea') {
+                                                            const span = document.createElement('span');
+                                                            span.textContent = el.value;
+                                                            el.parentNode.replaceChild(span, el);
+                                                        } else {
+                                                            el.remove();
+                                                        }
+                                                    });
+                                                    // Remove form tags
+                                                    clone.querySelectorAll('form').forEach(f => {
+                                                        const parent = f.parentNode;
+                                                        while (f.firstChild) parent.insertBefore(f.firstChild, f);
+                                                        parent.removeChild(f);
+                                                    });
+                                                    // Open print window with only invoice content and styles
                                                     const printWindow = window.open('', '', 'width=900,height=700');
                                                     printWindow.document.write('<html><head><title>Print Invoice</title>');
                                                     printWindow.document.write('<link rel="stylesheet" href="/assets/css/styles.css">');
-                                                    printWindow.document.write('</head><body >');
-                                                    printWindow.document.write(modal.innerHTML);
+                                                    printWindow.document.write('<style>body{background:white!important;color:#222!important;}</style>');
+                                                    printWindow.document.write('</head><body>');
+                                                    printWindow.document.write(clone.innerHTML);
                                                     printWindow.document.write('</body></html>');
                                                     printWindow.document.close();
                                                     printWindow.focus();
