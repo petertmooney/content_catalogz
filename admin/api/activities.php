@@ -16,7 +16,7 @@ if ($method === 'GET') {
     
     if ($clientId) {
         $stmt = $conn->prepare("
-            SELECT a.*, u.username as created_by_username 
+            SELECT a.*, u.username as created_by_username, u.full_name as created_by_name 
             FROM activities a 
             LEFT JOIN users u ON a.created_by = u.id 
             WHERE a.client_id = ? 
@@ -26,7 +26,9 @@ if ($method === 'GET') {
     } else {
         // Get all recent activities
         $stmt = $conn->prepare("
-            SELECT a.*, q.name as client_name, u.username as created_by_username 
+            SELECT a.*, q.name as client_name, q.company, 
+                   u.username as created_by_username, 
+                   u.full_name as created_by_name 
             FROM activities a 
             LEFT JOIN quotes q ON a.client_id = q.id 
             LEFT JOIN users u ON a.created_by = u.id 

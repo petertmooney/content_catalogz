@@ -1017,6 +1017,7 @@ if ($invoices_result) {
                     <table style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden;">
                         <thead>
                             <tr style="background: #f8f9fa;">
+                                <th style="padding: 15px; text-align: left; border-bottom: 2px solid #ddd;">Full Name</th>
                                 <th style="padding: 15px; text-align: left; border-bottom: 2px solid #ddd;">Username</th>
                                 <th style="padding: 15px; text-align: left; border-bottom: 2px solid #ddd;">Email</th>
                                 <th style="padding: 15px; text-align: left; border-bottom: 2px solid #ddd;">Role</th>
@@ -1026,7 +1027,7 @@ if ($invoices_result) {
                         </thead>
                         <tbody id="users-list-tbody">
                             <tr>
-                                <td colspan="5" style="padding: 40px; text-align: center; color: #999;">
+                                <td colspan="6" style="padding: 40px; text-align: center; color: #999;">
                                     Loading users...
                                 </td>
                             </tr>
@@ -1862,6 +1863,11 @@ if ($invoices_result) {
             </div>
             <form id="createUserForm" onsubmit="createUser(event)">
                 <div class="form-group">
+                    <label for="newUserFullName">Full Name *</label>
+                    <input type="text" id="newUserFullName" class="form-control" required placeholder="e.g., John Smith">
+                </div>
+                
+                <div class="form-group">
                     <label for="newUsername">Username *</label>
                     <input type="text" id="newUsername" class="form-control" required minlength="3" placeholder="e.g., john_admin" pattern="[a-zA-Z0-9_]+" title="Only letters, numbers, and underscores">
                     <small style="color: #666;">Minimum 3 characters, letters, numbers, and underscores only</small>
@@ -1909,6 +1915,11 @@ if ($invoices_result) {
             </div>
             <form id="editUserForm" onsubmit="updateUser(event)">
                 <input type="hidden" id="editUserId">
+                
+                <div class="form-group">
+                    <label for="editUserFullName">Full Name *</label>
+                    <input type="text" id="editUserFullName" class="form-control" required placeholder="e.g., John Smith">
+                </div>
                 
                 <div class="form-group">
                     <label for="editUsername">Username</label>
@@ -3965,7 +3976,7 @@ if ($invoices_result) {
                                     <div class="activity-meta">
                                         <span>📅 ${new Date(activity.activity_date).toLocaleString()}</span>
                                         ${activity.duration_minutes ? `<span>⏱️ ${activity.duration_minutes} min</span>` : ''}
-                                        <span>👤 ${activity.created_by_username || 'System'}</span>
+                                        <span>👤 ${escapeHtml(activity.created_by_name || activity.created_by_username || 'System')}</span>
                                     </div>
                                 </div>
                             `;
@@ -4066,7 +4077,7 @@ if ($invoices_result) {
                                 <div class="note-text">${escapeHtml(note.note_text || '')}</div>
                                 <div class="note-meta">
                                     <span>📅 ${new Date(note.created_at).toLocaleString()}</span>
-                                    <span>👤 ${escapeHtml(note.created_by_username || 'System')}</span>
+                                    <span>👤 ${escapeHtml(note.created_by_name || note.created_by_username || 'System')}</span>
                                     <a href="javascript:void(0)" class="note-delete" onclick="deleteNote(${note.id})">Delete</a>
                                 </div>
                             </div>
@@ -4470,7 +4481,7 @@ if ($invoices_result) {
                             <span>${statusBadges[task.status]}</span>
                             ${task.due_date ? `<span>📅 Due: ${new Date(task.due_date).toLocaleDateString()}</span>` : ''}
                             ${task.client_name ? `<span>👤 ${task.client_name}</span>` : '<span>👤 General Task</span>'}
-                            ${task.assigned_to_username ? `<span>👷 ${task.assigned_to_username}</span>` : ''}
+                            ${task.assigned_to_name || task.assigned_to_username ? `<span>👷 ${escapeHtml(task.assigned_to_name || task.assigned_to_username)}</span>` : ''}
                         </div>
                     </div>
                     <div class="task-actions">
@@ -4607,7 +4618,7 @@ if ($invoices_result) {
                     if (!data.success || !data.users || data.users.length === 0) {
                         tbody.innerHTML = `
                             <tr>
-                                <td colspan="5" style="padding: 40px; text-align: center; color: #999;">
+                                <td colspan="6" style="padding: 40px; text-align: center; color: #999;">
                                     No users found. Click "Create New User" to add your first user.
                                 </td>
                             </tr>
@@ -4622,7 +4633,8 @@ if ($invoices_result) {
                         
                         return `
                             <tr style="border-bottom: 1px solid #eee;">
-                                <td style="padding: 15px; font-weight: 500;">${escapeHtml(user.username)}</td>
+                                <td style="padding: 15px; font-weight: 500;">${escapeHtml(user.full_name || 'N/A')}</td>
+                                <td style="padding: 15px;">${escapeHtml(user.username)}</td>
                                 <td style="padding: 15px;">${escapeHtml(user.email || 'N/A')}</td>
                                 <td style="padding: 15px;">
                                     <span style="background: ${roleBadgeColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
@@ -4646,7 +4658,7 @@ if ($invoices_result) {
                     console.error('Error loading users:', err);
                     document.getElementById('users-list-tbody').innerHTML = `
                         <tr>
-                            <td colspan="5" style="padding: 40px; text-align: center; color: #dc3545;">
+                            <td colspan="6" style="padding: 40px; text-align: center; color: #dc3545;">
                                 Error loading users. Please refresh the page.
                             </td>
                         </tr>
@@ -4666,6 +4678,7 @@ if ($invoices_result) {
         function createUser(event) {
             event.preventDefault();
             
+            const fullName = document.getElementById('newUserFullName').value;
             const username = document.getElementById('newUsername').value;
             const email = document.getElementById('newUserEmail').value;
             const password = document.getElementById('newUserPassword').value;
@@ -4681,6 +4694,7 @@ if ($invoices_result) {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
+                    full_name: fullName,
                     username: username,
                     email: email,
                     password: password,
@@ -4710,6 +4724,7 @@ if ($invoices_result) {
                     if (data.success && data.users && data.users.length > 0) {
                         const user = data.users[0];
                         document.getElementById('editUserId').value = user.id;
+                        document.getElementById('editUserFullName').value = user.full_name || '';
                         document.getElementById('editUsername').value = user.username;
                         document.getElementById('editUserEmail').value = user.email || '';
                         document.getElementById('editUserRole').value = user.role || 'admin';
@@ -4734,6 +4749,7 @@ if ($invoices_result) {
             event.preventDefault();
             
             const userId = document.getElementById('editUserId').value;
+            const fullName = document.getElementById('editUserFullName').value;
             const email = document.getElementById('editUserEmail').value;
             const password = document.getElementById('editUserPassword').value;
             const passwordConfirm = document.getElementById('editUserPasswordConfirm').value;
@@ -4746,6 +4762,7 @@ if ($invoices_result) {
             
             const updateData = {
                 id: userId,
+                full_name: fullName,
                 email: email,
                 role: role
             };

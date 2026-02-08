@@ -21,7 +21,7 @@ if ($method === 'GET') {
     }
     
     $stmt = $conn->prepare("
-        SELECT n.*, u.username as created_by_username 
+        SELECT n.*, u.username as created_by_username, u.full_name as created_by_name 
         FROM client_notes n 
         LEFT JOIN users u ON n.created_by = u.id 
         WHERE n.client_id = ? 

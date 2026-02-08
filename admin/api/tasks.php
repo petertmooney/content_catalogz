@@ -18,7 +18,7 @@ if ($method === 'GET') {
     $clientId = isset($_GET['client_id']) ? intval($_GET['client_id']) : null;
     $status = isset($_GET['status']) ? $_GET['status'] : null;
     
-    $sql = "SELECT t.*, q.name as client_name, q.company FROM tasks t LEFT JOIN quotes q ON t.client_id = q.id WHERE 1=1";
+    $sql = "SELECT t.*, q.name as client_name, q.company, u.username as assigned_to_username, u.full_name as assigned_to_name FROM tasks t LEFT JOIN quotes q ON t.client_id = q.id LEFT JOIN users u ON t.assigned_to = u.id WHERE 1=1";
     $params = [];
     $types = '';
     
