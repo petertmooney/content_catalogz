@@ -4119,16 +4119,61 @@ invoices.forEach(invoice => {
                         .then(data => {
                             if (data.success && data.invoice) {
                                 const inv = data.invoice;
+                                // Use print preview style
                                 modalBody.innerHTML = `
-                                    <h4>Invoice #${inv.invoice_number}</h4>
-                                    <p><strong>Client ID:</strong> ${inv.client_id}</p>
-                                    <p><strong>Date:</strong> ${inv.invoice_date}</p>
-                                    <p><strong>Total Cost:</strong> £${parseFloat(inv.total_cost).toFixed(2)}</p>
-                                    <p><strong>Total Paid:</strong> £${parseFloat(inv.total_paid).toFixed(2)}</p>
-                                    <p><strong>Balance Due:</strong> £${parseFloat(inv.total_remaining).toFixed(2)}</p>
-                                    <p><strong>Status:</strong> ${inv.status}</p>
-                                    <p><strong>Notes:</strong> ${inv.notes ? inv.notes : '<em>None</em>'}</p>
-                                    <button class="btn btn-secondary" onclick="closeInvoiceModal()">Close</button>
+                                    <div class="invoice-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                                        <div class="company-info">
+                                            <img src="/assets/images/LogoPink.png" alt="Content Catalogz" style="height: 75px; margin-bottom: 10px;">
+                                            <p>Professional Content Services</p>
+                                        </div>
+                                        <div class="invoice-details">
+                                            <h2 style="margin: 0; color: #ff69b4;">INVOICE</h2>
+                                            <p><strong>Invoice No:</strong> ${inv.invoice_number}</p>
+                                            <p><strong>Date:</strong> ${inv.invoice_date}</p>
+                                        </div>
+                                    </div>
+                                    <div class="client-info" style="margin-bottom: 20px;">
+                                        <h3>Bill To:</h3>
+                                        <p><strong>${inv.name || ''}</strong></p>
+                                        ${inv.company && inv.company !== 'none' ? `<p>${inv.company}</p>` : ''}
+                                        <p>Email: ${inv.email || ''}</p>
+                                        ${inv.phone ? `<p>Phone: ${inv.phone}</p>` : ''}
+                                    </div>
+                                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                                        <thead>
+                                            <tr>
+                                                <th style="text-align:left; border-bottom: 1px solid #ddd;">Service Description</th>
+                                                <th style="text-align:right; border-bottom: 1px solid #ddd;">Amount (GBP)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Content Services</td>
+                                                <td style="text-align:right;">£${parseFloat(inv.total_cost).toFixed(2)}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                                        <tr>
+                                            <td><strong>Total Cost:</strong></td>
+                                            <td style="text-align: right;">£${parseFloat(inv.total_cost).toFixed(2)}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Total Paid:</strong></td>
+                                            <td style="text-align: right;">£${parseFloat(inv.total_paid).toFixed(2)}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Amount Due:</strong></td>
+                                            <td style="text-align: right;">£${parseFloat(inv.total_remaining).toFixed(2)}</td>
+                                        </tr>
+                                    </table>
+                                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666;">
+                                        <p>Thank you for your business!</p>
+                                        <p style="font-size: 12px;">Payment is due within 30 days of invoice date.</p>
+                                    </div>
+                                    <div style="text-align:right; margin-top:20px;">
+                                        <button class="btn btn-secondary" onclick="closeInvoiceModal()">Close</button>
+                                    </div>
                                 `;
                             } else {
                                 modalBody.innerHTML = '<p style="color:red;">Failed to load invoice details.</p>';
