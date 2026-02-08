@@ -4110,9 +4110,34 @@ invoices.forEach(invoice => {
 
         // ==================== Invoice Modal Handlers ====================
         function openInvoiceModal(invoiceId) {
-          // TODO: Fetch invoice details via AJAX and populate modal
-          document.getElementById('invoiceModalBody').innerHTML = '<p>Loading invoice #' + invoiceId + '...</p>';
-          document.getElementById('invoiceModal').classList.add('show');
+                    const modalBody = document.getElementById('invoiceModalBody');
+                    modalBody.innerHTML = '<p>Loading invoice #' + invoiceId + '...</p>';
+                    document.getElementById('invoiceModal').classList.add('show');
+
+                    fetch('api/get_invoice.php?id=' + encodeURIComponent(invoiceId))
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success && data.invoice) {
+                                const inv = data.invoice;
+                                modalBody.innerHTML = `
+                                    <h4>Invoice #${inv.invoice_number}</h4>
+                                    <p><strong>Client ID:</strong> ${inv.client_id}</p>
+                                    <p><strong>Date:</strong> ${inv.invoice_date}</p>
+                                    <p><strong>Total Cost:</strong> £${parseFloat(inv.total_cost).toFixed(2)}</p>
+                                    <p><strong>Total Paid:</strong> £${parseFloat(inv.total_paid).toFixed(2)}</p>
+                                    <p><strong>Balance Due:</strong> £${parseFloat(inv.total_remaining).toFixed(2)}</p>
+                                    <p><strong>Status:</strong> ${inv.status}</p>
+                                    <p><strong>Notes:</strong> ${inv.notes ? inv.notes : '<em>None</em>'}</p>
+                                    <button class="btn btn-secondary" onclick="closeInvoiceModal()">Close</button>
+                                `;
+                            } else {
+                                modalBody.innerHTML = '<p style="color:red;">Failed to load invoice details.</p>';
+                            }
+                        })
+                        .catch(err => {
+                            modalBody.innerHTML = '<p style="color:red;">Error loading invoice details.</p>';
+                            console.error(err);
+                        });
         }
         function closeInvoiceModal() {
           document.getElementById('invoiceModal').classList.remove('show');
