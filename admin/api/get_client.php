@@ -22,8 +22,8 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($row = $result->fetch_assoc()) {
-    // Decode services JSON
-    if ($row['services']) {
+    // Check if services column exists and decode JSON if present
+    if (isset($row['services']) && $row['services']) {
         $row['services'] = json_decode($row['services'], true);
     } else {
         $row['services'] = [];
