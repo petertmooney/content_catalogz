@@ -33,8 +33,14 @@ $name = trim($data['name'] ?? '');
 $email = trim($data['email'] ?? '');
 $company = trim($data['company'] ?? '');
 $phone = trim($data['phone'] ?? '');
-$address = trim($data['address'] ?? '');
-$serviceType = trim($data['service_type'] ?? '');
+$address_street = trim($data['address_street'] ?? '');
+$address_line2 = trim($data['address_line2'] ?? '');
+$address_city = trim($data['address_city'] ?? '');
+$address_county = trim($data['address_county'] ?? '');
+$address_postcode = trim($data['address_postcode'] ?? '');
+$address_country = trim($data['address_country'] ?? 'Ireland');
+$message = trim($data['message'] ?? '');
+$service = trim($data['service'] ?? '');
 $status = trim($data['status'] ?? 'new');
 $notes = trim($data['notes'] ?? '');
 
@@ -66,8 +72,8 @@ if ($result->num_rows > 0) {
 $stmt->close();
 
 // Insert the new client into quotes table - use correct column names
-$stmt = $conn->prepare("INSERT INTO quotes (name, email, company, phone, address_street, service, status, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
-$stmt->bind_param("ssssssss", $name, $email, $company, $phone, $address, $serviceType, $status, $notes);
+$stmt = $conn->prepare("INSERT INTO quotes (name, email, company, phone, address_street, address_line2, address_city, address_county, address_postcode, address_country, message, service, status, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+$stmt->bind_param("ssssssssssssss", $name, $email, $company, $phone, $address_street, $address_line2, $address_city, $address_county, $address_postcode, $address_country, $message, $service, $status, $notes);
 
 if ($stmt->execute()) {
     $clientId = $conn->insert_id;
