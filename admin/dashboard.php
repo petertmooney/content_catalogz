@@ -4139,8 +4139,9 @@ invoices.forEach(invoice => {
                         .then(data => {
                             if (data.success && data.invoice) {
                                 const inv = data.invoice;
-                                // Use print preview style
-                                modalBody.innerHTML = `
+                                // Render the invoice form cleanly
+                                modalBody.innerHTML = '';
+                                modalBody.insertAdjacentHTML('afterbegin', `
                                     <form id="editInvoiceForm" onsubmit="return false;">
                                     <div class="invoice-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
                                         <div class="company-info">
@@ -4213,11 +4214,8 @@ invoices.forEach(invoice => {
                                         <button class="btn btn-secondary btn-sm" type="button" onclick="printInvoiceFromModal()">🖨️ Print</button>
                                         <button class="btn btn-secondary btn-sm" type="button" onclick="emailInvoiceFromModal()">📧 Email</button>
                                     </div>
-                                            // Print and Email handlers for modal (attach only once)
-                                            if (!window.printInvoiceFromModal) {
-                                                window.printInvoiceFromModal = function() {
-                                                    const modal = document.getElementById('invoiceModalBody');
-                                                    const clone = modal.cloneNode(true);
+                                    </form>
+                                `);
                                                     // Replace form controls with plain text for printing
                                                     clone.querySelectorAll('button, .btn, input, select, textarea').forEach(el => {
                                                         if (el.tagName.toLowerCase() === 'input' && (el.type === 'text' || el.type === 'number' || el.type === 'date')) {
@@ -4312,6 +4310,14 @@ invoices.forEach(invoice => {
         }
         function closeInvoiceModal() {
           document.getElementById('invoiceModal').classList.remove('show');
+          // Restore dashboard style in case it was lost
+          document.body.style.background = '#f5f5f5';
+          document.body.style.color = '#222';
+          // Re-apply dashboard section visibility and nav highlight
+          showSection('dashboard');
+          // Optionally reload stats if needed
+          if (typeof loadInvoiceStats === 'function') loadInvoiceStats();
+          if (typeof showFilteredInvoices === 'function') showFilteredInvoices('all');
         }
         function deleteInvoice(invoiceId) {
                     if (confirm('Are you sure you want to delete this invoice?')) {
