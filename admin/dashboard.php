@@ -4189,7 +4189,14 @@ invoices.forEach(invoice => {
                                         </tr>
                                         <tr>
                                             <td><strong>Status:</strong></td>
-                                            <td><input type="text" name="status" value="${inv.status}" style="width:120px;"></td>
+                                            <td>
+                                                <select name="status" style="width: 130px;">
+                                                    <option value="outstanding" ${inv.status === 'outstanding' ? 'selected' : ''}>Outstanding</option>
+                                                    <option value="overdue" ${inv.status === 'overdue' ? 'selected' : ''}>Overdue</option>
+                                                    <option value="paid" ${inv.status === 'paid' ? 'selected' : ''}>Paid</option>
+                                                    <option value="cancelled" ${inv.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                                                </select>
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td><strong>Notes:</strong></td>
