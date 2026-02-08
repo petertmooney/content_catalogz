@@ -783,7 +783,6 @@ if ($invoices_result) {
             
             <a href="export.php" id="nav-export" style="border-top: 1px solid #444; margin-top: 10px; padding-top: 10px;">📦 Export Website</a>
             <a href="#" onclick="openMenuCustomizationModal(); return false;" id="nav-customize-menu">⚙️ Customize Menu</a>
-                        <a href="#" onclick="openDashboardCustomizationModal(); return false;" id="nav-customize-dashboard">🛠️ Customize Dashboard</a>
             <a href="/" target="_blank" id="nav-view-site">🌐 View Site</a>
             <a href="api/logout.php" id="nav-logout">🚪 Logout</a>
         </div>
@@ -5585,8 +5584,7 @@ invoices.forEach(invoice => {
                 {id: 'nav-users-list', label: '📋 View All Users', section: 'users-list'},
                 {id: 'nav-create-user', label: '➕ Create User', action: 'openCreateUserModal()'}
             ]},
-            {id: 'nav-export', label: '📦 Export Website', section: 'export', type: 'link'},
-            {id: 'nav-customize-dashboard', label: '🛠️ Customize Dashboard', section: 'customize-dashboard', type: 'link'}
+            {id: 'nav-export', label: '📦 Export Website', section: 'export', type: 'link'}
         ];
         
         function openMenuCustomizationModal() {
