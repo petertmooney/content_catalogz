@@ -116,7 +116,7 @@ elseif ($method === 'PUT') {
 
 // DELETE - Remove note
 elseif ($method === 'DELETE') {
-    parse_str(file_get_contents("php://input"), $data);
+    $data = json_decode(file_get_contents('php://input'), true);
     $noteId = isset($data['id']) ? intval($data['id']) : null;
     
     if (!$noteId) {
