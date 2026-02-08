@@ -4118,10 +4118,26 @@ invoices.forEach(invoice => {
           document.getElementById('invoiceModal').classList.remove('show');
         }
         function deleteInvoice(invoiceId) {
-          if (confirm('Are you sure you want to delete this invoice?')) {
-            // TODO: Implement AJAX delete
-            alert('Delete invoice ' + invoiceId + ' (not yet implemented)');
-          }
+                    if (confirm('Are you sure you want to delete this invoice?')) {
+                        fetch('api/delete_invoice.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ invoice_id: invoiceId })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Invoice deleted successfully.');
+                                showFilteredInvoices('all');
+                            } else {
+                                alert('Failed to delete invoice: ' + (data.message || 'Unknown error'));
+                            }
+                        })
+                        .catch(err => {
+                            alert('Error deleting invoice.');
+                            console.error(err);
+                        });
+                    }
         }
         
         // Load all dashboard stats
