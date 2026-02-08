@@ -20,8 +20,9 @@ $row = $result->fetch_assoc();
 $stats['outstanding_count'] = intval($row['count']);
 $stats['outstanding_amount'] = floatval($row['amount']);
 
-// Overdue invoices (due_date < today and total_remaining > 0)
-$result = $conn->query("SELECT COUNT(*) as count, COALESCE(SUM(total_remaining), 0) as amount FROM invoices WHERE total_remaining > 0 AND due_date < CURDATE()");
+// Overdue invoices (invoice_date + 30 days < today and total_remaining > 0)
+// Assumes invoices are due 30 days from invoice date
+$result = $conn->query("SELECT COUNT(*) as count, COALESCE(SUM(total_remaining), 0) as amount FROM invoices WHERE total_remaining > 0 AND DATE_ADD(invoice_date, INTERVAL 30 DAY) < CURDATE()");
 $row = $result->fetch_assoc();
 $stats['overdue_count'] = intval($row['count']);
 $stats['overdue_amount'] = floatval($row['amount']);

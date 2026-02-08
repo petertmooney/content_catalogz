@@ -31,6 +31,8 @@ if ($filter === 'outstanding') {
     $sql .= " AND i.total_remaining > 0 AND DATE_ADD(i.invoice_date, INTERVAL 30 DAY) < CURDATE()";
 } elseif ($filter === 'paid') {
     $sql .= " AND i.total_remaining = 0";
+} elseif ($filter === 'all') {
+    // No filter, show all invoices
 }
 
 if (!empty($searchQuery)) {
