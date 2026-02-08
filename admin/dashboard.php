@@ -743,9 +743,9 @@ if ($invoices_result) {
                 <a href="#" onclick="openCreateUserModal(); return false;" id="nav-create-user">➕ Create User</a>
             </div>
             
-            <a href="#" onclick="openMenuCustomizationModal(); return false;" style="border-top: 1px solid #444; margin-top: 10px; padding-top: 10px;">⚙️ Customize Menu</a>
-            <a href="/" target="_blank">🌐 View Site</a>
-            <a href="api/logout.php">🚪 Logout</a>
+            <a href="#" onclick="openMenuCustomizationModal(); return false;" id="nav-customize-menu" style="border-top: 1px solid #444; margin-top: 10px; padding-top: 10px;">⚙️ Customize Menu</a>
+            <a href="/" target="_blank" id="nav-view-site">🌐 View Site</a>
+            <a href="api/logout.php" id="nav-logout">🚪 Logout</a>
         </div>
 
         <div class="main-content">
@@ -5215,29 +5215,24 @@ if ($invoices_result) {
             const sidebar = document.querySelector('.sidebar');
             if (!sidebar) return;
             
-            // Get all links and submenus
+            // Get all links and submenus with IDs
             const elements = {};
             sidebar.querySelectorAll('a, .submenu').forEach(el => {
-                if (el.id) elements[el.id] = el;
+                if (el.id) elements[el.id] = el.cloneNode(true);
             });
             
-            // Find footer elements (customize menu, view site, logout)
-            const customizeMenuLink = Array.from(sidebar.children).find(el => 
-                el.textContent && el.textContent.includes('Customize Menu')
-            );
-            const viewSiteLink = Array.from(sidebar.children).find(el => 
-                el.textContent && el.textContent.includes('View Site')
-            );
-            const logoutLink = Array.from(sidebar.children).find(el => 
-                el.textContent && el.textContent.includes('Logout') && !el.querySelector
-            );
+            // Preserve footer elements
+            const customizeMenu = elements['nav-customize-menu'];
+            const viewSite = elements['nav-view-site'];
+            const logout = elements['nav-logout'];
             
+            // Clear and rebuild sidebar
             sidebar.innerHTML = '';
             
-            // Rebuild in new order
+            // Add items in custom order
             order.forEach(item => {
                 if (item.type === 'parent' && item.id) {
-                    // Add parent menu link
+                    // Recreate parent menu link
                     const parent = document.createElement('a');
                     parent.href = '#';
                     parent.className = 'menu-parent';
@@ -5250,17 +5245,23 @@ if ($invoices_result) {
                     
                     // Add submenu if exists
                     if (elements[item.id]) {
-                        sidebar.appendChild(elements[item.id]);
+                        const submenu = elements[item.id].cloneNode(true);
+                        sidebar.appendChild(submenu);
                     }
                 } else if (item.id && elements[item.id] && !item.id.includes('submenu')) {
-                    sidebar.appendChild(elements[item.id]);
+                    const link = elements[item.id].cloneNode(true);
+                    sidebar.appendChild(link);
                 }
             });
             
-            // Add back footer links at the end
-            if (customizeMenuLink) sidebar.appendChild(customizeMenuLink);
-            if (viewSiteLink) sidebar.appendChild(viewSiteLink);
-            if (logoutLink) sidebar.appendChild(logoutLink);
+            // Add footer links at the end (always in this order)
+            if (customizeMenu) {
+                const cm = customizeMenu.cloneNode(true);
+                cm.onclick = (e) => { openMenuCustomizationModal(); return false; };
+                sidebar.appendChild(cm);
+            }
+            if (viewSite) sidebar.appendChild(viewSite.cloneNode(true));
+            if (logout) sidebar.appendChild(logout.cloneNode(true));
         }
         
         // Load and apply saved menu order on page load
