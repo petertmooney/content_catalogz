@@ -53,6 +53,30 @@ if ($invoices_result) {
             align-items: center;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
+        
+        .navbar-left {
+            flex: 1;
+        }
+        
+        .navbar-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .navbar-center h2 {
+            font-size: 20px;
+            margin: 0;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        
+        .navbar-right {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+        }
 
         .navbar h1 {
             font-size: 24px;
@@ -60,8 +84,8 @@ if ($invoices_result) {
         }
         
         .navbar h1 img {
-            height: 52px;
-            width: 80px;
+            height: 59px;
+            width: 250px;
             display: block;
         }
 
@@ -705,12 +729,19 @@ if ($invoices_result) {
 <body>
     
     <div class="navbar">
-        <h1><img src="../assets/images/LogoPink.png" alt="Content Catalogz"></h1>
-        <div class="user-info">
-            <span>Welcome, <strong><?php echo escapeHtml($user['username']); ?></strong></span>
-            <form method="POST" action="api/logout.php" style="margin: 0;">
-                <button type="submit" class="logout-btn">Logout</button>
-            </form>
+        <div class="navbar-left">
+            <h1><img src="../assets/images/LogoPink.png" alt="Content Catalogz"></h1>
+        </div>
+        <div class="navbar-center">
+            <h2>Administration Panel</h2>
+        </div>
+        <div class="navbar-right">
+            <div class="user-info">
+                <span>Welcome, <strong><?php echo escapeHtml($user['username']); ?></strong></span>
+                <form method="POST" action="api/logout.php" style="margin: 0;">
+                    <button type="submit" class="logout-btn">Logout</button>
+                </form>
+            </div>
         </div>
     </div>
 
