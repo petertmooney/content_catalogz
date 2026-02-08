@@ -4216,14 +4216,11 @@ invoices.forEach(invoice => {
                                             // Print and Email handlers for modal (attach only once)
                                             if (!window.printInvoiceFromModal) {
                                                 window.printInvoiceFromModal = function() {
-                                                    // Only print the invoice content, not the modal or form controls
                                                     const modal = document.getElementById('invoiceModalBody');
-                                                    // Clone the modal content and remove form controls/buttons
                                                     const clone = modal.cloneNode(true);
-                                                    // Remove all .btn, input[type=button], input[type=submit], select, textarea, form tags
-                                                    clone.querySelectorAll('button, .btn, input, select, textarea, form').forEach(el => {
+                                                    // Replace form controls with plain text for printing
+                                                    clone.querySelectorAll('button, .btn, input, select, textarea').forEach(el => {
                                                         if (el.tagName.toLowerCase() === 'input' && (el.type === 'text' || el.type === 'number' || el.type === 'date')) {
-                                                            // Replace input with span showing value
                                                             const span = document.createElement('span');
                                                             span.textContent = el.value;
                                                             el.parentNode.replaceChild(span, el);
@@ -4239,13 +4236,13 @@ invoices.forEach(invoice => {
                                                             el.remove();
                                                         }
                                                     });
-                                                    // Remove form tags
+                                                    // Remove form tags but keep their content
                                                     clone.querySelectorAll('form').forEach(f => {
                                                         const parent = f.parentNode;
                                                         while (f.firstChild) parent.insertBefore(f.firstChild, f);
                                                         parent.removeChild(f);
                                                     });
-                                                    // Open print window with only invoice content and styles
+                                                    // Open print window with correct HTML structure and styles
                                                     const printWindow = window.open('', '', 'width=900,height=700');
                                                     printWindow.document.write('<html><head><title>Print Invoice</title>');
                                                     printWindow.document.write('<link rel="stylesheet" href="/assets/css/styles.css">');
