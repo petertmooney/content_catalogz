@@ -4105,13 +4105,17 @@ invoices.forEach(invoice => {
         // Load HTML files count and quotes on page load
         window.addEventListener('DOMContentLoaded', function() {
             console.log('%c Dashboard Loaded', 'background: #28a745; color: white; font-weight: bold; padding: 4px 12px; border-radius: 4px;');
-            // Force show dashboard section and widgets
-            var dashboardSection = document.getElementById('section-dashboard');
-            if (dashboardSection) {
-                dashboardSection.classList.add('active');
-                dashboardSection.style.display = 'block';
-                console.log('✓ Forced dashboard section to be visible');
-            }
+            // Force show all main content sections (dashboard, clients, etc.)
+            document.querySelectorAll('.content-section').forEach(function(section) {
+                section.style.display = 'block';
+                // Optionally, remove .active from all except dashboard
+                if (section.id === 'section-dashboard') {
+                    section.classList.add('active');
+                } else {
+                    section.classList.remove('active');
+                }
+                console.log('✓ Forced section visible:', section.id);
+            });
             // Force show all dashboard widgets
             ['dashboard-widget-email','dashboard-widget-clients','dashboard-widget-tasks','dashboard-widget-invoices'].forEach(function(id) {
                 var el = document.getElementById(id);
