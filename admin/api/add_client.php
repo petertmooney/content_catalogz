@@ -65,8 +65,8 @@ if ($result->num_rows > 0) {
 }
 $stmt->close();
 
-// Insert the new client into quotes table
-$stmt = $conn->prepare("INSERT INTO quotes (name, email, company, phone, address, service_type, status, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+// Insert the new client into quotes table - use correct column names
+$stmt = $conn->prepare("INSERT INTO quotes (name, email, company, phone, address_street, service, status, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
 $stmt->bind_param("ssssssss", $name, $email, $company, $phone, $address, $serviceType, $status, $notes);
 
 if ($stmt->execute()) {
