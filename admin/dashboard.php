@@ -3640,7 +3640,7 @@ if ($invoices_result) {
                     // Log payment as an activity
                     const activityData = {
                         client_id: clientId,
-                        activity_type: 'payment_received',
+                        type: 'payment_received',
                         subject: `Payment Received: £${amount.toFixed(2)}`,
                         description: `Payment of £${amount.toFixed(2)} received via ${paymentMethod}.${notes ? ' Notes: ' + notes : ''}`,
                         activity_date: paymentDate + ' 12:00:00'
