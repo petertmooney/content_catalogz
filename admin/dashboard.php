@@ -783,6 +783,7 @@ if ($invoices_result) {
             
             <a href="export.php" id="nav-export" style="border-top: 1px solid #444; margin-top: 10px; padding-top: 10px;">📦 Export Website</a>
             <a href="#" onclick="openMenuCustomizationModal(); return false;" id="nav-customize-menu">⚙️ Customize Menu</a>
+                        <a href="#" onclick="openDashboardCustomizationModal(); return false;" id="nav-customize-dashboard">🛠️ Customize Dashboard</a>
             <a href="/" target="_blank" id="nav-view-site">🌐 View Site</a>
             <a href="api/logout.php" id="nav-logout">🚪 Logout</a>
         </div>
@@ -2115,6 +2116,26 @@ function filterClientsByType(type) {
             <div style="padding: 20px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end; gap: 10px;">
                 <button type="button" class="btn btn-secondary" onclick="resetMenuOrder()">Reset to Default</button>
                 <button type="button" class="btn btn-primary" onclick="closeMenuCustomizationModal()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Customization Modal -->
+    <div id="dashboardCustomizationModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>Customize Dashboard</h3>
+                <button class="close-btn" onclick="closeDashboardCustomizationModal()">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <p style="color: #666; margin-bottom: 20px;">Choose which dashboard widgets/stat cards to show or hide. (Feature coming soon!)</p>
+                <div id="dashboard-widgets-list" style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+                    <!-- Dashboard widgets will be listed here -->
+                </div>
+            </div>
+            <div style="padding: 20px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="resetDashboardWidgets()">Reset to Default</button>
+                <button type="button" class="btn btn-primary" onclick="closeDashboardCustomizationModal()">Done</button>
             </div>
         </div>
     </div>
@@ -5528,6 +5549,17 @@ invoices.forEach(invoice => {
         }
         
         // ==================== Menu Customization ====================
+                // ==================== Dashboard Customization ====================
+                function openDashboardCustomizationModal() {
+                    document.getElementById('dashboardCustomizationModal').style.display = 'flex';
+                }
+                function closeDashboardCustomizationModal() {
+                    document.getElementById('dashboardCustomizationModal').style.display = 'none';
+                }
+                function resetDashboardWidgets() {
+                    // Placeholder for reset logic
+                    alert('Dashboard widgets reset to default (feature coming soon).');
+                }
         
         const defaultMenuOrder = [
             {id: 'nav-dashboard', label: '📋 Dashboard', section: 'dashboard', type: 'link'},
