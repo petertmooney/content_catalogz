@@ -2761,19 +2761,25 @@ if ($invoices_result) {
             row.innerHTML = `
                 <div class="form-group" style="margin: 0;">
                     <label>Service Description</label>
-                    <input type="text" class="form-control quote-service-name" placeholder="e.g., Website Design" value="${escapeHtml(serviceName)}" oninput="calculateQuoteTotalCost()">
+                    <input type="text" class="form-control quote-service-name" placeholder="e.g., Website Design" oninput="calculateQuoteTotalCost()">
                 </div>
                 <div class="form-group" style="margin: 0;">
                     <label>Cost (£)</label>
                     <div style="position: relative;">
                         <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 500; color: #333;">£</span>
-                        <input type="number" class="form-control quote-service-cost" step="0.01" min="0" placeholder="0.00" value="${serviceCost}" oninput="calculateQuoteTotalCost()" style="padding-left: 28px;">
+                        <input type="number" class="form-control quote-service-cost" step="0.01" min="0" placeholder="0.00" oninput="calculateQuoteTotalCost()" style="padding-left: 28px;">
                     </div>
                 </div>
                 <button type="button" class="btn btn-danger btn-sm" onclick="removeQuoteServiceRow('${rowId}')" style="height: 38px;">Remove</button>
             `;
             
             container.appendChild(row);
+            
+            // Set values after DOM insertion to avoid escaping issues
+            const nameInput = row.querySelector('.quote-service-name');
+            const costInput = row.querySelector('.quote-service-cost');
+            if (nameInput) nameInput.value = serviceName;
+            if (costInput) costInput.value = serviceCost;
         }
 
         function removeQuoteServiceRow(rowId) {
@@ -3201,19 +3207,25 @@ if ($invoices_result) {
             row.innerHTML = `
                 <div class="form-group" style="margin: 0;">
                     <label>Service Description</label>
-                    <input type="text" class="form-control service-name" placeholder="e.g., Website Design" value="${escapeHtml(serviceName)}" oninput="calculateTotalCost()">
+                    <input type="text" class="form-control service-name" placeholder="e.g., Website Design" oninput="calculateTotalCost()">
                 </div>
                 <div class="form-group" style="margin: 0;">
                     <label>Cost (£)</label>
                     <div style="position: relative;">
                         <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 500; color: #333;">£</span>
-                        <input type="number" class="form-control service-cost" step="0.01" min="0" placeholder="0.00" value="${serviceCost}" oninput="calculateTotalCost()" style="padding-left: 28px;">
+                        <input type="number" class="form-control service-cost" step="0.01" min="0" placeholder="0.00" oninput="calculateTotalCost()" style="padding-left: 28px;">
                     </div>
                 </div>
                 <button type="button" class="btn btn-danger btn-sm" onclick="removeServiceRow('${rowId}')" style="height: 38px;">Remove</button>
             `;
             
             container.appendChild(row);
+            
+            // Set values after DOM insertion to avoid escaping issues
+            const nameInput = row.querySelector('.service-name');
+            const costInput = row.querySelector('.service-cost');
+            if (nameInput) nameInput.value = serviceName;
+            if (costInput) costInput.value = serviceCost;
         }
 
         function removeServiceRow(rowId) {
