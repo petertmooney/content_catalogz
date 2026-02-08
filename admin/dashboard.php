@@ -864,13 +864,6 @@ if ($invoices_result) {
                         <small style="color: #666;">All time</small>
                     </div>
                 </div>
-
-                <div class="btn-group">
-                    <button class="btn btn-primary" onclick="showSection('clients')">Quote Requests</button>
-                    <button class="btn btn-primary" onclick="showSection('existing-clients')">Existing Clients</button>
-                    <button class="btn btn-primary" onclick="showSection('tasks')">Tasks & To-Do</button>
-                    <button class="btn btn-primary" onclick="showSection('invoices')">Invoices</button>
-                </div>
             </div>
 
             <!-- Clients Section -->
