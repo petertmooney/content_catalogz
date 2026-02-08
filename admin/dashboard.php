@@ -1642,6 +1642,7 @@ if ($invoices_result) {
                     <button type="button" class="btn btn-danger" onclick="confirmDeleteClient()" title="Delete this client and all related data">🗑️ Delete Client</button>
                     <div style="display: flex; gap: 10px;">
                         <button type="button" class="btn btn-secondary" onclick="closeClientModal()">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="generateInvoiceForClient()" title="Generate and save invoice to database">📄 Generate Invoice</button>
                         <button type="button" class="btn btn-secondary" onclick="composeEmail()">✉️ Send Email</button>
                         <button type="button" class="btn btn-secondary" onclick="printInvoice()">🖨️ Print Invoice</button>
                         <button type="button" class="btn btn-secondary" onclick="emailInvoice()">📧 Email Invoice</button>
@@ -3353,6 +3354,54 @@ if ($invoices_result) {
             .catch(error => {
                 console.error('Error:', error);
                 alert('Failed to update client information: ' + error.message);
+            });
+        }
+
+        function generateInvoiceForClient() {
+            const clientId = document.getElementById('clientId').value;
+            const clientName = document.getElementById('clientName').textContent;
+            const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
+            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            
+            if (totalCost === 0) {
+                alert('Cannot generate invoice: Total cost is £0.00. Please add services first.');
+                return;
+            }
+            
+            const invoiceDate = new Date().toISOString().split('T')[0];
+            const invoiceNumber = 'INV-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-6);
+            
+            fetch('api/save_invoice.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    client_id: clientId,
+                    invoice_number: invoiceNumber,
+                    invoice_date: invoiceDate,
+                    total_cost: totalCost,
+                    total_paid: totalPaid
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.exists) {
+                        showNotification('Invoice already exists for this client', 'info');
+                    } else {
+                        showNotification(`Invoice ${invoiceNumber} generated successfully for ${clientName}!`, 'success');
+                        // Reload invoice stats
+                        loadInvoiceStats();
+                        loadDashboardStats();
+                    }
+                } else {
+                    alert('Failed to generate invoice: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to generate invoice: ' + error.message);
             });
         }
 
