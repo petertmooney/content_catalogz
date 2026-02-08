@@ -4177,7 +4177,7 @@ invoices.forEach(invoice => {
                                     <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                                         <tr>
                                             <td><strong>Total Cost:</strong></td>
-                                            <td style="text-align: right;">£<input type="number" step="0.01" name="total_cost2" value="${parseFloat(inv.total_cost).toFixed(2)}" style="width:100px;"></td>
+                                            <td style="text-align: right;">£<input type="number" step="0.01" name="total_cost" value="${parseFloat(inv.total_cost).toFixed(2)}" style="width:100px;"></td>
                                         </tr>
                                         <tr>
                                             <td><strong>Total Paid:</strong></td>
