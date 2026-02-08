@@ -696,6 +696,12 @@ if ($invoices_result) {
                 <a href="#" onclick="openNewPageModal(); return false;" id="nav-new-page">➕ Create New Page</a>
             </div>
             
+            <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'users-submenu'); return false;">👤 Users</a>
+            <div class="submenu" id="users-submenu">
+                <a href="#" onclick="showSection('users-list'); return false;" id="nav-users-list">📋 View All Users</a>
+                <a href="#" onclick="openCreateUserModal(); return false;" id="nav-create-user">➕ Create User</a>
+            </div>
+            
             <a href="/" target="_blank">🌐 View Site</a>
             <a href="api/logout.php">🚪 Logout</a>
         </div>
@@ -954,6 +960,39 @@ if ($invoices_result) {
                 </div>
 
                 <div id="tasks-list"></div>
+            </div>
+            
+            <!-- Users Section -->
+            <div id="section-users-list" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h2>User Management</h2>
+                    <p>Manage admin users and their access</p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="openCreateUserModal()">➕ Create New User</button>
+                </div>
+
+                <div id="users-table-container">
+                    <table style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                <th style="padding: 15px; text-align: left; border-bottom: 2px solid #ddd;">Username</th>
+                                <th style="padding: 15px; text-align: left; border-bottom: 2px solid #ddd;">Email</th>
+                                <th style="padding: 15px; text-align: left; border-bottom: 2px solid #ddd;">Role</th>
+                                <th style="padding: 15px; text-align: left; border-bottom: 2px solid #ddd;">Created</th>
+                                <th style="padding: 15px; text-align: center; border-bottom: 2px solid #ddd;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-list-tbody">
+                            <tr>
+                                <td colspan="5" style="padding: 40px; text-align: center; color: #999;">
+                                    Loading users...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -1596,6 +1635,124 @@ if ($invoices_result) {
                     <button type="submit" class="btn btn-primary">💰 Record Payment</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Create User Modal -->
+    <div id="createUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Admin User</h3>
+                <button class="close-btn" onclick="closeCreateUserModal()">&times;</button>
+            </div>
+            <form id="createUserForm" onsubmit="createUser(event)">
+                <div class="form-group">
+                    <label for="newUsername">Username *</label>
+                    <input type="text" id="newUsername" class="form-control" required minlength="3" placeholder="e.g., john_admin" pattern="[a-zA-Z0-9_]+" title="Only letters, numbers, and underscores">
+                    <small style="color: #666;">Minimum 3 characters, letters, numbers, and underscores only</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="newUserEmail">Email *</label>
+                    <input type="email" id="newUserEmail" class="form-control" required placeholder="admin@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="newUserPassword">Password *</label>
+                    <input type="password" id="newUserPassword" class="form-control" required minlength="8" placeholder="Minimum 8 characters">
+                    <small style="color: #666;">Minimum 8 characters</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="newUserPasswordConfirm">Confirm Password *</label>
+                    <input type="password" id="newUserPasswordConfirm" class="form-control" required minlength="8" placeholder="Re-enter password">
+                </div>
+                
+                <div class="form-group">
+                    <label for="newUserRole">Role</label>
+                    <select id="newUserRole" class="form-control">
+                        <option value="admin">Administrator</option>
+                        <option value="superadmin">Super Administrator</option>
+                    </select>
+                    <small style="color: #666;">Super Admins can manage other users</small>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeCreateUserModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">➕ Create User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit User</h3>
+                <button class="close-btn" onclick="closeEditUserModal()">&times;</button>
+            </div>
+            <form id="editUserForm" onsubmit="updateUser(event)">
+                <input type="hidden" id="editUserId">
+                
+                <div class="form-group">
+                    <label for="editUsername">Username</label>
+                    <input type="text" id="editUsername" class="form-control" readonly style="background: #f0f0f0; cursor: not-allowed;">
+                    <small style="color: #666;">Username cannot be changed</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editUserEmail">Email *</label>
+                    <input type="email" id="editUserEmail" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editUserPassword">New Password (Optional)</label>
+                    <input type="password" id="editUserPassword" class="form-control" minlength="8" placeholder="Leave blank to keep current password">
+                    <small style="color: #666;">Only enter a new password if you want to change it</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editUserPasswordConfirm">Confirm New Password</label>
+                    <input type="password" id="editUserPasswordConfirm" class="form-control" minlength="8" placeholder="Confirm new password">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editUserRole">Role</label>
+                    <select id="editUserRole" class="form-control">
+                        <option value="admin">Administrator</option>
+                        <option value="superadmin">Super Administrator</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditUserModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete User Confirmation Modal -->
+    <div id="deleteUserModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>🗑️ Delete User</h3>
+                <button class="close-btn" onclick="closeDeleteUserModal()">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <p style="font-size: 16px; margin-bottom: 20px;">
+                    Are you sure you want to delete the user <strong id="deleteUserName"></strong>?
+                </p>
+                <p style="color: #dc3545; margin-bottom: 20px;">
+                    ⚠️ <strong>Warning:</strong> This action cannot be undone. The user will no longer be able to access the admin panel.
+                </p>
+                <input type="hidden" id="deleteUserId">
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeDeleteUserModal()">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDeleteUser()">🗑️ Delete User</button>
+                </div>
+            </div>
         </div>
     </div>
 
