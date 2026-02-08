@@ -1947,9 +1947,16 @@ if ($invoices_result) {
                 <button class="close-btn" onclick="closeCreateUserModal()">&times;</button>
             </div>
             <form id="createUserForm" onsubmit="createUser(event)">
-                <div class="form-group">
-                    <label for="newUserFullName">Full Name *</label>
-                    <input type="text" id="newUserFullName" class="form-control" required placeholder="e.g., John Smith">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="newUserFirstName">First Name *</label>
+                        <input type="text" id="newUserFirstName" class="form-control" required placeholder="e.g., John">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newUserLastName">Last Name *</label>
+                        <input type="text" id="newUserLastName" class="form-control" required placeholder="e.g., Smith">
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -2001,9 +2008,16 @@ if ($invoices_result) {
             <form id="editUserForm" onsubmit="updateUser(event)">
                 <input type="hidden" id="editUserId">
                 
-                <div class="form-group">
-                    <label for="editUserFullName">Full Name *</label>
-                    <input type="text" id="editUserFullName" class="form-control" required placeholder="e.g., John Smith">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="editUserFirstName">First Name *</label>
+                        <input type="text" id="editUserFirstName" class="form-control" required placeholder="e.g., John">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editUserLastName">Last Name *</label>
+                        <input type="text" id="editUserLastName" class="form-control" required placeholder="e.g., Smith">
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -4796,7 +4810,8 @@ if ($invoices_result) {
         function createUser(event) {
             event.preventDefault();
             
-            const fullName = document.getElementById('newUserFullName').value;
+            const firstName = document.getElementById('newUserFirstName').value;
+            const lastName = document.getElementById('newUserLastName').value;
             const username = document.getElementById('newUsername').value;
             const email = document.getElementById('newUserEmail').value;
             const password = document.getElementById('newUserPassword').value;
@@ -4812,7 +4827,8 @@ if ($invoices_result) {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
-                    full_name: fullName,
+                    first_name: firstName,
+                    last_name: lastName,
                     username: username,
                     email: email,
                     password: password,
@@ -4842,7 +4858,8 @@ if ($invoices_result) {
                     if (data.success && data.users && data.users.length > 0) {
                         const user = data.users[0];
                         document.getElementById('editUserId').value = user.id;
-                        document.getElementById('editUserFullName').value = user.full_name || '';
+                        document.getElementById('editUserFirstName').value = user.first_name || '';
+                        document.getElementById('editUserLastName').value = user.last_name || '';
                         document.getElementById('editUsername').value = user.username;
                         document.getElementById('editUserEmail').value = user.email || '';
                         document.getElementById('editUserRole').value = user.role || 'admin';
@@ -4867,7 +4884,8 @@ if ($invoices_result) {
             event.preventDefault();
             
             const userId = document.getElementById('editUserId').value;
-            const fullName = document.getElementById('editUserFullName').value;
+            const firstName = document.getElementById('editUserFirstName').value;
+            const lastName = document.getElementById('editUserLastName').value;
             const email = document.getElementById('editUserEmail').value;
             const password = document.getElementById('editUserPassword').value;
             const passwordConfirm = document.getElementById('editUserPasswordConfirm').value;
@@ -4880,7 +4898,8 @@ if ($invoices_result) {
             
             const updateData = {
                 id: userId,
-                full_name: fullName,
+                first_name: firstName,
+                last_name: lastName,
                 email: email,
                 role: role
             };

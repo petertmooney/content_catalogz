@@ -30,7 +30,9 @@ try {
     $username = trim($data['username']);
     $password = $data['password'];
     $email = isset($data['email']) ? trim($data['email']) : null;
-    $fullName = isset($data['full_name']) ? trim($data['full_name']) : null;
+    $firstName = isset($data['first_name']) ? trim($data['first_name']) : '';
+    $lastName = isset($data['last_name']) ? trim($data['last_name']) : '';
+    $fullName = trim($firstName . ' ' . $lastName);
     $role = isset($data['role']) ? $data['role'] : 'admin';
     
     // Validate username format
@@ -62,8 +64,8 @@ try {
     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
     
     // Insert new user
-    $stmt = $conn->prepare("INSERT INTO users (username, full_name, password, email, role, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
-    $stmt->bind_param("sssss", $username, $fullName, $passwordHash, $email, $role);
+    $stmt = $conn->prepare("INSERT INTO users (username, full_name, first_name, last_name, password, email, role, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
+    $stmt->bind_param("sssssss", $username, $fullName, $firstName, $lastName, $passwordHash, $email, $role);
     
     if (!$stmt->execute()) {
         throw new Exception('Failed to create user: ' . $stmt->error);

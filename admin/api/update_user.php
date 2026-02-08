@@ -29,7 +29,9 @@ try {
     
     $userId = intval($data['id']);
     $email = isset($data['email']) ? trim($data['email']) : null;
-    $fullName = isset($data['full_name']) ? trim($data['full_name']) : null;
+    $firstName = isset($data['first_name']) ? trim($data['first_name']) : '';
+    $lastName = isset($data['last_name']) ? trim($data['last_name']) : '';
+    $fullName = trim($firstName . ' ' . $lastName);
     $role = isset($data['role']) ? $data['role'] : 'admin';
     $password = isset($data['password']) ? $data['password'] : null;
     
@@ -52,12 +54,12 @@ try {
     if ($password && strlen($password) >= 8) {
         // Update with new password
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $conn->prepare("UPDATE users SET full_name = ?, email = ?, role = ?, password = ? WHERE id = ?");
-        $stmt->bind_param("ssssi", $fullName, $email, $role, $passwordHash, $userId);
+        $stmt = $conn->prepare("UPDATE users SET full_name = ?, first_name = ?, last_name = ?, email = ?, role = ?, password = ? WHERE id = ?");
+        $stmt->bind_param("ssssssi", $fullName, $firstName, $lastName, $email, $role, $passwordHash, $userId);
     } else {
         // Update without changing password
-        $stmt = $conn->prepare("UPDATE users SET full_name = ?, email = ?, role = ? WHERE id = ?");
-        $stmt->bind_param("sssi", $fullName, $email, $role, $userId);
+        $stmt = $conn->prepare("UPDATE users SET full_name = ?, first_name = ?, last_name = ?, email = ?, role = ? WHERE id = ?");
+        $stmt->bind_param("sssssi", $fullName, $firstName, $lastName, $email, $role, $userId);
     }
     
     if (!$stmt->execute()) {

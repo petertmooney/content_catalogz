@@ -19,7 +19,7 @@ try {
     
     if ($userId) {
         // Get specific user
-        $stmt = $conn->prepare("SELECT id, username, email, role, created_at FROM users WHERE id = ?");
+        $stmt = $conn->prepare("SELECT id, username, full_name, first_name, last_name, email, role, created_at FROM users WHERE id = ?");
         $stmt->bind_param("i", $userId);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -39,7 +39,7 @@ try {
         ]);
     } else {
         // Get all users
-        $sql = "SELECT id, username, email, role, created_at FROM users ORDER BY created_at DESC";
+        $sql = "SELECT id, username, full_name, first_name, last_name, email, role, created_at FROM users ORDER BY created_at DESC";
         $result = $conn->query($sql);
         
         if (!$result) {
