@@ -40,6 +40,10 @@ $address_county = trim($data['address_county'] ?? '');
 $address_postcode = trim($data['address_postcode'] ?? '');
 $address_country = trim($data['address_country'] ?? 'Ireland');
 $message = trim($data['message'] ?? '');
+// Ensure message is not empty since DB field is NOT NULL
+if (empty($message)) {
+    $message = 'Manually added client';
+}
 $service = trim($data['service'] ?? '');
 $status = trim($data['status'] ?? 'new');
 $notes = trim($data['notes'] ?? '');
