@@ -1617,11 +1617,12 @@ if ($invoices_result) {
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="totalRemaining">Total Remaining (£)</label>
+                            <label id="totalRemainingLabel" for="totalRemaining">Balance Due (£)</label>
                             <div style="position: relative;">
-                                <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 18px; color: #dc3545;">£</span>
+                                <span id="totalRemainingCurrency" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 18px; color: #dc3545;">£</span>
                                 <input type="number" id="totalRemaining" name="total_remaining" class="form-control" step="0.01" readonly style="background:#f8f9fa; font-weight: bold; font-size: 18px; color: #dc3545; padding-left: 28px;">
                             </div>
+                            <small id="totalRemainingHelp" style="color: #666; display: none;"></small>
                         </div>
                     </div>
                 </div>
