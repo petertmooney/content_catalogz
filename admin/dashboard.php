@@ -4207,10 +4207,36 @@ invoices.forEach(invoice => {
                                         <p>Thank you for your business!</p>
                                         <p style="font-size: 12px;">Payment is due within 30 days of invoice date.</p>
                                     </div>
-                                    <div style="text-align:right; margin-top:20px;">
+                                    <div style="text-align:right; margin-top:20px; display: flex; gap: 10px; justify-content: flex-end;">
                                         <button class="btn btn-primary" type="submit">Save Changes</button>
                                         <button class="btn btn-secondary" type="button" onclick="closeInvoiceModal()">Close</button>
+                                        <button class="btn btn-secondary" type="button" onclick="printInvoiceFromModal()">🖨️ Print</button>
+                                        <button class="btn btn-secondary" type="button" onclick="emailInvoiceFromModal()">📧 Email</button>
                                     </div>
+                                            // Print and Email handlers for modal
+                                            window.printInvoiceFromModal = function() {
+                                                // Print only the invoice modal content
+                                                const modal = document.getElementById('invoiceModalBody');
+                                                const printWindow = window.open('', '', 'width=900,height=700');
+                                                printWindow.document.write('<html><head><title>Print Invoice</title>');
+                                                printWindow.document.write('<link rel="stylesheet" href="/assets/css/styles.css">');
+                                                printWindow.document.write('</head><body >');
+                                                printWindow.document.write(modal.innerHTML);
+                                                printWindow.document.write('</body></html>');
+                                                printWindow.document.close();
+                                                printWindow.focus();
+                                                printWindow.print();
+                                                printWindow.close();
+                                            };
+
+                                            window.emailInvoiceFromModal = function() {
+                                                // Use the existing emailInvoice function if available, or trigger backend
+                                                if (typeof emailInvoice === 'function') {
+                                                    emailInvoice();
+                                                } else {
+                                                    alert('Email functionality not implemented.');
+                                                }
+                                            };
                                     </form>
                                 `;
                                 // Save handler
