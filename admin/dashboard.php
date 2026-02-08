@@ -1739,7 +1739,22 @@ if ($invoices_result) {
                     </div>
                     <div class="form-group">
                         <label for="newClientCountry">Country</label>
-                        <input type="text" id="newClientCountry" name="address_country" class="form-control" placeholder="Ireland" value="Ireland">
+                        <select id="newClientCountry" name="address_country" class="form-control">
+                            <option value="United Kingdom" selected>United Kingdom</option>
+                            <option value="Ireland">Ireland</option>
+                            <option value="United States">United States</option>
+                            <option value="Canada">Canada</option>
+                            <option value="Australia">Australia</option>
+                            <option value="New Zealand">New Zealand</option>
+                            <option value="France">France</option>
+                            <option value="Germany">Germany</option>
+                            <option value="Spain">Spain</option>
+                            <option value="Italy">Italy</option>
+                            <option value="Netherlands">Netherlands</option>
+                            <option value="Belgium">Belgium</option>
+                            <option value="Switzerland">Switzerland</option>
+                            <option value="Other">Other</option>
+                        </select>
                     </div>
                     <div class="form-group" style="grid-column: 1 / -1;">
                         <label for="newClientMessage">Message/Request</label>

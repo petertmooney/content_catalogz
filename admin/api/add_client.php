@@ -39,7 +39,7 @@ $address_line2 = trim($data['address_line2'] ?? '');
 $address_city = trim($data['address_city'] ?? '');
 $address_county = trim($data['address_county'] ?? '');
 $address_postcode = trim($data['address_postcode'] ?? '');
-$address_country = trim($data['address_country'] ?? 'Ireland');
+$address_country = trim($data['address_country'] ?? 'United Kingdom');
 $message = trim($data['message'] ?? '');
 // Ensure message is not empty since DB field is NOT NULL
 if (empty($message)) {
