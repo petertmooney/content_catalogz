@@ -56,6 +56,13 @@ if ($invoices_result) {
 
         .navbar h1 {
             font-size: 24px;
+            margin: 0;
+        }
+        
+        .navbar h1 img {
+            height: 40px;
+            width: auto;
+            display: block;
         }
 
         .user-info {
@@ -698,7 +705,7 @@ if ($invoices_result) {
 <body>
     
     <div class="navbar">
-        <h1>📊 Content Catalogz Admin</h1>
+        <h1><img src="../assets/images/LogoPink.png" alt="Content Catalogz"></h1>
         <div class="user-info">
             <span>Welcome, <strong><?php echo escapeHtml($user['username']); ?></strong></span>
             <form method="POST" action="api/logout.php" style="margin: 0;">
