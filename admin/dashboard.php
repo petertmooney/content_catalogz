@@ -3390,7 +3390,7 @@ if ($invoices_result) {
                     if (data.exists) {
                         showNotification('Invoice already exists for this client', 'info');
                     } else {
-                        showNotification(`Invoice ${invoiceNumber} generated successfully for ${clientName}!`, 'success');
+                        showNotification('Invoice ' + invoiceNumber + ' generated successfully for ' + clientName + '!', 'success');
                         // Reload invoice stats
                         loadInvoiceStats();
                         loadDashboardStats();
