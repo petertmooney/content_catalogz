@@ -797,7 +797,6 @@ if ($invoices_result) {
 
                 <!-- Email Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">📧 Email</h3>
-                <div id="dashboard-widget-email">
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
                     <div class="stat-card" onclick="showSection('email-inbox')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #007bff; font-size: 14px; margin-bottom: 5px;">Unread Emails</h4>
@@ -815,12 +814,7 @@ if ($invoices_result) {
 
                 <!-- Client & Quotes Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">📊 Clients & Quotes</h3>
-                <div id="dashboard-widget-clients">
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                        <h4 style="color: #6c63ff; font-size: 14px; margin-bottom: 5px;">Website Pages</h4>
-                        <p class="stat-number" id="html-count" style="font-size: 28px; font-weight: bold; color: #6c63ff;">0</p>
-                    </div>
                     <div class="stat-card" onclick="showSection('clients')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Total Quotes</h4>
                         <p class="stat-number" id="quotes-count" style="font-size: 28px; font-weight: bold; color: #28a745;">0</p>
@@ -837,39 +831,23 @@ if ($invoices_result) {
 
                 <!-- Tasks Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">✅ Tasks & To-Do</h3>
-                <div id="dashboard-widget-tasks">
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                    <div class="stat-card" onclick="filterTasksByType('pending')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
+                    <div class="stat-card" onclick="showSection('tasks')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Pending Tasks</h4>
-                        <p class="stat-number" id="dash-tasks-pending" style="font-size: 28px; font-weight: bold; color: #ffc107; cursor: pointer;">0</p>
+                        <p class="stat-number" id="dash-tasks-pending" style="font-size: 28px; font-weight: bold; color: #ffc107;">0</p>
                     </div>
-                    <div class="stat-card" onclick="filterTasksByType('overdue')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
+                    <div class="stat-card" onclick="showSection('tasks')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #dc3545; font-size: 14px; margin-bottom: 5px;">Overdue Tasks</h4>
-                        <p class="stat-number" id="dash-tasks-overdue" style="font-size: 28px; font-weight: bold; color: #dc3545; cursor: pointer;">0</p>
+                        <p class="stat-number" id="dash-tasks-overdue" style="font-size: 28px; font-weight: bold; color: #dc3545;">0</p>
                     </div>
-                    <div class="stat-card" onclick="filterTasksByType('urgent')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
+                    <div class="stat-card" onclick="showSection('tasks')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #ff69b4; font-size: 14px; margin-bottom: 5px;">Urgent Tasks</h4>
-                        <p class="stat-number" id="dash-tasks-urgent" style="font-size: 28px; font-weight: bold; color: #ff69b4; cursor: pointer;">0</p>
+                        <p class="stat-number" id="dash-tasks-urgent" style="font-size: 28px; font-weight: bold; color: #ff69b4;">0</p>
                     </div>
-                <script>
-                function filterTasksByType(type) {
-                    showSection('tasks');
-                    // Set filter dropdown if it exists
-                    var filter = document.getElementById('taskStatusFilter');
-                    if (filter) {
-                        if (type === 'pending') filter.value = 'pending';
-                        else if (type === 'overdue') filter.value = 'overdue';
-                        else if (type === 'urgent') filter.value = 'urgent';
-                        else filter.value = 'all';
-                        loadTasks();
-                    }
-                }
-                </script>
                 </div>
 
                 <!-- Invoice Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">📄 Invoices</h3>
-                <div id="dashboard-widget-invoices">
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
                     <div class="stat-card" onclick="showFilteredInvoices('outstanding')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Outstanding</h4>
@@ -957,28 +935,15 @@ if ($invoices_result) {
                 </div>
 
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                    <div class="stat-card" onclick="filterClientsByType('active')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
+                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Active Clients</h4>
-                        <p id="active-clients-count" style="font-size: 24px; font-weight: bold; color: #28a745; cursor: pointer;">0</p>
+                        <p id="active-clients-count" style="font-size: 24px; font-weight: bold; color: #28a745;">0</p>
                     </div>
-                    <div class="stat-card" onclick="filterClientsByType('completed')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
+                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #17a2b8; font-size: 14px; margin-bottom: 5px;">Completed Projects</h4>
-                        <p id="total-projects-count" style="font-size: 24px; font-weight: bold; color: #17a2b8; cursor: pointer;">0</p>
+                        <p id="total-projects-count" style="font-size: 24px; font-weight: bold; color: #17a2b8;">0</p>
                     </div>
                 </div>
-<script>
-function filterClientsByType(type) {
-    // Set filter dropdown if it exists
-    var filter = document.getElementById('clientStatusFilter');
-    if (filter) {
-        if (type === 'active') filter.value = 'active';
-        else if (type === 'completed') filter.value = 'completed';
-        else filter.value = 'all';
-        loadExistingClients();
-    }
-    // If no dropdown, fallback: show all or custom logic
-}
-</script>
 
                 <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <input type="text" id="searchClients" placeholder="Search by name, email, company..." style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ddd; width: 300px;" onkeyup="loadExistingClients()">
@@ -1070,22 +1035,29 @@ function filterClientsByType(type) {
                 </div>
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                    <div class="stat-card" onclick="filterTasksByType('pending')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
+                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Pending</h4>
-                        <p id="stat-tasks-pending" style="font-size: 24px; font-weight: bold; color: #ffc107; cursor: pointer;">0</p>
+                        <p id="stat-tasks-pending" style="font-size: 24px; font-weight: bold; color: #ffc107;">0</p>
                     </div>
-                    <div class="stat-card" onclick="filterTasksByType('overdue')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
+                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #dc3545; font-size: 14px; margin-bottom: 5px;">Overdue</h4>
-                        <p id="stat-tasks-overdue" style="font-size: 24px; font-weight: bold; color: #dc3545; cursor: pointer;">0</p>
+                        <p id="stat-tasks-overdue" style="font-size: 24px; font-weight: bold; color: #dc3545;">0</p>
                     </div>
-                    <div class="stat-card" onclick="filterTasksByType('urgent')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
+                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #ff69b4; font-size: 14px; margin-bottom: 5px;">Urgent</h4>
-                        <p id="stat-tasks-urgent" style="font-size: 24px; font-weight: bold; color: #ff69b4; cursor: pointer;">0</p>
+                        <p id="stat-tasks-urgent" style="font-size: 24px; font-weight: bold; color: #ff69b4;">0</p>
                     </div>
                 </div>
 
                 <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <button class="btn btn-primary" onclick="openAddTaskModal()">+ Add New Task</button>
+                    <select id="taskStatusFilter" onchange="loadTasks()" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ddd;">
+                        <option value="all">All Tasks</option>
+                        <option value="pending" selected>Pending</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="loadTasks()">🔄 Refresh</button>
                 </div>
 
                 <div id="tasks-list"></div>
@@ -1236,7 +1208,7 @@ function filterClientsByType(type) {
                             
                             <div class="form-group">
                                 <label for="smtpPassword">Password *</label>
-                                <input type="password" id="smtpPassword" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+                                <input type="password" id="smtpPassword" class="form-control" placeholder="••••••••" required>
                             </div>
                             
                             <div class="form-group">
@@ -1389,7 +1361,7 @@ function filterClientsByType(type) {
             </div>
             <form id="pageForm" onsubmit="savePage(event)">
                 <div class="form-group">
-                    <label>Page ID</label>
+                    <label for="pageId">Page ID</label>
                     <input type="hidden" id="pageId" name="id" value="">
                 </div>
                 <div class="form-group">
@@ -2021,13 +1993,13 @@ function filterClientsByType(type) {
                 
                 <div class="form-group">
                     <label for="newUserPassword">Password *</label>
-                    <input type="password" id="newUserPassword" class="form-control" required minlength="8" placeholder="Minimum 8 characters" autocomplete="new-password">
+                    <input type="password" id="newUserPassword" class="form-control" required minlength="8" placeholder="Minimum 8 characters">
                     <small style="color: #666;">Minimum 8 characters</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="newUserPasswordConfirm">Confirm Password *</label>
-                    <input type="password" id="newUserPasswordConfirm" class="form-control" required minlength="8" placeholder="Re-enter password" autocomplete="new-password">
+                    <input type="password" id="newUserPasswordConfirm" class="form-control" required minlength="8" placeholder="Re-enter password">
                 </div>
                 
                 <div class="form-group">
@@ -2082,13 +2054,13 @@ function filterClientsByType(type) {
                 
                 <div class="form-group">
                     <label for="editUserPassword">New Password (Optional)</label>
-                    <input type="password" id="editUserPassword" class="form-control" minlength="8" placeholder="Leave blank to keep current password" autocomplete="new-password">
+                    <input type="password" id="editUserPassword" class="form-control" minlength="8" placeholder="Leave blank to keep current password">
                     <small style="color: #666;">Only enter a new password if you want to change it</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="editUserPasswordConfirm">Confirm New Password</label>
-                    <input type="password" id="editUserPasswordConfirm" class="form-control" minlength="8" placeholder="Confirm new password" autocomplete="new-password">
+                    <input type="password" id="editUserPasswordConfirm" class="form-control" minlength="8" placeholder="Confirm new password">
                 </div>
                 
                 <div class="form-group">
@@ -2123,30 +2095,6 @@ function filterClientsByType(type) {
             <div style="padding: 20px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end; gap: 10px;">
                 <button type="button" class="btn btn-secondary" onclick="resetMenuOrder()">Reset to Default</button>
                 <button type="button" class="btn btn-primary" onclick="closeMenuCustomizationModal()">Done</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Dashboard Customization Modal -->
-    <div id="dashboardCustomizationModal" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-header">
-                <h3>Customize Dashboard</h3>
-                <button class="close-btn" onclick="closeDashboardCustomizationModal()">&times;</button>
-            </div>
-            <div style="padding: 20px;">
-                <p style="color: #666; margin-bottom: 20px;">Choose which dashboard widgets/stat cards to show or hide. (Feature coming soon!)</p>
-                <div id="dashboard-widgets-list" style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
-                        <label style="display:block; margin-bottom:10px;"><input type="checkbox" id="toggle-widget-email" checked> 📧 Email Stats</label>
-                        <label style="display:block; margin-bottom:10px;"><input type="checkbox" id="toggle-widget-clients" checked> 📊 Clients & Quotes</label>
-                        <label style="display:block; margin-bottom:10px;"><input type="checkbox" id="toggle-widget-tasks" checked> ✅ Tasks & To-Do</label>
-                        <label style="display:block; margin-bottom:10px;"><input type="checkbox" id="toggle-widget-invoices" checked> 📄 Invoices</label>
-                    <!-- Dashboard widgets will be listed here -->
-                </div>
-            </div>
-            <div style="padding: 20px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" class="btn btn-secondary" onclick="resetDashboardWidgets()">Reset to Default</button>
-                <button type="button" class="btn btn-primary" onclick="closeDashboardCustomizationModal()">Done</button>
             </div>
         </div>
     </div>
@@ -4104,25 +4052,7 @@ invoices.forEach(invoice => {
         // Load HTML files count and quotes on page load
         window.addEventListener('DOMContentLoaded', function() {
             console.log('%c Dashboard Loaded', 'background: #28a745; color: white; font-weight: bold; padding: 4px 12px; border-radius: 4px;');
-            // Force show all main content sections (dashboard, clients, etc.)
-            document.querySelectorAll('.content-section').forEach(function(section) {
-                section.style.display = 'block';
-                // Optionally, remove .active from all except dashboard
-                if (section.id === 'section-dashboard') {
-                    section.classList.add('active');
-                } else {
-                    section.classList.remove('active');
-                }
-                console.log('✓ Forced section visible:', section.id);
-            });
-            // Force show all dashboard widgets
-            ['dashboard-widget-email','dashboard-widget-clients','dashboard-widget-tasks','dashboard-widget-invoices'].forEach(function(id) {
-                var el = document.getElementById(id);
-                if (el) {
-                    el.style.display = '';
-                    console.log('✓ Forced widget visible:', id);
-                }
-            });
+            
             // Check if required elements exist
             const requiredElements = [
                 'section-dashboard',
@@ -4130,6 +4060,7 @@ invoices.forEach(invoice => {
                 'quotes-count',
                 'nav-dashboard'
             ];
+            
             let allElementsFound = true;
             requiredElements.forEach(id => {
                 const el = document.getElementById(id);
@@ -4140,19 +4071,34 @@ invoices.forEach(invoice => {
                     console.log('✓ Found element:', id);
                 }
             });
+            
             if (!allElementsFound) {
                 console.error('%c Some required elements are missing!', 'color: red; font-weight: bold;');
             }
+            
+            // Ensure dashboard section is visible
+            const dashboardSection = document.getElementById('section-dashboard');
+            if (dashboardSection) {
+                if (!dashboardSection.classList.contains('active')) {
+                    dashboardSection.classList.add('active');
+                    dashboardSection.style.display = 'block';
+                    console.log('✓ Dashboard section set to active');
+                }
+            } else {
+                console.error('❌ Dashboard section not found!');
+            }
+            
             // Load initial data
             try {
                 console.log('Loading HTML files...');
                 loadHtmlFiles();
+                
                 console.log('Loading quotes...');
                 loadQuotes();
+                
                 console.log('Loading dashboard stats...');
                 loadDashboardStats();
-                // Load all invoices on dashboard load
-                showFilteredInvoices('all');
+                
                 console.log('%c All data loading functions called successfully', 'background: #667eea; color: white; padding: 2px 8px; border-radius: 3px;');
             } catch (error) {
                 console.error('%c Error during initialization:', 'color: red; font-weight: bold;', error);
@@ -4161,166 +4107,18 @@ invoices.forEach(invoice => {
 
         // ==================== Invoice Modal Handlers ====================
         function openInvoiceModal(invoiceId) {
-                    const modalBody = document.getElementById('invoiceModalBody');
-                    modalBody.innerHTML = '<p>Loading invoice #' + invoiceId + '...</p>';
-                    document.getElementById('invoiceModal').classList.add('show');
-
-                    fetch('api/get_invoice.php?id=' + encodeURIComponent(invoiceId))
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success && data.invoice) {
-                                const inv = data.invoice;
-                                // Safely inject the invoice form
-                                modalBody.innerHTML = `
-                                    <form id="editInvoiceForm" onsubmit="return false;">
-                                    <div class="invoice-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
-                                        <div class="company-info">
-                                            <img src="/assets/images/LogoPink.png" alt="Content Catalogz" style="height: 75px; margin-bottom: 10px;">
-                                            <p>Professional Content Services</p>
-                                        </div>
-                                        <div class="invoice-details">
-                                            <h2 style="margin: 0; color: #ff69b4;">INVOICE</h2>
-                                            <p><strong>Invoice No:</strong> <input type="text" name="invoice_number" value="${inv.invoice_number}" style="width:120px;"></p>
-                                            <p><strong>Date:</strong> <input type="date" name="invoice_date" value="${inv.invoice_date}"></p>
-                                        </div>
-                                    </div>
-                                    <div class="client-info" style="margin-bottom: 20px;">
-                                        <h3>Bill To:</h3>
-                                        <p><strong>${inv.name || ''}</strong></p>
-                                        ${inv.company && inv.company !== 'none' ? `<p>${inv.company}</p>` : ''}
-                                        <p>Email: ${inv.email || ''}</p>
-                                        ${inv.phone ? `<p>Phone: ${inv.phone}</p>` : ''}
-                                    </div>
-                                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                                        <thead>
-                                            <tr>
-                                                <th style="text-align:left; border-bottom: 1px solid #ddd;">Service Description</th>
-                                                <th style="text-align:right; border-bottom: 1px solid #ddd;">Amount (GBP)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>Content Services</td>
-                                                <td style="text-align:right;"><input type="number" step="0.01" name="total_cost" value="${parseFloat(inv.total_cost).toFixed(2)}" style="width:100px;"></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                                        <tr>
-                                            <td><strong>Total Cost:</strong></td>
-                                            <td style="text-align: right;">£${parseFloat(inv.total_cost).toFixed(2)}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Total Paid:</strong></td>
-                                            <td style="text-align: right;">£<input type="number" step="0.01" name="total_paid" value="${parseFloat(inv.total_paid).toFixed(2)}" style="width:100px;"></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Amount Due:</strong></td>
-                                            <td style="text-align: right;">£<input type="number" step="0.01" name="total_remaining" value="${parseFloat(inv.total_remaining).toFixed(2)}" style="width:100px;"></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Status:</strong></td>
-                                            <td>
-                                                <select name="status" style="width: 130px;">
-                                                    <option value="outstanding" ${inv.status === 'outstanding' ? 'selected' : ''}>Outstanding</option>
-                                                    <option value="overdue" ${inv.status === 'overdue' ? 'selected' : ''}>Overdue</option>
-                                                    <option value="paid" ${inv.status === 'paid' ? 'selected' : ''}>Paid</option>
-                                                    <option value="cancelled" ${inv.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Notes:</strong></td>
-                                            <td><textarea name="notes" style="width:100%;">${inv.notes ? inv.notes : ''}</textarea></td>
-                                        </tr>
-                                    </table>
-                                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666;">
-                                        <p>Thank you for your business!</p>
-                                        <p style="font-size: 12px;">Payment is due within 30 days of invoice date.</p>
-                                    </div>
-                                    <div style="text-align:right; margin-top:20px; display: flex; gap: 8px; justify-content: flex-end;">
-                                        <button class="btn btn-primary btn-sm" type="submit">Save Changes</button>
-                                        <button class="btn btn-secondary btn-sm" type="button" onclick="closeInvoiceModal()">Close</button>
-                                        <button class="btn btn-secondary btn-sm" type="button" onclick="printInvoiceFromModal()">🖨️ Print</button>
-                                        <button class="btn btn-secondary btn-sm" type="button" onclick="emailInvoiceFromModal()">📧 Email</button>
-                                    </div>
-                                    </form>
-                                `;
-                                // Save handler
-                                document.getElementById('editInvoiceForm').onsubmit = function() {
-                                    const form = this;
-                                    const payload = {
-                                        id: inv.id,
-                                        invoice_number: form.invoice_number.value,
-                                        invoice_date: form.invoice_date.value,
-                                        total_cost: form.total_cost.value,
-                                        total_paid: form.total_paid.value,
-                                        total_remaining: form.total_remaining.value,
-                                        status: form.status.value,
-                                        notes: form.notes.value
-                                    };
-                                    fetch('api/update_invoice.php', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify(payload)
-                                    })
-                                    .then(res => res.json())
-                                    .then(data => {
-                                        if (data.success) {
-                                            alert('Invoice updated successfully.');
-                                            showFilteredInvoices('all');
-                                            closeInvoiceModal();
-                                        } else {
-                                            alert('Failed to update invoice: ' + (data.message || 'Unknown error'));
-                                        }
-                                    })
-                                    .catch(err => {
-                                        alert('Error updating invoice.');
-                                        console.error(err);
-                                    });
-                                    return false;
-                                };
-                            } else {
-                                modalBody.innerHTML = '<p style="color:red;">Failed to load invoice details.</p>';
-                            }
-                        })
-                        .catch(err => {
-                            modalBody.innerHTML = '<p style="color:red;">Error loading invoice details.</p>';
-                            console.error(err);
-                        });
+          // TODO: Fetch invoice details via AJAX and populate modal
+          document.getElementById('invoiceModalBody').innerHTML = '<p>Loading invoice #' + invoiceId + '...</p>';
+          document.getElementById('invoiceModal').classList.add('show');
         }
         function closeInvoiceModal() {
           document.getElementById('invoiceModal').classList.remove('show');
-          // Restore dashboard style in case it was lost
-          document.body.style.background = '#f5f5f5';
-          document.body.style.color = '#222';
-          // Re-apply dashboard section visibility and nav highlight
-          showSection('dashboard');
-          // Optionally reload stats if needed
-          if (typeof loadInvoiceStats === 'function') loadInvoiceStats();
-          if (typeof showFilteredInvoices === 'function') showFilteredInvoices('all');
         }
         function deleteInvoice(invoiceId) {
-                    if (confirm('Are you sure you want to delete this invoice?')) {
-                        fetch('api/delete_invoice.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ invoice_id: invoiceId })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                alert('Invoice deleted successfully.');
-                                showFilteredInvoices('all');
-                            } else {
-                                alert('Failed to delete invoice: ' + (data.message || 'Unknown error'));
-                            }
-                        })
-                        .catch(err => {
-                            alert('Error deleting invoice.');
-                            console.error(err);
-                        });
-                    }
+          if (confirm('Are you sure you want to delete this invoice?')) {
+            // TODO: Implement AJAX delete
+            alert('Delete invoice ' + invoiceId + ' (not yet implemented)');
+          }
         }
         
         // Load all dashboard stats
@@ -5558,7 +5356,7 @@ invoices.forEach(invoice => {
             });
         }
         
-
+        // ==================== Menu Customization ====================
         
         const defaultMenuOrder = [
             {id: 'nav-dashboard', label: '📋 Dashboard', section: 'dashboard', type: 'link'},
@@ -5583,8 +5381,7 @@ invoices.forEach(invoice => {
             {id: 'users-submenu', label: '👤 Users', type: 'parent', children: [
                 {id: 'nav-users-list', label: '📋 View All Users', section: 'users-list'},
                 {id: 'nav-create-user', label: '➕ Create User', action: 'openCreateUserModal()'}
-            ]},
-            {id: 'nav-export', label: '📦 Export Website', section: 'export', type: 'link'}
+            ]}
         ];
         
         function openMenuCustomizationModal() {
