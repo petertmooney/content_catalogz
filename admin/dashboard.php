@@ -1775,8 +1775,8 @@ if ($invoices_result) {
                     <textarea id="noteText" class="form-control" rows="5" required placeholder="Enter your note..."></textarea>
                 </div>
                 <div class="form-group">
-                    <label style="display: flex; align-items: center; gap: 8px;">
-                        <input type="checkbox" id="noteImportant">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="noteImportant" style="margin: 0;">
                         <span>⭐ Mark as Important</span>
                     </label>
                 </div>
@@ -4063,9 +4063,10 @@ if ($invoices_result) {
                         container.innerHTML = data.notes.map(note => `
                             <div class="note-item ${note.is_important ? 'important' : ''}">
                                 ${note.is_important ? '<span class="note-important-badge">⭐ IMPORTANT</span>' : ''}
-                                <div class="note-text">${note.note_text}</div>
+                                <div class="note-text">${escapeHtml(note.note_text || '')}</div>
                                 <div class="note-meta">
-                                    <span>📅 ${new Date(note.created_at).toLocaleString()} by ${note.created_by_username || 'Unknown'}</span>
+                                    <span>📅 ${new Date(note.created_at).toLocaleString()}</span>
+                                    <span>👤 ${escapeHtml(note.created_by_username || 'System')}</span>
                                     <a href="javascript:void(0)" class="note-delete" onclick="deleteNote(${note.id})">Delete</a>
                                 </div>
                             </div>

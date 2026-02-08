@@ -20,7 +20,13 @@ if ($method === 'GET') {
         exit;
     }
     
-    $stmt = $conn->prepare("SELECT * FROM client_notes WHERE client_id = ? ORDER BY is_important DESC, created_at DESC");
+    $stmt = $conn->prepare("
+        SELECT n.*, u.username as created_by_username 
+        FROM client_notes n 
+        LEFT JOIN users u ON n.created_by = u.id 
+        WHERE n.client_id = ? 
+        ORDER BY n.is_important DESC, n.created_at DESC
+    ");
     $stmt->bind_param("i", $clientId);
     $stmt->execute();
     $result = $stmt->get_result();
