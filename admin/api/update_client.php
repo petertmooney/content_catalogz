@@ -16,6 +16,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $data = json_decode(file_get_contents('php://input'), true);
 
+if ($data === null) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Invalid JSON data']);
+    exit;
+}
+
 if (!isset($data['id']) || !is_numeric($data['id'])) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Invalid client ID']);
@@ -50,9 +56,20 @@ $totalRemaining = $totalCost - $totalPaid;
 
 // Convert services array to JSON
 $servicesJson = json_encode($services);
+if ($servicesJson === false) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Invalid services data']);
+    exit;
+}
 
 // Update the client information
 $stmt = $conn->prepare("UPDATE quotes SET address_street = ?, address_line2 = ?, address_city = ?, address_county = ?, address_postcode = ?, address_country = ?, services = ?, total_cost = ?, total_paid = ?, total_remaining = ? WHERE id = ?");
+if (!$stmt) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Database prepare error: ' . $conn->error]);
+    exit;
+}
+
 $stmt->bind_param("sssssssdddi", $addressStreet, $addressLine2, $addressCity, $addressCounty, $addressPostcode, $addressCountry, $servicesJson, $totalCost, $totalPaid, $totalRemaining, $clientId);
 
 if ($stmt->execute()) {

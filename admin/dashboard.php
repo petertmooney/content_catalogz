@@ -3320,19 +3320,26 @@ if ($invoices_result) {
                 },
                 body: JSON.stringify(data)
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error('Server error: ' + response.status + ' - ' + text);
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     alert('Client information updated successfully!');
                     closeClientModal();
                     loadExistingClients(); // Refresh the clients list
                 } else {
-                    alert('Error: ' + data.message);
+                    alert('Error: ' + (data.message || 'Unknown error'));
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Failed to update client information');
+                alert('Failed to update client information: ' + error.message);
             });
         }
 
