@@ -3396,8 +3396,12 @@ if ($invoices_result) {
         function deleteActivity(activityId) {
             if (!confirm('Delete this activity?')) return;
             
-            fetch(`api/activities.php?id=${activityId}`, {
-                method: 'DELETE'
+            fetch('api/activities.php', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({id: activityId})
             })
             .then(res => res.json())
             .then(data => {

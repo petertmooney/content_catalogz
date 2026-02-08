@@ -52,16 +52,10 @@ elseif ($method === 'POST') {
     $duration = isset($data['duration_minutes']) ? intval($data['duration_minutes']) : 0;
     $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
     
-    $stmt = $conn->prepare("INSERT INTO activities (client_id, activity_type, subject, description, activity_date, duration_minutes, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO activities (client_id, type, subject, description, activity_date, duration_minutes, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)");
     $stmt->bind_param("issssii", $clientId, $activityType, $subject, $description, $activityDate, $duration, $userId);
     
     if ($stmt->execute()) {
-        // Update last_contact_date in quotes table
-        $updateStmt = $conn->prepare("UPDATE quotes SET last_contact_date = CURDATE() WHERE id = ?");
-        $updateStmt->bind_param("i", $clientId);
-        $updateStmt->execute();
-        $updateStmt->close();
-        
         echo json_encode(['success' => true, 'message' => 'Activity logged successfully', 'id' => $conn->insert_id]);
     } else {
         http_response_code(500);
@@ -73,7 +67,7 @@ elseif ($method === 'POST') {
 
 // DELETE - Remove activity
 elseif ($method === 'DELETE') {
-    parse_str(file_get_contents("php://input"), $data);
+    $data = json_decode(file_get_contents('php://input'), true);
     $activityId = isset($data['id']) ? intval($data['id']) : null;
     
     if (!$activityId) {
