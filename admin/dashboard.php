@@ -3241,6 +3241,9 @@ if ($invoices_result) {
             const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
             const remaining = totalCost - totalPaid;
             
+            // Always store the actual calculated value
+            document.getElementById('totalRemaining').value = remaining.toFixed(2);
+            
             // Update label, color code, and help text based on balance
             const remainingInput = document.getElementById('totalRemaining');
             const remainingLabel = document.getElementById('totalRemainingLabel');
@@ -3249,14 +3252,12 @@ if ($invoices_result) {
             
             if (remaining > 0) {
                 // Outstanding balance
-                remainingInput.value = remaining.toFixed(2);
                 remainingInput.style.color = '#dc3545'; // Red
                 remainingCurrency.style.color = '#dc3545';
                 remainingLabel.textContent = 'Balance Due (£)';
                 remainingHelp.style.display = 'none';
             } else if (remaining < 0) {
-                // Account credit - show as positive amount for clarity
-                remainingInput.value = Math.abs(remaining).toFixed(2);
+                // Account credit - negative value indicates credit
                 remainingInput.style.color = '#28a745'; // Green
                 remainingCurrency.style.color = '#28a745';
                 remainingLabel.textContent = 'Account Credit (£)';
@@ -3265,7 +3266,6 @@ if ($invoices_result) {
                 remainingHelp.textContent = 'Client has paid £' + Math.abs(remaining).toFixed(2) + ' in advance';
             } else {
                 // Paid in full
-                remainingInput.value = '0.00';
                 remainingInput.style.color = '#28a745'; // Green
                 remainingCurrency.style.color = '#28a745';
                 remainingLabel.textContent = 'Balance (£)';
