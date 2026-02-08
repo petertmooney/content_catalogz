@@ -3525,7 +3525,7 @@ if ($invoices_result) {
                     
                     <div class="invoice-header">
                         <div class="company-info">
-                            <h1>Content Catalogz</h1>
+                            <img src="../assets/images/LogoPink.png" alt="Content Catalogz" style="height: 50px; margin-bottom: 10px;">
                             <p>Professional Content Services</p>
                         </div>
                         <div class="invoice-details">

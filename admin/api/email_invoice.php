@@ -120,7 +120,7 @@ try {
                 <p style="color: #666; margin: 5px 0;">' . htmlspecialchars($invoiceNumber) . '</p>
             </td>
             <td style="text-align: right;">
-                <h2 style="margin: 0; color: #333;">Content Catalogz</h2>
+                <img src="cid:logo" alt="Content Catalogz" style="height: 50px; margin-bottom: 10px;">
                 <p style="color: #666; margin: 5px 0;">Your Business Address</p>
                 <p style="color: #666; margin: 5px 0;">contact@contentcatalogz.com</p>
             </td>
