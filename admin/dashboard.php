@@ -4121,6 +4121,7 @@ invoices.forEach(invoice => {
                                 const inv = data.invoice;
                                 // Use print preview style
                                 modalBody.innerHTML = `
+                                    <form id="editInvoiceForm" onsubmit="return false;">
                                     <div class="invoice-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
                                         <div class="company-info">
                                             <img src="/assets/images/LogoPink.png" alt="Content Catalogz" style="height: 75px; margin-bottom: 10px;">
@@ -4128,8 +4129,8 @@ invoices.forEach(invoice => {
                                         </div>
                                         <div class="invoice-details">
                                             <h2 style="margin: 0; color: #ff69b4;">INVOICE</h2>
-                                            <p><strong>Invoice No:</strong> ${inv.invoice_number}</p>
-                                            <p><strong>Date:</strong> ${inv.invoice_date}</p>
+                                            <p><strong>Invoice No:</strong> <input type="text" name="invoice_number" value="${inv.invoice_number}" style="width:120px;"></p>
+                                            <p><strong>Date:</strong> <input type="date" name="invoice_date" value="${inv.invoice_date}"></p>
                                         </div>
                                     </div>
                                     <div class="client-info" style="margin-bottom: 20px;">
@@ -4149,22 +4150,30 @@ invoices.forEach(invoice => {
                                         <tbody>
                                             <tr>
                                                 <td>Content Services</td>
-                                                <td style="text-align:right;">£${parseFloat(inv.total_cost).toFixed(2)}</td>
+                                                <td style="text-align:right;"><input type="number" step="0.01" name="total_cost" value="${parseFloat(inv.total_cost).toFixed(2)}" style="width:100px;"></td>
                                             </tr>
                                         </tbody>
                                     </table>
                                     <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                                         <tr>
                                             <td><strong>Total Cost:</strong></td>
-                                            <td style="text-align: right;">£${parseFloat(inv.total_cost).toFixed(2)}</td>
+                                            <td style="text-align: right;">£<input type="number" step="0.01" name="total_cost2" value="${parseFloat(inv.total_cost).toFixed(2)}" style="width:100px;"></td>
                                         </tr>
                                         <tr>
                                             <td><strong>Total Paid:</strong></td>
-                                            <td style="text-align: right;">£${parseFloat(inv.total_paid).toFixed(2)}</td>
+                                            <td style="text-align: right;">£<input type="number" step="0.01" name="total_paid" value="${parseFloat(inv.total_paid).toFixed(2)}" style="width:100px;"></td>
                                         </tr>
                                         <tr>
                                             <td><strong>Amount Due:</strong></td>
-                                            <td style="text-align: right;">£${parseFloat(inv.total_remaining).toFixed(2)}</td>
+                                            <td style="text-align: right;">£<input type="number" step="0.01" name="total_remaining" value="${parseFloat(inv.total_remaining).toFixed(2)}" style="width:100px;"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Status:</strong></td>
+                                            <td><input type="text" name="status" value="${inv.status}" style="width:120px;"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Notes:</strong></td>
+                                            <td><textarea name="notes" style="width:100%;">${inv.notes ? inv.notes : ''}</textarea></td>
                                         </tr>
                                     </table>
                                     <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666;">
@@ -4172,9 +4181,45 @@ invoices.forEach(invoice => {
                                         <p style="font-size: 12px;">Payment is due within 30 days of invoice date.</p>
                                     </div>
                                     <div style="text-align:right; margin-top:20px;">
-                                        <button class="btn btn-secondary" onclick="closeInvoiceModal()">Close</button>
+                                        <button class="btn btn-primary" type="submit">Save Changes</button>
+                                        <button class="btn btn-secondary" type="button" onclick="closeInvoiceModal()">Close</button>
                                     </div>
+                                    </form>
                                 `;
+                                // Save handler
+                                document.getElementById('editInvoiceForm').onsubmit = function() {
+                                    const form = this;
+                                    const payload = {
+                                        id: inv.id,
+                                        invoice_number: form.invoice_number.value,
+                                        invoice_date: form.invoice_date.value,
+                                        total_cost: form.total_cost.value,
+                                        total_paid: form.total_paid.value,
+                                        total_remaining: form.total_remaining.value,
+                                        status: form.status.value,
+                                        notes: form.notes.value
+                                    };
+                                    fetch('api/update_invoice.php', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(payload)
+                                    })
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        if (data.success) {
+                                            alert('Invoice updated successfully.');
+                                            showFilteredInvoices('all');
+                                            closeInvoiceModal();
+                                        } else {
+                                            alert('Failed to update invoice: ' + (data.message || 'Unknown error'));
+                                        }
+                                    })
+                                    .catch(err => {
+                                        alert('Error updating invoice.');
+                                        console.error(err);
+                                    });
+                                    return false;
+                                };
                             } else {
                                 modalBody.innerHTML = '<p style="color:red;">Failed to load invoice details.</p>';
                             }
