@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Catalogz - Get a Quote</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <img src="assets/images/logo.png" alt="Content Catalogz Logo" class="nav-logo">
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="quote.html" class="active">Get a Quote</a></li>
+                <li><a href="admin/login.php" class="admin-link" title="Admin Panel">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Get a Quote</h1>
+                <p class="page-subtitle">Let's discuss how we can help grow your business</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <div class="quote-content">
+                    <div class="quote-intro">
+                        <h2>Request Your Free Consultation</h2>
+                        <p>Fill out the form below and one of our content experts will reach out to you within 24 hours to discuss your needs and provide a customized quote.</p>
+                        <div id="formMessage" style="display: none; padding: 15px; margin: 15px 0; border-radius: 4px;"></div>
+                    </div>
+                    
+                    <form class="quote-form" id="quoteForm">
+                        <div class="form-group">
+                            <label for="name">Full Name *</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="company">Company Name</label>
+                            <input type="text" id="company" name="company">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="service">Service Interested In *</label>
+                            <select id="service" name="service" required>
+                                <option value="">Select a service</option>
+                                <option value="strategy">Content Strategy</option>
+                                <option value="cataloging">Content Cataloging</option>
+                                <option value="seo">SEO Optimization</option>
+                                <option value="marketing">Content Marketing</option>
+                                <option value="analytics">Analytics & Tracking</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="message">Tell Us About Your Project *</label>
+                            <textarea id="message" name="message" rows="5" required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Submit Request</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section class="newsletter">
+            <div class="container">
+                <h2>Subscribe to Our Newsletter</h2>
+                <p>Get weekly insights, tips, and exclusive content delivered to your inbox.</p>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Enter your email" required>
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Content Catalogz. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('quoteForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const messageDiv = document.getElementById('formMessage');
+            
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
+            // Hide any previous messages
+            messageDiv.style.display = 'none';
+            
+            fetch('api/submit_quote.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                messageDiv.style.display = 'block';
+                
+                if (data.success) {
+                    messageDiv.style.background = '#d4edda';
+                    messageDiv.style.color = '#155724';
+                    messageDiv.style.border = '1px solid #c3e6cb';
+                    messageDiv.textContent = data.message;
+                    
+                    // Reset form
+                    document.getElementById('quoteForm').reset();
+                    
+                    // Scroll to message
+                    messageDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    messageDiv.style.background = '#f8d7da';
+                    messageDiv.style.color = '#721c24';
+                    messageDiv.style.border = '1px solid #f5c6cb';
+                    messageDiv.textContent = data.message || 'An error occurred. Please try again.';
+                }
+            })
+            .catch(error => {
+                messageDiv.style.display = 'block';
+                messageDiv.style.background = '#f8d7da';
+                messageDiv.style.color = '#721c24';
+                messageDiv.style.border = '1px solid #f5c6cb';
+                messageDiv.textContent = 'Network error. Please check your connection and try again.';
+            })
+            .finally(() => {
+                // Re-enable submit button
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Request';
+            });
+        });
+    </script>
+</body>
+</html>

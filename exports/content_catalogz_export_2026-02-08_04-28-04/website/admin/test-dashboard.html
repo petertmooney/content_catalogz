@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .success { color: green; }
+        .error { color: red; }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dashboard Diagnostic Test</h1>
+    
+    <div class="test-box">
+        <h3>1. JavaScript Execution Test</h3>
+        <p id="js-test" class="error">JavaScript NOT working</p>
+    </div>
+    
+    <div class="test-box">
+        <h3>2. Button Click Test</h3>
+        <button onclick="testClick()">Click Me</button>
+        <p id="click-result"></p>
+    </div>
+    
+    <div class="test-box">
+        <h3>3. API Connection Test</h3>
+        <button onclick="testAPI()">Test API</button>
+        <p id="api-result"></p>
+    </div>
+    
+    <div class="test-box">
+        <h3>4. Fetch Quotes Test</h3>
+        <button onclick="testQuotes()">Fetch Quotes</button>
+        <pre id="quotes-result" style="background: #f0f0f0; padding: 10px; border-radius: 4px;"></pre>
+    </div>
+
+    <script>
+        // Test 1: Basic JavaScript
+        document.getElementById('js-test').textContent = 'JavaScript is working!';
+        document.getElementById('js-test').className = 'success';
+        
+        console.log('Diagnostic page loaded successfully');
+        
+        // Test 2: Click handler
+        function testClick() {
+            document.getElementById('click-result').textContent = 'Button click works! ✓';
+            document.getElementById('click-result').className = 'success';
+            console.log('Click test passed');
+        }
+        
+        // Test 3: API connection
+        function testAPI() {
+            const resultEl = document.getElementById('api-result');
+            resultEl.textContent = 'Testing...';
+            
+            fetch('api/get_html_files.php')
+                .then(response => {
+                    console.log('API Response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('API Data:', data);
+                    if (data.success) {
+                        resultEl.textContent = `API works! Found ${data.files ? data.files.length : 0} files ✓`;
+                        resultEl.className = 'success';
+                    } else {
+                        resultEl.textContent = 'API response: ' + JSON.stringify(data);
+                        resultEl.className = 'error';
+                    }
+                })
+                .catch(error => {
+                    console.error('API Error:', error);
+                    resultEl.textContent = 'API Error: ' + error.message;
+                    resultEl.className = 'error';
+                });
+        }
+        
+        // Test 4: Fetch quotes  
+        function testQuotes() {
+            const resultEl = document.getElementById('quotes-result');
+            resultEl.textContent = 'Loading...';
+            
+            fetch('api/get_quotes.php')
+                .then(response => {
+                    console.log('Quotes API status:', response.status);
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Quotes data:', data);
+                    if (data.success) {
+                        resultEl.textContent = `Success! Found ${data.quotes.length} quotes\n\nFirst quote:\n` + 
+                            JSON.stringify(data.quotes[0], null, 2);
+                    } else {
+                        resultEl.textContent = 'Error: ' + (data.message || 'Unknown error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Quotes error:', error);
+                    resultEl.textContent = 'Error: ' + error.message;
+                });
+        }
+        
+        // Auto-run basic tests
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('Page fully loaded');
+        });
+    </script>
+</body>
+</html>
