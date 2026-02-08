@@ -442,6 +442,16 @@ if ($invoices_result) {
             border-left-color: #ffc107;
         }
         
+        .activity-item.type-quote_sent,
+        .activity-item.type-invoice_sent,
+        .activity-item.type-email_sent {
+            border-left-color: #007bff;
+        }
+        
+        .activity-item.type-payment_received {
+            border-left-color: #28a745;
+        }
+        
         .activity-header {
             display: flex;
             justify-content: space-between;
@@ -476,6 +486,27 @@ if ($invoices_result) {
         .activity-type.type-note {
             background: #e7e7e7;
             color: #333;
+        }
+        
+        .activity-type.type-quote_sent,
+        .activity-type.type-invoice_sent {
+            background: #cfe2ff;
+            color: #084298;
+        }
+        
+        .activity-type.type-payment_received {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .activity-type.type-task {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .activity-type.type-other {
+            background: #f8d7da;
+            color: #721c24;
         }
         
         .activity-subject {
@@ -1548,6 +1579,7 @@ if ($invoices_result) {
                     <button type="button" class="btn btn-danger" onclick="confirmDeleteClient()" title="Delete this client and all related data">🗑️ Delete Client</button>
                     <div style="display: flex; gap: 10px;">
                         <button type="button" class="btn btn-secondary" onclick="closeClientModal()">Close</button>
+                        <button type="button" class="btn btn-secondary" onclick="composeEmail()">✉️ Send Email</button>
                         <button type="button" class="btn btn-secondary" onclick="printInvoice()">🖨️ Print Invoice</button>
                         <button type="button" class="btn btn-secondary" onclick="emailInvoice()">📧 Email Invoice</button>
                         <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -1560,6 +1592,7 @@ if ($invoices_result) {
             <div id="client-tab-activities" class="client-tab-content" style="display: none;">
                 <div style="margin-bottom: 20px;">
                     <button class="btn btn-primary" onclick="openLogActivityModal()">+ Log Activity</button>
+                    <button class="btn btn-secondary" onclick="composeEmail()">✉️ Email Client</button>
                 </div>
                 <div id="client-activities-list">
                     <div class="empty-state">
@@ -1935,6 +1968,47 @@ if ($invoices_result) {
                     <button type="button" class="btn btn-danger" onclick="confirmDeleteUser()">🗑️ Delete User</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Compose Email Modal -->
+    <div id="composeEmailModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3>✉️ Compose Email</h3>
+                <button class="close-btn" onclick="closeComposeEmailModal()">&times;</button>
+            </div>
+            <form id="composeEmailForm" onsubmit="sendClientEmail(event)">
+                <input type="hidden" id="emailClientId">
+                
+                <div class="form-group">
+                    <label for="emailTo">To *</label>
+                    <input type="email" id="emailTo" class="form-control" required readonly style="background: #f8f9fa;">
+                    <small style="color: #666;">Client email address</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="emailSubject">Subject *</label>
+                    <input type="text" id="emailSubject" class="form-control" required placeholder="Email subject...">
+                </div>
+                
+                <div class="form-group">
+                    <label for="emailMessage">Message *</label>
+                    <textarea id="emailMessage" class="form-control" rows="8" required placeholder="Type your message here..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="emailLogActivity" checked style="margin-right: 8px;">
+                        Log this email in activity timeline
+                    </label>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeComposeEmailModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">📧 Send Email</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -2626,6 +2700,23 @@ if ($invoices_result) {
                 loadQuotes(); // Refresh list
                 if (data.success) {
                     alert('Quote saved and emailed successfully to ' + clientEmail);
+                    
+                    // Log email activity
+                    const activityData = {
+                        client_id: quoteId,
+                        type: 'email',
+                        subject: `Quote Emailed to ${clientName}`,
+                        description: `Quote sent to ${clientEmail}. Total: £${totalCost}. Services: ${services.map(s => s.name).join(', ')}`,
+                        activity_date: new Date().toISOString().slice(0, 19).replace('T', ' ')
+                    };
+                    
+                    fetch('api/activities.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(activityData)
+                    })
+                    .catch(err => console.error('Error logging activity:', err));
+                    
                 } else if (data.fallback) {
                     // Server mail not configured - open email client
                     const mailtoLink = 'mailto:' + encodeURIComponent(data.email) + 
@@ -3495,6 +3586,26 @@ if ($invoices_result) {
             .then(data => {
                 if (data.success) {
                     alert('Invoice sent successfully to ' + clientEmail);
+                    
+                    // Log email activity
+                    const activityData = {
+                        client_id: currentClientId,
+                        type: 'email',
+                        subject: `Invoice ${invoiceNumber} Emailed`,
+                        description: `Invoice sent to ${clientEmail}. Total: £${totalCost}, Paid: £${totalPaid}, Remaining: £${totalRemaining}`,
+                        activity_date: new Date().toISOString().slice(0, 19).replace('T', ' ')
+                    };
+                    
+                    fetch('api/activities.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(activityData)
+                    })
+                    .then(() => {
+                        loadClientActivities(currentClientId);
+                    })
+                    .catch(err => console.error('Error logging activity:', err));
+                    
                 } else {
                     alert('Error sending invoice: ' + (data.message || 'Unknown error'));
                 }
@@ -3814,21 +3925,51 @@ if ($invoices_result) {
                 .then(data => {
                     const container = document.getElementById('client-activities-list');
                     if (data.success && data.activities && data.activities.length > 0) {
-                        container.innerHTML = data.activities.map(activity => `
-                            <div class="activity-item type-${activity.type}">
-                                <div class="activity-header">
-                                    <span class="activity-type type-${activity.type}">${activity.type}</span>
-                                    <a href="javascript:void(0)" class="activity-delete" onclick="deleteActivity(${activity.id})">Delete</a>
+                        container.innerHTML = data.activities.map(activity => {
+                            // Get icon and label based on activity type
+                            const typeIcons = {
+                                'call': '📞',
+                                'email': '📧',
+                                'meeting': '👥',
+                                'note': '📝',
+                                'task': '✅',
+                                'quote_sent': '📋',
+                                'invoice_sent': '📄',
+                                'payment_received': '💰',
+                                'other': '📌'
+                            };
+                            
+                            const typeLabels = {
+                                'call': 'Phone Call',
+                                'email': 'Email',
+                                'meeting': 'Meeting',
+                                'note': 'Note',
+                                'task': 'Task',
+                                'quote_sent': 'Quote Sent',
+                                'invoice_sent': 'Invoice Sent',
+                                'payment_received': 'Payment',
+                                'other': 'Other'
+                            };
+                            
+                            const icon = typeIcons[activity.type] || '📌';
+                            const label = typeLabels[activity.type] || activity.type;
+                            
+                            return `
+                                <div class="activity-item type-${activity.type}">
+                                    <div class="activity-header">
+                                        <span class="activity-type type-${activity.type}">${icon} ${label}</span>
+                                        <a href="javascript:void(0)" class="activity-delete" onclick="deleteActivity(${activity.id})">Delete</a>
+                                    </div>
+                                    <div class="activity-subject">${escapeHtml(activity.subject || 'No Subject')}</div>
+                                    ${activity.description ? `<div class="activity-description">${escapeHtml(activity.description)}</div>` : ''}
+                                    <div class="activity-meta">
+                                        <span>📅 ${new Date(activity.activity_date).toLocaleString()}</span>
+                                        ${activity.duration_minutes ? `<span>⏱️ ${activity.duration_minutes} min</span>` : ''}
+                                        <span>👤 ${activity.created_by_username || 'System'}</span>
+                                    </div>
                                 </div>
-                                <div class="activity-subject">${activity.subject || 'No Subject'}</div>
-                                ${activity.description ? `<div class="activity-description">${activity.description}</div>` : ''}
-                                <div class="activity-meta">
-                                    <span>📅 ${new Date(activity.activity_date).toLocaleString()}</span>
-                                    ${activity.duration_minutes ? `<span>⏱️ ${activity.duration_minutes} min</span>` : ''}
-                                    <span>👤 ${activity.created_by_username || 'Unknown'}</span>
-                                </div>
-                            </div>
-                        `).join('');
+                            `;
+                        }).join('');
                     } else {
                         container.innerHTML = '<div class="empty-state"><h3>No Activities Yet</h3><p>Log your first interaction with this client.</p></div>';
                     }
@@ -4669,8 +4810,93 @@ if ($invoices_result) {
         
         // ==================== Email Functions ====================
         
-        function composeEmail() {
-            alert('Compose email feature coming soon! This will open a modal to compose and send emails.');
+        function composeEmail(clientId = null, clientEmail = null, clientName = null) {
+            if (clientId && clientEmail) {
+                // Composing to a specific client
+                document.getElementById('emailClientId').value = clientId;
+                document.getElementById('emailTo').value = clientEmail;
+                document.getElementById('emailSubject').value = '';
+                document.getElementById('emailMessage').value = '';
+                document.getElementById('emailLogActivity').checked = true;
+            } else if (currentClientId) {
+                // Use current client if in client modal
+                const email = document.getElementById('clientEmail')?.textContent;
+                const name = document.getElementById('clientName')?.textContent;
+                if (email) {
+                    document.getElementById('emailClientId').value = currentClientId;
+                    document.getElementById('emailTo').value = email;
+                    document.getElementById('emailSubject').value = '';
+                    document.getElementById('emailMessage').value = '';
+                    document.getElementById('emailLogActivity').checked = true;
+                }
+            } else {
+                alert('Please select a client first to compose an email.');
+                return;
+            }
+            
+            document.getElementById('composeEmailModal').classList.add('show');
+        }
+        
+        function closeComposeEmailModal() {
+            document.getElementById('composeEmailModal').classList.remove('show');
+        }
+        
+        function sendClientEmail(event) {
+            event.preventDefault();
+            
+            const clientId = document.getElementById('emailClientId').value;
+            const to = document.getElementById('emailTo').value;
+            const subject = document.getElementById('emailSubject').value;
+            const message = document.getElementById('emailMessage').value;
+            const logActivity = document.getElementById('emailLogActivity').checked;
+            
+            // Send email
+            fetch('api/send_email.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    to: to,
+                    subject: subject,
+                    message: message,
+                    client_id: clientId
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Email sent successfully!');
+                    closeComposeEmailModal();
+                    
+                    // Log activity if checkbox is checked
+                    if (logActivity && clientId) {
+                        const activityData = {
+                            client_id: clientId,
+                            type: 'email',
+                            subject: `Email: ${subject}`,
+                            description: message.substring(0, 200) + (message.length > 200 ? '...' : ''),
+                            activity_date: new Date().toISOString().slice(0, 19).replace('T', ' ')
+                        };
+                        
+                        fetch('api/activities.php', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify(activityData)
+                        })
+                        .then(() => {
+                            if (currentClientId == clientId) {
+                                loadClientActivities(clientId);
+                            }
+                        })
+                        .catch(err => console.error('Error logging activity:', err));
+                    }
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to send email. Please check your email settings.'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error sending email. Please try again.');
+            });
         }
         
         function loadInboxEmails() {
