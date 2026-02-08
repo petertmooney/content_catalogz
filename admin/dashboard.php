@@ -1294,9 +1294,12 @@ if ($invoices_result) {
                             </div>
                             <div class="form-group">
                                 <label for="totalPaid">Total Paid (£)</label>
-                                <div style="position: relative;">
-                                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 16px; color: #333;">£</span>
-                                    <input type="number" id="totalPaid" name="total_paid" class="form-control" step="0.01" min="0" oninput="calculateRemaining()" style="padding-left: 28px;">
+                                <div style="display: flex; gap: 10px;">
+                                    <div style="position: relative; flex: 1;">
+                                        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 16px; color: #333;">£</span>
+                                        <input type="number" id="totalPaid" name="total_paid" class="form-control" step="0.01" min="0" readonly style="background:#f8f9fa; padding-left: 28px;">
+                                    </div>
+                                    <button type="button" class="btn btn-primary" onclick="openPaymentModal()" style="white-space: nowrap;">💰 Record Payment</button>
                                 </div>
                             </div>
                         </div>
@@ -1516,6 +1519,71 @@ if ($invoices_result) {
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
                     <button type="button" class="btn btn-secondary" onclick="closeNoteModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Record Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Record Payment</h3>
+                <button class="close-btn" onclick="closePaymentModal()">&times;</button>
+            </div>
+            <form id="paymentForm" onsubmit="recordPayment(event)">
+                <input type="hidden" id="paymentClientId">
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                        <div>
+                            <strong>Total Cost:</strong><br>
+                            <span style="font-size: 18px; color: #333;">£<span id="paymentTotalCost">0.00</span></span>
+                        </div>
+                        <div>
+                            <strong>Total Paid:</strong><br>
+                            <span style="font-size: 18px; color: #28a745;">£<span id="paymentTotalPaid">0.00</span></span>
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <strong>Outstanding Balance:</strong><br>
+                            <span style="font-size: 20px; font-weight: bold; color: #dc3545;">£<span id="paymentOutstanding">0.00</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="paymentAmount">Payment Amount (£) *</label>
+                    <div style="position: relative;">
+                        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 16px; color: #333;">£</span>
+                        <input type="number" id="paymentAmount" class="form-control" step="0.01" min="0.01" required placeholder="0.00" style="padding-left: 28px; font-size: 18px; font-weight: bold;">
+                    </div>
+                    <small style="color: #666;">Enter the amount received from the client</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="paymentDate">Payment Date *</label>
+                    <input type="date" id="paymentDate" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="paymentMethod">Payment Method</label>
+                    <select id="paymentMethod" class="form-control">
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="cash">Cash</option>
+                        <option value="check">Cheque</option>
+                        <option value="card">Card Payment</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="paymentNotes">Notes (Optional)</label>
+                    <textarea id="paymentNotes" class="form-control" rows="3" placeholder="Payment reference, notes, etc..."></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closePaymentModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">💰 Record Payment</button>
                 </div>
             </form>
         </div>
@@ -3508,6 +3576,101 @@ if ($invoices_result) {
             .catch(err => {
                 console.error('Error:', err);
                 alert('Error deleting note');
+            });
+        }
+        
+        // ==================== Payment Functions ====================
+        
+        function openPaymentModal() {
+            const clientId = document.getElementById('clientId').value;
+            const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
+            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            const outstanding = totalCost - totalPaid;
+            
+            document.getElementById('paymentClientId').value = clientId;
+            document.getElementById('paymentTotalCost').textContent = totalCost.toFixed(2);
+            document.getElementById('paymentTotalPaid').textContent = totalPaid.toFixed(2);
+            document.getElementById('paymentOutstanding').textContent = outstanding.toFixed(2);
+            
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('paymentDate').value = today;
+            
+            // Set suggested payment amount to outstanding balance
+            document.getElementById('paymentAmount').value = outstanding.toFixed(2);
+            
+            document.getElementById('paymentForm').reset();
+            document.getElementById('paymentClientId').value = clientId;
+            document.getElementById('paymentDate').value = today;
+            document.getElementById('paymentAmount').value = outstanding.toFixed(2);
+            
+            document.getElementById('paymentModal').style.display = 'flex';
+        }
+        
+        function closePaymentModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+        }
+        
+        function recordPayment(event) {
+            event.preventDefault();
+            
+            const clientId = document.getElementById('paymentClientId').value;
+            const amount = parseFloat(document.getElementById('paymentAmount').value);
+            const paymentDate = document.getElementById('paymentDate').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const notes = document.getElementById('paymentNotes').value;
+            
+            const currentPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            const newTotalPaid = currentPaid + amount;
+            
+            // Update the client with new total_paid
+            const formData = {
+                id: clientId,
+                total_paid: newTotalPaid
+            };
+            
+            fetch('api/update_client.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Log payment as an activity
+                    const activityData = {
+                        client_id: clientId,
+                        activity_type: 'payment_received',
+                        subject: `Payment Received: £${amount.toFixed(2)}`,
+                        description: `Payment of £${amount.toFixed(2)} received via ${paymentMethod}.${notes ? ' Notes: ' + notes : ''}`,
+                        activity_date: paymentDate + ' 12:00:00'
+                    };
+                    
+                    return fetch('api/activities.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(activityData)
+                    });
+                } else {
+                    throw new Error(data.message || 'Failed to update payment');
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                closePaymentModal();
+                
+                // Update the display
+                document.getElementById('totalPaid').value = newTotalPaid.toFixed(2);
+                calculateRemaining();
+                
+                // Reload activities to show the payment
+                loadClientActivities(clientId);
+                
+                showNotification(`Payment of £${amount.toFixed(2)} recorded successfully`, 'success');
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error recording payment: ' + err.message);
             });
         }
         
