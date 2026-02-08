@@ -1957,6 +1957,11 @@ if ($invoices_result) {
                 if (sectionName === 'invoices') {
                     loadInvoiceStats();
                 }
+                
+                // Load users if switching to users section
+                if (sectionName === 'users-list') {
+                    loadUsers();
+                }
             } catch (error) {
                 console.error('Error in showSection:', error);
             }
@@ -4248,6 +4253,219 @@ if ($invoices_result) {
         
         function openTaskModal() {
             openAddTaskModal();
+        }
+        
+        // ==================== User Management Functions ====================
+        
+        function loadUsers() {
+            fetch('api/get_users.php')
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('users-list-tbody');
+                    
+                    if (!data.success || !data.users || data.users.length === 0) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="5" style="padding: 40px; text-align: center; color: #999;">
+                                    No users found. Click "Create New User" to add your first user.
+                                </td>
+                            </tr>
+                        `;
+                        return;
+                    }
+                    
+                    tbody.innerHTML = data.users.map(user => {
+                        const createdDate = new Date(user.created_at).toLocaleDateString('en-GB');
+                        const roleLabel = user.role === 'superadmin' ? 'Super Admin' : 'Admin';
+                        const roleBadgeColor = user.role === 'superadmin' ? '#dc3545' : '#007bff';
+                        
+                        return `
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 15px; font-weight: 500;">${escapeHtml(user.username)}</td>
+                                <td style="padding: 15px;">${escapeHtml(user.email || 'N/A')}</td>
+                                <td style="padding: 15px;">
+                                    <span style="background: ${roleBadgeColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                                        ${roleLabel}
+                                    </span>
+                                </td>
+                                <td style="padding: 15px; color: #666;">${createdDate}</td>
+                                <td style="padding: 15px; text-align: center;">
+                                    <button class="btn btn-sm btn-primary" onclick="openEditUserModal(${user.id})" style="margin-right: 5px;">
+                                        ✏️ Edit
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="openDeleteUserModal(${user.id}, '${escapeHtml(user.username)}')">
+                                        🗑️ Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                })
+                .catch(err => {
+                    console.error('Error loading users:', err);
+                    document.getElementById('users-list-tbody').innerHTML = `
+                        <tr>
+                            <td colspan="5" style="padding: 40px; text-align: center; color: #dc3545;">
+                                Error loading users. Please refresh the page.
+                            </td>
+                        </tr>
+                    `;
+                });
+        }
+        
+        function openCreateUserModal() {
+            document.getElementById('createUserForm').reset();
+            document.getElementById('createUserModal').classList.add('show');
+        }
+        
+        function closeCreateUserModal() {
+            document.getElementById('createUserModal').classList.remove('show');
+        }
+        
+        function createUser(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('newUsername').value;
+            const email = document.getElementById('newUserEmail').value;
+            const password = document.getElementById('newUserPassword').value;
+            const passwordConfirm = document.getElementById('newUserPasswordConfirm').value;
+            const role = document.getElementById('newUserRole').value;
+            
+            if (password !== passwordConfirm) {
+                alert('Passwords do not match!');
+                return;
+            }
+            
+            fetch('api/create_user.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    username: username,
+                    email: email,
+                    password: password,
+                    role: role
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('User created successfully!');
+                    closeCreateUserModal();
+                    loadUsers();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to create user'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error creating user');
+            });
+        }
+        
+        function openEditUserModal(userId) {
+            fetch('api/get_users.php?id=' + userId)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.users && data.users.length > 0) {
+                        const user = data.users[0];
+                        document.getElementById('editUserId').value = user.id;
+                        document.getElementById('editUsername').value = user.username;
+                        document.getElementById('editUserEmail').value = user.email || '';
+                        document.getElementById('editUserRole').value = user.role || 'admin';
+                        document.getElementById('editUserPassword').value = '';
+                        document.getElementById('editUserPasswordConfirm').value = '';
+                        document.getElementById('editUserModal').classList.add('show');
+                    } else {
+                        alert('Error loading user details');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('Error loading user details');
+                });
+        }
+        
+        function closeEditUserModal() {
+            document.getElementById('editUserModal').classList.remove('show');
+        }
+        
+        function updateUser(event) {
+            event.preventDefault();
+            
+            const userId = document.getElementById('editUserId').value;
+            const email = document.getElementById('editUserEmail').value;
+            const password = document.getElementById('editUserPassword').value;
+            const passwordConfirm = document.getElementById('editUserPasswordConfirm').value;
+            const role = document.getElementById('editUserRole').value;
+            
+            if (password && password !== passwordConfirm) {
+                alert('Passwords do not match!');
+                return;
+            }
+            
+            const updateData = {
+                id: userId,
+                email: email,
+                role: role
+            };
+            
+            if (password) {
+                updateData.password = password;
+            }
+            
+            fetch('api/update_user.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(updateData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('User updated successfully!');
+                    closeEditUserModal();
+                    loadUsers();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to update user'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error updating user');
+            });
+        }
+        
+        function openDeleteUserModal(userId, username) {
+            document.getElementById('deleteUserId').value = userId;
+            document.getElementById('deleteUserName').textContent = username;
+            document.getElementById('deleteUserModal').classList.add('show');
+        }
+        
+        function closeDeleteUserModal() {
+            document.getElementById('deleteUserModal').classList.remove('show');
+        }
+        
+        function confirmDeleteUser() {
+            const userId = document.getElementById('deleteUserId').value;
+            
+            fetch('api/delete_user.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id: userId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('User deleted successfully!');
+                    closeDeleteUserModal();
+                    loadUsers();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to delete user'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error deleting user');
+            });
         }
     </script>
 </body>
