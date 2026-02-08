@@ -1237,7 +1237,7 @@ function filterClientsByType(type) {
                             
                             <div class="form-group">
                                 <label for="smtpPassword">Password *</label>
-                                <input type="password" id="smtpPassword" class="form-control" placeholder="••••••••" required>
+                                <input type="password" id="smtpPassword" class="form-control" placeholder="••••••••" required autocomplete="current-password">
                             </div>
                             
                             <div class="form-group">
@@ -2022,13 +2022,13 @@ function filterClientsByType(type) {
                 
                 <div class="form-group">
                     <label for="newUserPassword">Password *</label>
-                    <input type="password" id="newUserPassword" class="form-control" required minlength="8" placeholder="Minimum 8 characters">
+                    <input type="password" id="newUserPassword" class="form-control" required minlength="8" placeholder="Minimum 8 characters" autocomplete="new-password">
                     <small style="color: #666;">Minimum 8 characters</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="newUserPasswordConfirm">Confirm Password *</label>
-                    <input type="password" id="newUserPasswordConfirm" class="form-control" required minlength="8" placeholder="Re-enter password">
+                    <input type="password" id="newUserPasswordConfirm" class="form-control" required minlength="8" placeholder="Re-enter password" autocomplete="new-password">
                 </div>
                 
                 <div class="form-group">
@@ -2083,13 +2083,13 @@ function filterClientsByType(type) {
                 
                 <div class="form-group">
                     <label for="editUserPassword">New Password (Optional)</label>
-                    <input type="password" id="editUserPassword" class="form-control" minlength="8" placeholder="Leave blank to keep current password">
+                    <input type="password" id="editUserPassword" class="form-control" minlength="8" placeholder="Leave blank to keep current password" autocomplete="new-password">
                     <small style="color: #666;">Only enter a new password if you want to change it</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="editUserPasswordConfirm">Confirm New Password</label>
-                    <input type="password" id="editUserPasswordConfirm" class="form-control" minlength="8" placeholder="Confirm new password">
+                    <input type="password" id="editUserPasswordConfirm" class="form-control" minlength="8" placeholder="Confirm new password" autocomplete="new-password">
                 </div>
                 
                 <div class="form-group">
