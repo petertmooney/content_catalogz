@@ -45,7 +45,7 @@ if ($invoices_result) {
         }
 
         .navbar {
-            background: linear-gradient(135deg, #000000 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #000000 0%, #DB1C56 100%);
             color: white;
             padding: 15px 30px;
             display: flex;
