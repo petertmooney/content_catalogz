@@ -730,7 +730,7 @@ if ($invoices_result) {
     
     <div class="navbar">
         <div class="navbar-left">
-            <h1><img src="../assets/images/LogoPink.png" alt="Content Catalogz"></h1>
+            <h1><img src="../assets/images/LogoWhiteSmall.png" alt="Content Catalogz"></h1>
         </div>
         <div class="navbar-center">
             <h2>Administration Panel</h2>
