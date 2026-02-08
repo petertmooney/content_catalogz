@@ -3322,9 +3322,9 @@ if ($invoices_result) {
                     const container = document.getElementById('client-activities-list');
                     if (data.success && data.activities && data.activities.length > 0) {
                         container.innerHTML = data.activities.map(activity => `
-                            <div class="activity-item type-${activity.activity_type}">
+                            <div class="activity-item type-${activity.type}">
                                 <div class="activity-header">
-                                    <span class="activity-type type-${activity.activity_type}">${activity.activity_type}</span>
+                                    <span class="activity-type type-${activity.type}">${activity.type}</span>
                                     <a href="javascript:void(0)" class="activity-delete" onclick="deleteActivity(${activity.id})">Delete</a>
                                 </div>
                                 <div class="activity-subject">${activity.subject || 'No Subject'}</div>
