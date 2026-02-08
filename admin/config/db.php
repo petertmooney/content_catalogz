@@ -1,6 +1,6 @@
 <?php
 // Database configuration
-define('DB_HOST', '127.0.0.1');  // Use 127.0.0.1 instead of localhost to force TCP
+define('DB_HOST', 'db');  // Docker Compose service name for database container
 define('DB_PORT', 3306);
 define('DB_USER', 'petertmooney');
 define('DB_PASS', '68086500aA!');
