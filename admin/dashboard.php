@@ -1698,10 +1698,14 @@ if ($invoices_result) {
             <form id="addClientForm" onsubmit="saveNewClient(event)">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div class="form-group">
-                        <label for="newClientName">Full Name <span style="color: red;">*</span></label>
-                        <input type="text" id="newClientName" name="name" class="form-control" required placeholder="John Smith">
+                        <label for="newClientFirstName">First Name <span style="color: red;">*</span></label>
+                        <input type="text" id="newClientFirstName" name="first_name" class="form-control" required placeholder="John">
                     </div>
                     <div class="form-group">
+                        <label for="newClientLastName">Last Name <span style="color: red;">*</span></label>
+                        <input type="text" id="newClientLastName" name="last_name" class="form-control" required placeholder="Smith">
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
                         <label for="newClientEmail">Email <span style="color: red;">*</span></label>
                         <input type="email" id="newClientEmail" name="email" class="form-control" required placeholder="john@example.com">
                     </div>
@@ -3742,7 +3746,8 @@ if ($invoices_result) {
             event.preventDefault();
             
             const formData = {
-                name: document.getElementById('newClientName').value,
+                first_name: document.getElementById('newClientFirstName').value,
+                last_name: document.getElementById('newClientLastName').value,
                 email: document.getElementById('newClientEmail').value,
                 company: document.getElementById('newClientCompany').value,
                 phone: document.getElementById('newClientPhone').value,

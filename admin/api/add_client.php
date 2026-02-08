@@ -29,7 +29,8 @@ if (!$data) {
     exit;
 }
 
-$name = trim($data['name'] ?? '');
+$first_name = trim($data['first_name'] ?? '');
+$last_name = trim($data['last_name'] ?? '');
 $email = trim($data['email'] ?? '');
 $company = trim($data['company'] ?? '');
 $phone = trim($data['phone'] ?? '');
@@ -48,9 +49,12 @@ $service = trim($data['service'] ?? '');
 $status = trim($data['status'] ?? 'new');
 $notes = trim($data['notes'] ?? '');
 
+// Concatenate first and last name for the name field
+$name = trim($first_name . ' ' . $last_name);
+
 // Validation
-if (empty($name)) {
-    echo json_encode(['success' => false, 'message' => 'Name is required']);
+if (empty($first_name) || empty($last_name)) {
+    echo json_encode(['success' => false, 'message' => 'First name and last name are required']);
     exit;
 }
 
@@ -76,8 +80,8 @@ if ($result->num_rows > 0) {
 $stmt->close();
 
 // Insert the new client into quotes table - use correct column names
-$stmt = $conn->prepare("INSERT INTO quotes (name, email, company, phone, address_street, address_line2, address_city, address_county, address_postcode, address_country, message, service, status, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
-$stmt->bind_param("ssssssssssssss", $name, $email, $company, $phone, $address_street, $address_line2, $address_city, $address_county, $address_postcode, $address_country, $message, $service, $status, $notes);
+$stmt = $conn->prepare("INSERT INTO quotes (name, first_name, last_name, email, company, phone, address_street, address_line2, address_city, address_county, address_postcode, address_country, message, service, status, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+$stmt->bind_param("ssssssssssssssss", $name, $first_name, $last_name, $email, $company, $phone, $address_street, $address_line2, $address_city, $address_county, $address_postcode, $address_country, $message, $service, $status, $notes);
 
 if ($stmt->execute()) {
     $clientId = $conn->insert_id;
