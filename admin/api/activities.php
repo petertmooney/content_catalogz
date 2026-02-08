@@ -15,11 +15,24 @@ if ($method === 'GET') {
     $clientId = isset($_GET['client_id']) ? intval($_GET['client_id']) : null;
     
     if ($clientId) {
-        $stmt = $conn->prepare("SELECT * FROM activities WHERE client_id = ? ORDER BY activity_date DESC");
+        $stmt = $conn->prepare("
+            SELECT a.*, u.username as created_by_username 
+            FROM activities a 
+            LEFT JOIN users u ON a.created_by = u.id 
+            WHERE a.client_id = ? 
+            ORDER BY a.activity_date DESC
+        ");
         $stmt->bind_param("i", $clientId);
     } else {
         // Get all recent activities
-        $stmt = $conn->prepare("SELECT a.*, q.name as client_name FROM activities a LEFT JOIN quotes q ON a.client_id = q.id ORDER BY a.activity_date DESC LIMIT 50");
+        $stmt = $conn->prepare("
+            SELECT a.*, q.name as client_name, u.username as created_by_username 
+            FROM activities a 
+            LEFT JOIN quotes q ON a.client_id = q.id 
+            LEFT JOIN users u ON a.created_by = u.id 
+            ORDER BY a.activity_date DESC 
+            LIMIT 50
+        ");
     }
     
     $stmt->execute();
@@ -38,14 +51,16 @@ if ($method === 'GET') {
 elseif ($method === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
     
-    if (!isset($data['client_id']) || !isset($data['activity_type']) || !isset($data['subject'])) {
+    // Accept both 'type' and 'activity_type' for backwards compatibility
+    $hasType = isset($data['type']) || isset($data['activity_type']);
+    if (!isset($data['client_id']) || !$hasType || !isset($data['subject'])) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'Missing required fields']);
         exit;
     }
     
     $clientId = intval($data['client_id']);
-    $activityType = $data['activity_type'];
+    $activityType = isset($data['type']) ? $data['type'] : $data['activity_type'];
     $subject = trim($data['subject']);
     $description = isset($data['description']) ? trim($data['description']) : null;
     $activityDate = isset($data['activity_date']) ? $data['activity_date'] : date('Y-m-d H:i:s');
