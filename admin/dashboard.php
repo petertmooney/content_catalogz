@@ -45,7 +45,7 @@ if ($invoices_result) {
         }
 
         .navbar {
-            background: #43081A;
+            background: linear-gradient(135deg, #db1c56 0%, #a01440 100%);
             color: white;
             padding: 15px 30px;
             display: flex;
@@ -322,12 +322,12 @@ if ($invoices_result) {
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
         }
 
         .modal.show {
             display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
         .modal-content {
