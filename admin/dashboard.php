@@ -991,12 +991,12 @@ if ($invoices_result) {
                         <p id="stat-invoices-overdue-count" style="font-size: 24px; font-weight: bold; color: #dc3545;">0</p>
                         <p id="stat-invoices-overdue-amount" style="font-size: 14px; color: #666; margin-top: 5px;">£0.00</p>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="showFilteredInvoices('all')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #17a2b8; font-size: 14px; margin-bottom: 5px;">Total Invoiced</h4>
                         <p id="stat-invoices-total" style="font-size: 24px; font-weight: bold; color: #17a2b8;">£0.00</p>
                         <p style="font-size: 14px; color: #666; margin-top: 5px;">All time</p>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="showFilteredInvoices('paid')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Total Collected</h4>
                         <p id="stat-invoices-collected" style="font-size: 24px; font-weight: bold; color: #28a745;">£0.00</p>
                         <p style="font-size: 14px; color: #666; margin-top: 5px;">All time</p>
@@ -3899,7 +3899,8 @@ if ($invoices_result) {
             const filterLabels = {
                 'outstanding': 'Outstanding Invoices',
                 'overdue': 'Overdue Invoices',
-                'paid': 'Paid Invoices'
+                'paid': 'Paid Invoices',
+                'all': 'All Invoices'
             };
             
             fetch('api/search_invoices.php?filter=' + filter)
