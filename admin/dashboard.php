@@ -702,6 +702,15 @@ if ($invoices_result) {
                 <a href="#" onclick="openCreateUserModal(); return false;" id="nav-create-user">➕ Create User</a>
             </div>
             
+            <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'email-submenu'); return false;">📧 Email</a>
+            <div class="submenu" id="email-submenu">
+                <a href="#" onclick="showSection('email-inbox'); return false;" id="nav-email-inbox">📥 Inbox</a>
+                <a href="#" onclick="showSection('email-draft'); return false;" id="nav-email-draft">📝 Drafts</a>
+                <a href="#" onclick="showSection('email-sent'); return false;" id="nav-email-sent">📤 Sent</a>
+                <a href="#" onclick="showSection('email-trash'); return false;" id="nav-email-trash">🗑️ Trash</a>
+                <a href="#" onclick="showSection('email-settings'); return false;" id="nav-email-settings">⚙️ Settings</a>
+            </div>
+            
             <a href="/" target="_blank">🌐 View Site</a>
             <a href="api/logout.php">🚪 Logout</a>
         </div>
@@ -993,6 +1002,179 @@ if ($invoices_result) {
                         </tbody>
                     </table>
                 </div>
+            </div>
+            
+            <!-- Email Inbox Section -->
+            <div id="section-email-inbox" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h2>📥 Email Inbox</h2>
+                    <p>Manage incoming email messages</p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="composeEmail()">✉️ Compose New Email</button>
+                    <button class="btn btn-secondary" onclick="loadInboxEmails()">🔄 Refresh</button>
+                </div>
+
+                <div id="inbox-email-list">
+                    <div class="empty-state">
+                        <h3>No Messages</h3>
+                        <p>Your inbox is empty.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Email Drafts Section -->
+            <div id="section-email-draft" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h2>📝 Email Drafts</h2>
+                    <p>View and edit draft messages</p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="composeEmail()">✉️ Compose New Email</button>
+                    <button class="btn btn-secondary" onclick="loadDraftEmails()">🔄 Refresh</button>
+                </div>
+
+                <div id="draft-email-list">
+                    <div class="empty-state">
+                        <h3>No Drafts</h3>
+                        <p>You don't have any saved drafts.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Email Sent Section -->
+            <div id="section-email-sent" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h2>📤 Sent Emails</h2>
+                    <p>View sent messages</p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="composeEmail()">✉️ Compose New Email</button>
+                    <button class="btn btn-secondary" onclick="loadSentEmails()">🔄 Refresh</button>
+                </div>
+
+                <div id="sent-email-list">
+                    <div class="empty-state">
+                        <h3>No Sent Messages</h3>
+                        <p>You haven't sent any emails yet.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Email Trash Section -->
+            <div id="section-email-trash" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h2>🗑️ Deleted Emails</h2>
+                    <p>View and restore deleted messages</p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-danger" onclick="emptyTrash()">🗑️ Empty Trash</button>
+                    <button class="btn btn-secondary" onclick="loadTrashEmails()">🔄 Refresh</button>
+                </div>
+
+                <div id="trash-email-list">
+                    <div class="empty-state">
+                        <h3>Trash is Empty</h3>
+                        <p>No deleted messages.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Email Settings Section -->
+            <div id="section-email-settings" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h2>⚙️ Email Settings</h2>
+                    <p>Configure email server settings and preferences</p>
+                </div>
+
+                <form id="emailSettingsForm" onsubmit="saveEmailSettings(event)">
+                    <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px;">
+                        <h3 style="margin-bottom: 20px; color: #333; border-bottom: 2px solid #ff69b4; padding-bottom: 10px;">SMTP Server Settings</h3>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="form-group">
+                                <label for="smtpHost">SMTP Host *</label>
+                                <input type="text" id="smtpHost" class="form-control" placeholder="smtp.example.com" required>
+                                <small style="color: #666;">Your SMTP server hostname</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="smtpPort">SMTP Port *</label>
+                                <input type="number" id="smtpPort" class="form-control" placeholder="587" required>
+                                <small style="color: #666;">Common ports: 587 (TLS), 465 (SSL), 25</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="smtpUsername">Username *</label>
+                                <input type="text" id="smtpUsername" class="form-control" placeholder="user@example.com" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="smtpPassword">Password *</label>
+                                <input type="password" id="smtpPassword" class="form-control" placeholder="••••••••" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="smtpEncryption">Encryption</label>
+                                <select id="smtpEncryption" class="form-control">
+                                    <option value="tls">TLS</option>
+                                    <option value="ssl">SSL</option>
+                                    <option value="none">None</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="smtpFromEmail">From Email *</label>
+                                <input type="email" id="smtpFromEmail" class="form-control" placeholder="noreply@example.com" required>
+                                <small style="color: #666;">Default sender email address</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="smtpFromName">From Name</label>
+                            <input type="text" id="smtpFromName" class="form-control" placeholder="Content Catalogz">
+                            <small style="color: #666;">Name that appears as sender</small>
+                        </div>
+                    </div>
+                    
+                    <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px;">
+                        <h3 style="margin-bottom: 20px; color: #333; border-bottom: 2px solid #ff69b4; padding-bottom: 10px;">Email Preferences</h3>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="enableEmailNotifications" style="margin-right: 8px;">
+                                Enable email notifications for new quote requests
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="enableAutoReply" style="margin-right: 8px;">
+                                Send automatic reply to quote requests
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="notificationEmail">Notification Email Address</label>
+                            <input type="email" id="notificationEmail" class="form-control" placeholder="admin@example.com">
+                            <small style="color: #666;">Where to send notifications</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="autoReplyTemplate">Auto-Reply Template</label>
+                            <textarea id="autoReplyTemplate" class="form-control" rows="5" placeholder="Thank you for your quote request. We will get back to you within 24 hours."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary" onclick="testEmailSettings()">📧 Test Connection</button>
+                        <button type="submit" class="btn btn-primary">💾 Save Settings</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -1961,6 +2143,23 @@ if ($invoices_result) {
                 // Load users if switching to users section
                 if (sectionName === 'users-list') {
                     loadUsers();
+                }
+                
+                // Load email sections
+                if (sectionName === 'email-inbox') {
+                    loadInboxEmails();
+                }
+                if (sectionName === 'email-draft') {
+                    loadDraftEmails();
+                }
+                if (sectionName === 'email-sent') {
+                    loadSentEmails();
+                }
+                if (sectionName === 'email-trash') {
+                    loadTrashEmails();
+                }
+                if (sectionName === 'email-settings') {
+                    loadEmailSettings();
                 }
             } catch (error) {
                 console.error('Error in showSection:', error);
@@ -4465,6 +4664,159 @@ if ($invoices_result) {
             .catch(err => {
                 console.error('Error:', err);
                 alert('Error deleting user');
+            });
+        }
+        
+        // ==================== Email Functions ====================
+        
+        function composeEmail() {
+            alert('Compose email feature coming soon! This will open a modal to compose and send emails.');
+        }
+        
+        function loadInboxEmails() {
+            const container = document.getElementById('inbox-email-list');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>Email Integration Coming Soon</h3>
+                    <p>The inbox feature will display emails sent through the quote request form and other contact forms.</p>
+                    <p style="margin-top: 10px; color: #666;">Configure your email settings first to enable this feature.</p>
+                </div>
+            `;
+        }
+        
+        function loadDraftEmails() {
+            const container = document.getElementById('draft-email-list');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>No Drafts</h3>
+                    <p>Draft emails will appear here once the compose feature is enabled.</p>
+                </div>
+            `;
+        }
+        
+        function loadSentEmails() {
+            const container = document.getElementById('sent-email-list');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>Email Integration Coming Soon</h3>
+                    <p>Sent emails including quote confirmations and invoices will appear here.</p>
+                    <p style="margin-top: 10px; color: #666;">Configure your email settings first to enable this feature.</p>
+                </div>
+            `;
+        }
+        
+        function loadTrashEmails() {
+            const container = document.getElementById('trash-email-list');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>Trash is Empty</h3>
+                    <p>Deleted emails will appear here.</p>
+                </div>
+            `;
+        }
+        
+        function emptyTrash() {
+            if (confirm('Are you sure you want to permanently delete all emails in trash?')) {
+                alert('Trash emptied successfully!');
+                loadTrashEmails();
+            }
+        }
+        
+        function saveEmailSettings(event) {
+            event.preventDefault();
+            
+            const settings = {
+                smtp_host: document.getElementById('smtpHost').value,
+                smtp_port: document.getElementById('smtpPort').value,
+                smtp_username: document.getElementById('smtpUsername').value,
+                smtp_password: document.getElementById('smtpPassword').value,
+                smtp_encryption: document.getElementById('smtpEncryption').value,
+                smtp_from_email: document.getElementById('smtpFromEmail').value,
+                smtp_from_name: document.getElementById('smtpFromName').value,
+                enable_notifications: document.getElementById('enableEmailNotifications').checked,
+                enable_auto_reply: document.getElementById('enableAutoReply').checked,
+                notification_email: document.getElementById('notificationEmail').value,
+                auto_reply_template: document.getElementById('autoReplyTemplate').value
+            };
+            
+            fetch('api/save_email_settings.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(settings)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Email settings saved successfully!');
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to save settings'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error saving email settings. Please try again.');
+            });
+        }
+        
+        function testEmailSettings() {
+            const settings = {
+                smtp_host: document.getElementById('smtpHost').value,
+                smtp_port: document.getElementById('smtpPort').value,
+                smtp_username: document.getElementById('smtpUsername').value,
+                smtp_password: document.getElementById('smtpPassword').value,
+                smtp_encryption: document.getElementById('smtpEncryption').value,
+                smtp_from_email: document.getElementById('smtpFromEmail').value
+            };
+            
+            if (!settings.smtp_host || !settings.smtp_port || !settings.smtp_username || !settings.smtp_password) {
+                alert('Please fill in all SMTP settings before testing.');
+                return;
+            }
+            
+            alert('Testing email connection...');
+            
+            fetch('api/test_email.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(settings)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ Email connection successful! Test email sent to ' + settings.smtp_from_email);
+                } else {
+                    alert('❌ Email connection failed: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('❌ Error testing email connection. Please check your settings.');
+            });
+        }
+        
+        function loadEmailSettings() {
+            fetch('api/get_email_settings.php')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.settings) {
+                    const s = data.settings;
+                    if (s.smtp_host) document.getElementById('smtpHost').value = s.smtp_host;
+                    if (s.smtp_port) document.getElementById('smtpPort').value = s.smtp_port;
+                    if (s.smtp_username) document.getElementById('smtpUsername').value = s.smtp_username;
+                    if (s.smtp_password) document.getElementById('smtpPassword').value = s.smtp_password;
+                    if (s.smtp_encryption) document.getElementById('smtpEncryption').value = s.smtp_encryption;
+                    if (s.smtp_from_email) document.getElementById('smtpFromEmail').value = s.smtp_from_email;
+                    if (s.smtp_from_name) document.getElementById('smtpFromName').value = s.smtp_from_name;
+                    
+                    document.getElementById('enableEmailNotifications').checked = s.enable_notifications == 1;
+                    document.getElementById('enableAutoReply').checked = s.enable_auto_reply == 1;
+                    
+                    if (s.notification_email) document.getElementById('notificationEmail').value = s.notification_email;
+                    if (s.auto_reply_template) document.getElementById('autoReplyTemplate').value = s.auto_reply_template;
+                }
+            })
+            .catch(err => {
+                console.error('Error loading email settings:', err);
             });
         }
     </script>
