@@ -1078,13 +1078,6 @@ function filterClientsByType(type) {
 
                 <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <button class="btn btn-primary" onclick="openAddTaskModal()">+ Add New Task</button>
-                    <select id="taskStatusFilter" onchange="loadTasks()" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ddd;">
-                        <option value="all">All Tasks</option>
-                        <option value="pending" selected>Pending</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                    </select>
-                    <button class="btn btn-secondary" onclick="loadTasks()">🔄 Refresh</button>
                 </div>
 
                 <div id="tasks-list"></div>
