@@ -4139,9 +4139,8 @@ invoices.forEach(invoice => {
                         .then(data => {
                             if (data.success && data.invoice) {
                                 const inv = data.invoice;
-                                // Render the invoice form cleanly
-                                modalBody.innerHTML = '';
-                                modalBody.insertAdjacentHTML('afterbegin', `
+                                // Safely inject the invoice form
+                                modalBody.innerHTML = `
                                     <form id="editInvoiceForm" onsubmit="return false;">
                                     <div class="invoice-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
                                         <div class="company-info">
@@ -4214,55 +4213,6 @@ invoices.forEach(invoice => {
                                         <button class="btn btn-secondary btn-sm" type="button" onclick="printInvoiceFromModal()">🖨️ Print</button>
                                         <button class="btn btn-secondary btn-sm" type="button" onclick="emailInvoiceFromModal()">📧 Email</button>
                                     </div>
-                                    </form>
-                                `);
-                                                    // Replace form controls with plain text for printing
-                                                    clone.querySelectorAll('button, .btn, input, select, textarea').forEach(el => {
-                                                        if (el.tagName.toLowerCase() === 'input' && (el.type === 'text' || el.type === 'number' || el.type === 'date')) {
-                                                            const span = document.createElement('span');
-                                                            span.textContent = el.value;
-                                                            el.parentNode.replaceChild(span, el);
-                                                        } else if (el.tagName.toLowerCase() === 'select') {
-                                                            const span = document.createElement('span');
-                                                            span.textContent = el.options[el.selectedIndex]?.text || '';
-                                                            el.parentNode.replaceChild(span, el);
-                                                        } else if (el.tagName.toLowerCase() === 'textarea') {
-                                                            const span = document.createElement('span');
-                                                            span.textContent = el.value;
-                                                            el.parentNode.replaceChild(span, el);
-                                                        } else {
-                                                            el.remove();
-                                                        }
-                                                    });
-                                                    // Remove form tags but keep their content
-                                                    clone.querySelectorAll('form').forEach(f => {
-                                                        const parent = f.parentNode;
-                                                        while (f.firstChild) parent.insertBefore(f.firstChild, f);
-                                                        parent.removeChild(f);
-                                                    });
-                                                    // Open print window with correct HTML structure and styles
-                                                    const printWindow = window.open('', '', 'width=900,height=700');
-                                                    printWindow.document.write('<html><head><title>Print Invoice</title>');
-                                                    printWindow.document.write('<link rel="stylesheet" href="/assets/css/styles.css">');
-                                                    printWindow.document.write('<style>body{background:white!important;color:#222!important;}</style>');
-                                                    printWindow.document.write('</head><body>');
-                                                    printWindow.document.write(clone.innerHTML);
-                                                    printWindow.document.write('</body></html>');
-                                                    printWindow.document.close();
-                                                    printWindow.focus();
-                                                    printWindow.print();
-                                                    printWindow.close();
-                                                };
-                                            }
-                                            if (!window.emailInvoiceFromModal) {
-                                                window.emailInvoiceFromModal = function() {
-                                                    if (typeof emailInvoice === 'function') {
-                                                        emailInvoice();
-                                                    } else {
-                                                        alert('Email functionality not implemented.');
-                                                    }
-                                                };
-                                            }
                                     </form>
                                 `;
                                 // Save handler
