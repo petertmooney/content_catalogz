@@ -1547,6 +1547,14 @@ if ($invoices_result) {
     </div>
 
     <script>
+        // Dashboard initialization and error handling
+        console.log('%c Dashboard Script Loading...', 'background: #667eea; color: white; padding: 2px 8px; border-radius: 3px;');
+        
+        // Global error handler
+        window.addEventListener('error', function(e) {
+            console.error('%c JavaScript Error:', 'color: red; font-weight: bold;', e.message, 'at', e.filename + ':' + e.lineno);
+        });
+        
         function toggleSubmenu(event, submenuId) {
             event.preventDefault();
             event.stopPropagation();
@@ -1654,51 +1662,68 @@ if ($invoices_result) {
 
         // Section switching
         function showSection(sectionName) {
-            // Hide all sections
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.style.display = 'none';
-            });
+            console.log('showSection called with:', sectionName);
             
-            // Remove active class from all nav items
-            document.querySelectorAll('.sidebar a').forEach(link => {
-                link.classList.remove('active');
-            });
-            
-            // Show selected section
-            document.getElementById('section-' + sectionName).style.display = 'block';
-            const navElement = document.getElementById('nav-' + sectionName);
-            if (navElement) {
-                navElement.classList.add('active');
-            }
-            
-            // Auto-expand submenu if section is in a submenu
-            if (sectionName === 'clients' || sectionName === 'existing-clients') {
-                const submenu = document.getElementById('clients-submenu');
-                const parent = document.querySelector('.sidebar .menu-parent');
-                if (submenu && !submenu.classList.contains('open')) {
-                    submenu.classList.add('open');
-                    parent.classList.add('open');
+            try {
+                // Hide all sections
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.style.display = 'none';
+                });
+                
+                // Remove active class from all nav items
+                document.querySelectorAll('.sidebar a').forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                // Show selected section
+                const targetSection = document.getElementById('section-' + sectionName);
+                if (!targetSection) {
+                    console.error('Section not found:', 'section-' + sectionName);
+                    return;
                 }
-                if (sectionName === 'clients') {
-                    loadQuotes();
-                } else if (sectionName === 'existing-clients') {
-                    loadExistingClients();
+                
+                targetSection.style.display = 'block';
+                console.log('✓ Section displayed:', sectionName);
+                
+                const navElement = document.getElementById('nav-' + sectionName);
+                if (navElement) {
+                    navElement.classList.add('active');
+                    console.log('✓ Nav item activated:', sectionName);
+                } else {
+                    console.warn('Nav element not found for:', sectionName);
                 }
-            }
-            
-            // Load HTML files if switching to that section
-            if (sectionName === 'html-files') {
-                loadHtmlFiles();
-            }
-            
-            // Load tasks if switching to tasks section
-            if (sectionName === 'tasks') {
-                loadTasks();
-            }
-            
-            // Load invoice stats if switching to invoices section
-            if (sectionName === 'invoices') {
-                loadInvoiceStats();
+                
+                // Auto-expand submenu if section is in a submenu
+                if (sectionName === 'clients' || sectionName === 'existing-clients') {
+                    const submenu = document.getElementById('clients-submenu');
+                    const parent = document.querySelector('.sidebar .menu-parent');
+                    if (submenu && !submenu.classList.contains('open')) {
+                        submenu.classList.add('open');
+                        parent.classList.add('open');
+                    }
+                    if (sectionName === 'clients') {
+                        loadQuotes();
+                    } else if (sectionName === 'existing-clients') {
+                        loadExistingClients();
+                    }
+                }
+                
+                // Load HTML files if switching to that section
+                if (sectionName === 'html-files') {
+                    loadHtmlFiles();
+                }
+                
+                // Load tasks if switching to tasks section
+                if (sectionName === 'tasks') {
+                    loadTasks();
+                }
+                
+                // Load invoice stats if switching to invoices section
+                if (sectionName === 'invoices') {
+                    loadInvoiceStats();
+                }
+            } catch (error) {
+                console.error('Error in showSection:', error);
             }
         }
 
@@ -3147,21 +3172,58 @@ if ($invoices_result) {
 
         // Load HTML files count and quotes on page load
         window.addEventListener('DOMContentLoaded', function() {
-            console.log('Dashboard loaded');
+            console.log('%c Dashboard Loaded', 'background: #28a745; color: white; font-weight: bold; padding: 4px 12px; border-radius: 4px;');
+            
+            // Check if required elements exist
+            const requiredElements = [
+                'section-dashboard',
+                'html-count',
+                'quotes-count',
+                'nav-dashboard'
+            ];
+            
+            let allElementsFound = true;
+            requiredElements.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) {
+                    console.error('❌ Missing required element:', id);
+                    allElementsFound = false;
+                } else {
+                    console.log('✓ Found element:', id);
+                }
+            });
+            
+            if (!allElementsFound) {
+                console.error('%c Some required elements are missing!', 'color: red; font-weight: bold;');
+            }
             
             // Ensure dashboard section is visible
             const dashboardSection = document.getElementById('section-dashboard');
-            if (dashboardSection && !dashboardSection.classList.contains('active')) {
-                dashboardSection.classList.add('active');
-                dashboardSection.style.display = 'block';
+            if (dashboardSection) {
+                if (!dashboardSection.classList.contains('active')) {
+                    dashboardSection.classList.add('active');
+                    dashboardSection.style.display = 'block';
+                    console.log('✓ Dashboard section set to active');
+                }
+            } else {
+                console.error('❌ Dashboard section not found!');
             }
             
             // Load initial data
-            loadHtmlFiles();
-            loadQuotes();
-            loadDashboardStats();
-            
-            console.log('Initial data loading started');
+            try {
+                console.log('Loading HTML files...');
+                loadHtmlFiles();
+                
+                console.log('Loading quotes...');
+                loadQuotes();
+                
+                console.log('Loading dashboard stats...');
+                loadDashboardStats();
+                
+                console.log('%c All data loading functions called successfully', 'background: #667eea; color: white; padding: 2px 8px; border-radius: 3px;');
+            } catch (error) {
+                console.error('%c Error during initialization:', 'color: red; font-weight: bold;', error);
+            }
         });
         
         // Load all dashboard stats
