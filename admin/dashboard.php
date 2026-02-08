@@ -4013,9 +4013,8 @@ if ($invoices_result) {
             invoices.forEach(invoice => {
                 const invoiceDate = new Date(invoice.invoice_date).toLocaleDateString('en-GB');
                 const balanceColor = invoice.total_remaining > 0 ? '#dc3545' : '#28a745';
-                
                 html += '<tr>';
-                html += '<td><strong>' + escapeHtml(invoice.invoice_number) + '</strong></td>';
+                html += `<td><a href="#" onclick="openInvoiceModal(${invoice.id});return false;"><strong>${escapeHtml(invoice.invoice_number)}</strong></a></td>`;
                 html += '<td>' + escapeHtml(invoice.name) + '</td>';
                 html += '<td>' + (invoice.company ? escapeHtml(invoice.company) : '<em>N/A</em>') + '</td>';
                 html += '<td>' + invoiceDate + '</td>';
@@ -4023,11 +4022,23 @@ if ($invoices_result) {
                 html += '<td>£' + parseFloat(invoice.total_paid).toFixed(2) + '</td>';
                 html += '<td style="color: ' + balanceColor + '; font-weight: bold;">£' + parseFloat(invoice.total_remaining).toFixed(2) + '</td>';
                 html += '<td>';
-                html += '<button class="btn btn-primary btn-sm" onclick="viewClientDetails(' + invoice.client_id + ')">View Client</button>';
-                html += '<a href="mailto:' + escapeHtml(invoice.email) + '" class="btn btn-secondary btn-sm">Email</a>';
+                html += `<button class="btn btn-primary btn-sm" onclick="openInvoiceModal(${invoice.id})">Edit</button> `;
+                html += `<button class="btn btn-danger btn-sm" onclick="confirmDeleteInvoice(${invoice.id})">Delete</button>`;
                 html += '</td>';
                 html += '</tr>';
             });
+// Modal for viewing/editing invoice
+function openInvoiceModal(invoiceId) {
+    // TODO: Fetch invoice details and populate modal
+    alert('Open invoice modal for ID: ' + invoiceId);
+}
+
+function confirmDeleteInvoice(invoiceId) {
+    if (confirm('Are you sure you want to delete this invoice?')) {
+        // TODO: Call API to delete invoice
+        alert('Delete invoice ID: ' + invoiceId);
+    }
+}
 
             html += '</tbody></table></div>';
             container.innerHTML = html;
