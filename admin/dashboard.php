@@ -61,7 +61,7 @@ if ($invoices_result) {
         
         .navbar h1 img {
             height: 52px;
-            width: auto;
+            width: 80px;
             display: block;
         }
 
