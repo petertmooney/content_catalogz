@@ -4098,6 +4098,9 @@ invoices.forEach(invoice => {
                 
                 console.log('Loading dashboard stats...');
                 loadDashboardStats();
+
+                // Load all invoices on dashboard load
+                showFilteredInvoices('all');
                 
                 console.log('%c All data loading functions called successfully', 'background: #667eea; color: white; padding: 2px 8px; border-radius: 3px;');
             } catch (error) {
