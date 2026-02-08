@@ -1,147 +1,183 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+
 session_start();
 require_once 'config/db.php';
 require_once 'config/auth.php';
 
 requireLogin();
 
-// Export configuration
-$exportDir = __DIR__ . '/../exports';
-$timestamp = date('Y-m-d_H-i-s');
-$exportName = "content_catalogz_export_{$timestamp}";
-$exportPath = "{$exportDir}/{$exportName}";
-
-// Create export directory
-if (!file_exists($exportDir)) {
-    mkdir($exportDir, 0755, true);
-}
-if (!file_exists($exportPath)) {
-    mkdir($exportPath, 0755, true);
-}
-
-// Function to export database
-function exportDatabase($conn, $exportPath) {
-    $sqlFile = "{$exportPath}/database.sql";
-    $tables = [];
-    
-    // Get all tables
-    $result = $conn->query("SHOW TABLES");
-    while ($row = $result->fetch_array()) {
-        $tables[] = $row[0];
-    }
-    
-    $output = "-- Content Catalogz Database Export\n";
-    $output .= "-- Export Date: " . date('Y-m-d H:i:s') . "\n\n";
-    $output .= "SET FOREIGN_KEY_CHECKS=0;\n";
-    $output .= "SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";\n";
-    $output .= "SET time_zone = \"+00:00\";\n\n";
-    
-    foreach ($tables as $table) {
-        // Get table structure
-        $result = $conn->query("SHOW CREATE TABLE `{$table}`");
-        $row = $result->fetch_row();
-        
-        $output .= "\n-- Table structure for table `{$table}`\n";
-        $output .= "DROP TABLE IF EXISTS `{$table}`;\n";
-        $output .= $row[1] . ";\n\n";
-        
-        // Get table data
-        $result = $conn->query("SELECT * FROM `{$table}`");
-        if ($result && $result->num_rows > 0) {
-            $output .= "-- Dumping data for table `{$table}`\n";
-            
-            while ($row = $result->fetch_assoc()) {
-                $values = [];
-                foreach ($row as $value) {
-                    if ($value === null) {
-                        $values[] = 'NULL';
-                    } else {
-                        $values[] = "'" . $conn->real_escape_string($value) . "'";
-                    }
-                }
-                $output .= "INSERT INTO `{$table}` VALUES (" . implode(', ', $values) . ");\n";
-            }
-            $output .= "\n";
-        }
-    }
-    
-    $output .= "SET FOREIGN_KEY_CHECKS=1;\n";
-    
-    file_put_contents($sqlFile, $output);
-    return filesize($sqlFile);
-}
-
-// Function to copy directory recursively
-function copyDirectory($src, $dst, $exclude = []) {
-    $dir = opendir($src);
-    @mkdir($dst, 0755, true);
-    
-    $fileCount = 0;
-    $totalSize = 0;
-    
-    while (false !== ($file = readdir($dir))) {
-        if (($file != '.') && ($file != '..')) {
-            $fullPath = $src . '/' . $file;
-            
-            // Skip excluded directories
-            $skip = false;
-            foreach ($exclude as $pattern) {
-                if (strpos($fullPath, $pattern) !== false || $file === $pattern) {
-                    $skip = true;
-                    break;
-                }
-            }
-            
-            if ($skip) continue;
-            
-            if (is_dir($fullPath)) {
-                $result = copyDirectory($fullPath, $dst . '/' . $file, $exclude);
-                $fileCount += $result['count'];
-                $totalSize += $result['size'];
-            } else {
-                copy($fullPath, $dst . '/' . $file);
-                $fileCount++;
-                $totalSize += filesize($fullPath);
-            }
-        }
-    }
-    closedir($dir);
-    
-    return ['count' => $fileCount, 'size' => $totalSize];
-}
-
-// Helper function to format bytes
-function formatBytes($bytes, $precision = 2) {
-    $units = ['B', 'KB', 'MB', 'GB'];
-    $bytes = max($bytes, 0);
-    $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-    $pow = min($pow, count($units) - 1);
-    $bytes /= pow(1024, $pow);
-    return round($bytes, $precision) . ' ' . $units[$pow];
-}
-
-// Helper function to delete directory
-function deleteDirectory($dir) {
-    if (!file_exists($dir)) return true;
-    if (!is_dir($dir)) return unlink($dir);
-    
-    foreach (scandir($dir) as $item) {
-        if ($item == '.' || $item == '..') continue;
-        if (!deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) return false;
-    }
-    
-    return rmdir($dir);
-}
-
-// Handle export request
+// Handle export request BEFORE any HTML output
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'export') {
-    $exportLog = [];
+    header('Content-Type: application/json');
     
     try {
+        // Check if ZipArchive is available
+        if (!class_exists('ZipArchive')) {
+            throw new Exception('ZipArchive extension is not available on this server');
+        }
+        
+        // Export configuration
+        $exportDir = __DIR__ . '/../exports';
+        $timestamp = date('Y-m-d_H-i-s');
+        $exportName = "content_catalogz_export_{$timestamp}";
+        $exportPath = "{$exportDir}/{$exportName}";
+        
+        // Create export directory
+        if (!file_exists($exportDir)) {
+            if (!mkdir($exportDir, 0755, true)) {
+                throw new Exception('Failed to create export directory');
+            }
+        }
+        if (!file_exists($exportPath)) {
+            if (!mkdir($exportPath, 0755, true)) {
+                throw new Exception('Failed to create temporary export directory');
+            }
+        }
+        
+        $exportLog = [];
+        
+        // Function to export database
+        $exportDatabase = function($conn, $exportPath) {
+            $sqlFile = "{$exportPath}/database.sql";
+            $tables = [];
+            
+            // Get all tables
+            $result = $conn->query("SHOW TABLES");
+            if (!$result) {
+                throw new Exception('Failed to fetch database tables: ' . $conn->error);
+            }
+            
+            while ($row = $result->fetch_array()) {
+                $tables[] = $row[0];
+            }
+            
+            $output = "-- Content Catalogz Database Export\n";
+            $output .= "-- Export Date: " . date('Y-m-d H:i:s') . "\n\n";
+            $output .= "SET FOREIGN_KEY_CHECKS=0;\n";
+            $output .= "SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";\n";
+            $output .= "SET time_zone = \"+00:00\";\n\n";
+            
+            foreach ($tables as $table) {
+                // Get table structure
+                $result = $conn->query("SHOW CREATE TABLE `{$table}`");
+                if (!$result) {
+                    throw new Exception("Failed to get structure for table {$table}: " . $conn->error);
+                }
+                $row = $result->fetch_row();
+                
+                $output .= "\n-- Table structure for table `{$table}`\n";
+                $output .= "DROP TABLE IF EXISTS `{$table}`;\n";
+                $output .= $row[1] . ";\n\n";
+                
+                // Get table data
+                $result = $conn->query("SELECT * FROM `{$table}`");
+                if ($result && $result->num_rows > 0) {
+                    $output .= "-- Dumping data for table `{$table}`\n";
+                    
+                    while ($row = $result->fetch_assoc()) {
+                        $values = [];
+                        foreach ($row as $value) {
+                            if ($value === null) {
+                                $values[] = 'NULL';
+                            } else {
+                                $values[] = "'" . $conn->real_escape_string($value) . "'";
+                            }
+                        }
+                        $output .= "INSERT INTO `{$table}` VALUES (" . implode(', ', $values) . ");\n";
+                    }
+                    $output .= "\n";
+                }
+            }
+            
+            $output .= "SET FOREIGN_KEY_CHECKS=1;\n";
+            
+            if (file_put_contents($sqlFile, $output) === false) {
+                throw new Exception('Failed to write database export file');
+            }
+            return filesize($sqlFile);
+        };
+        
+        // Function to copy directory recursively
+        $copyDirectory = function($src, $dst, $exclude = []) use (&$copyDirectory) {
+            if (!is_dir($src)) {
+                throw new Exception("Source directory does not exist: {$src}");
+            }
+            
+            $dir = opendir($src);
+            if (!$dir) {
+                throw new Exception("Failed to open directory: {$src}");
+            }
+            
+            if (!@mkdir($dst, 0755, true) && !is_dir($dst)) {
+                throw new Exception("Failed to create directory: {$dst}");
+            }
+            
+            $fileCount = 0;
+            $totalSize = 0;
+            
+            while (false !== ($file = readdir($dir))) {
+                if (($file != '.') && ($file != '..')) {
+                    $fullPath = $src . '/' . $file;
+                    
+                    // Skip excluded directories
+                    $skip = false;
+                    foreach ($exclude as $pattern) {
+                        if (strpos($fullPath, $pattern) !== false || $file === $pattern) {
+                            $skip = true;
+                            break;
+                        }
+                    }
+                    
+                    if ($skip) continue;
+                    
+                    if (is_dir($fullPath)) {
+                        $result = $copyDirectory($fullPath, $dst . '/' . $file, $exclude);
+                        $fileCount += $result['count'];
+                        $totalSize += $result['size'];
+                    } else {
+                        if (!copy($fullPath, $dst . '/' . $file)) {
+                            throw new Exception("Failed to copy file: {$fullPath}");
+                        }
+                        $fileCount++;
+                        $totalSize += filesize($fullPath);
+                    }
+                }
+            }
+            closedir($dir);
+            
+            return ['count' => $fileCount, 'size' => $totalSize];
+        };
+        
+        // Helper function to format bytes
+        $formatBytes = function($bytes, $precision = 2) {
+            $units = ['B', 'KB', 'MB', 'GB'];
+            $bytes = max($bytes, 0);
+            $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+            $pow = min($pow, count($units) - 1);
+            $bytes /= pow(1024, $pow);
+            return round($bytes, $precision) . ' ' . $units[$pow];
+        };
+        
+        // Helper function to delete directory
+        $deleteDirectory = function($dir) use (&$deleteDirectory) {
+            if (!file_exists($dir)) return true;
+            if (!is_dir($dir)) return unlink($dir);
+            
+            foreach (scandir($dir) as $item) {
+                if ($item == '.' || $item == '..') continue;
+                if (!$deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) return false;
+            }
+            
+            return rmdir($dir);
+        };
+        
         // 1. Export Database
         $exportLog[] = "Exporting database...";
-        $dbSize = exportDatabase($conn, $exportPath);
-        $exportLog[] = "✓ Database exported (" . formatBytes($dbSize) . ")";
+        $dbSize = $exportDatabase($conn, $exportPath);
+        $exportLog[] = "✓ Database exported (" . $formatBytes($dbSize) . ")";
         
         // 2. Copy website files
         $exportLog[] = "Copying website files...";
@@ -156,8 +192,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         ];
         
         $rootDir = dirname(__DIR__);
-        $result = copyDirectory($rootDir, "{$exportPath}/website", $exclude);
-        $exportLog[] = "✓ Website files copied ({$result['count']} files, " . formatBytes($result['size']) . ")";
+        $result = $copyDirectory($rootDir, "{$exportPath}/website", $exclude);
+        $exportLog[] = "✓ Website files copied ({$result['count']} files, " . $formatBytes($result['size']) . ")";
         
         // 3. Create configuration file
         $exportLog[] = "Creating configuration file...";
@@ -187,148 +223,89 @@ Export Date: {$config['export_date']}
 ## Installation Instructions
 
 ### 1. Upload Files
-Upload the contents of the 'website' folder to your web server's public directory (usually public_html, www, or htdocs)
+Upload the contents of the 'website' folder to your web server's public directory
 
 ### 2. Create Database
-- Create a new MySQL database on your hosting control panel
-- Note down the database name, username, and password
+Create a new MySQL database and note the credentials
 
 ### 3. Import Database
-Using phpMyAdmin or MySQL command line:
-```
+Import database.sql using phpMyAdmin or command line:
 mysql -u username -p database_name < database.sql
-```
-
-Or use phpMyAdmin:
-- Navigate to your database
-- Click "Import"
-- Select database.sql
-- Click "Go"
 
 ### 4. Update Configuration
-Edit admin/config/db.php with your database credentials:
-```php
-\$servername = "localhost"; // Usually localhost
-\$username = "your_db_username";
-\$password = "your_db_password";
-\$dbname = "your_db_name";
-```
+Edit admin/config/db.php with your database credentials
 
 ### 5. Set Permissions
-```bash
-find . -type d -exec chmod 755 {} \;
-find . -type f -exec chmod 644 {} \;
-chmod 775 assets/images
-chmod 775 backups
-```
+Set proper file permissions (755 for directories, 644 for files)
 
 ### 6. Test Your Site
-Visit your domain to verify everything works correctly.
-
-## Troubleshooting
-
-### Database Connection Issues
-- Verify database credentials in admin/config/db.php
-- Ensure your database user has proper permissions
-- Check that MySQL service is running
-
-### File Permission Issues  
-- Ensure writable directories have chmod 775
-- Check PHP user has write permissions
-
-### Site Not Loading
-- Verify .htaccess file is present
-- Check PHP version (requires PHP 7.4 or higher)
-- Review server error logs
+Visit your domain to verify everything works
 
 README;
         file_put_contents("{$exportPath}/README.txt", $readme);
         $exportLog[] = "✓ Installation guide created";
         
-        // 5. Create production .htaccess template
-        $htaccess = <<<HTACCESS
-# Content Catalogz Production .htaccess
-RewriteEngine On
-
-# Force HTTPS (uncomment in production)
-# RewriteCond %{HTTPS} off
-# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-
-# Protect sensitive files
-<FilesMatch "\.(env|log|sql|json)$">
-    Order Allow,Deny
-    Deny from all
-</FilesMatch>
-
-# Enable compression
-<IfModule mod_deflate.c>
-    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript
-</IfModule>
-
-# Browser caching
-<IfModule mod_expires.c>
-    ExpiresActive On
-    ExpiresByType image/jpg "access plus 1 year"
-    ExpiresByType image/jpeg "access plus 1 year"
-    ExpiresByType image/gif "access plus 1 year"
-    ExpiresByType image/png "access plus 1 year"
-    ExpiresByType text/css "access plus 1 month"
-    ExpiresByType application/javascript "access plus 1 month"
-</IfModule>
-HTACCESS;
-        file_put_contents("{$exportPath}/website/.htaccess.production", $htaccess);
-        $exportLog[] = "✓ Production .htaccess template created";
-        
-        // 6. Create zip archive
+        // 5. Create zip archive
         $exportLog[] = "Creating zip archive...";
         $zipFile = "{$exportDir}/{$exportName}.zip";
         
         $zip = new ZipArchive();
-        if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
-            $files = new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator($exportPath),
-                RecursiveIteratorIterator::LEAVES_ONLY
-            );
-            
-            foreach ($files as $file) {
-                if (!$file->isDir()) {
-                    $filePath = $file->getRealPath();
-                    $relativePath = substr($filePath, strlen($exportPath) + 1);
-                    $zip->addFile($filePath, $relativePath);
-                }
-            }
-            
-            $zip->close();
-            $zipSize = filesize($zipFile);
-            $exportLog[] = "✓ Zip archive created (" . formatBytes($zipSize) . ")";
-            
-            // Clean up temporary export folder
-            deleteDirectory($exportPath);
-            $exportLog[] = "✓ Temporary files cleaned up";
-            
-            $response = [
-                'success' => true,
-                'log' => $exportLog,
-                'filename' => basename($zipFile),
-                'size' => $zipSize,
-                'download_url' => '../exports/' . basename($zipFile)
-            ];
-        } else {
+        if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
             throw new Exception("Failed to create zip archive");
         }
         
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($exportPath),
+            RecursiveIteratorIterator::LEAVES_ONLY
+        );
+        
+        foreach ($files as $file) {
+            if (!$file->isDir()) {
+                $filePath = $file->getRealPath();
+                $relativePath = substr($filePath, strlen($exportPath) + 1);
+                $zip->addFile($filePath, $relativePath);
+            }
+        }
+        
+        $zip->close();
+        $zipSize = filesize($zipFile);
+        $exportLog[] = "✓ Zip archive created (" . $formatBytes($zipSize) . ")";
+        
+        // Clean up temporary export folder
+        $deleteDirectory($exportPath);
+        $exportLog[] = "✓ Temporary files cleaned up";
+        
+        echo json_encode([
+            'success' => true,
+            'log' => $exportLog,
+            'filename' => basename($zipFile),
+            'size' => $zipSize,
+            'download_url' => '../exports/' . basename($zipFile)
+        ]);
+        exit;
+        
     } catch (Exception $e) {
-        $response = [
+        echo json_encode([
             'success' => false,
             'error' => $e->getMessage(),
-            'log' => $exportLog
-        ];
+            'log' => isset($exportLog) ? $exportLog : []
+        ]);
+        exit;
     }
-    
-    header('Content-Type: application/json');
-    echo json_encode($response);
-    exit;
 }
+
+// Helper function to format bytes for display
+function formatBytes($bytes, $precision = 2) {
+    $units = ['B', 'KB', 'MB', 'GB'];
+    $bytes = max($bytes, 0);
+    $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+    $pow = min($pow, count($units) - 1);
+    $bytes /= pow(1024, $pow);
+    return round($bytes, $precision) . ' ' . $units[$pow];
+}
+
+// Export directory for page display
+$exportDir = __DIR__ . '/../exports';
 
 // List existing exports
 $existingExports = [];
