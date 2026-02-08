@@ -5629,7 +5629,9 @@ invoices.forEach(invoice => {
             {id: 'users-submenu', label: '👤 Users', type: 'parent', children: [
                 {id: 'nav-users-list', label: '📋 View All Users', section: 'users-list'},
                 {id: 'nav-create-user', label: '➕ Create User', action: 'openCreateUserModal()'}
-            ]}
+            ]},
+            {id: 'nav-export', label: '📦 Export Website', section: 'export', type: 'link'},
+            {id: 'nav-customize-dashboard', label: '🛠️ Customize Dashboard', section: 'customize-dashboard', type: 'link'}
         ];
         
         function openMenuCustomizationModal() {
