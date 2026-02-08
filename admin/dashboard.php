@@ -3369,7 +3369,8 @@ if ($invoices_result) {
             }
             
             const invoiceDate = new Date().toISOString().split('T')[0];
-            const invoiceNumber = 'INV-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-6);
+            // Deterministic invoice number: INV-<YEAR>-<CLIENTID>-<DATE>
+            const invoiceNumber = `INV-${new Date().getFullYear()}-${clientId}-${invoiceDate.replace(/-/g, '')}`;
             
             fetch('api/save_invoice.php', {
                 method: 'POST',

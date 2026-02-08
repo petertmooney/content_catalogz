@@ -55,16 +55,15 @@ $totalCost = isset($data['total_cost']) ? floatval($data['total_cost']) : 0.00;
 $totalPaid = isset($data['total_paid']) ? floatval($data['total_paid']) : 0.00;
 $totalRemaining = $totalCost - $totalPaid;
 
-// Check if invoice number already exists
-$checkStmt = $conn->prepare("SELECT id FROM invoices WHERE invoice_number = ?");
-$checkStmt->bind_param("s", $invoiceNumber);
+// Check if an invoice for this client and date already exists
+$checkStmt = $conn->prepare("SELECT id FROM invoices WHERE client_id = ? AND invoice_date = ?");
+$checkStmt->bind_param("is", $clientId, $invoiceDate);
 $checkStmt->execute();
 $result = $checkStmt->get_result();
 
-
 if ($result->num_rows > 0) {
-    // Invoice already exists, just return success
-    echo json_encode(['success' => true, 'message' => 'Invoice already exists', 'exists' => true]);
+    // Invoice already exists for this client and date
+    echo json_encode(['success' => true, 'message' => 'Invoice already exists for this client and date', 'exists' => true]);
     $checkStmt->close();
     $conn->close();
     exit;
