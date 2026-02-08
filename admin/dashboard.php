@@ -2779,14 +2779,6 @@ if ($invoices_result) {
                 console.error('Error fetching payment history:', error);
             }
             
-            // Get structured address
-            const addressStreet = document.getElementById('clientAddressStreet').value || '';
-            const addressLine2 = document.getElementById('clientAddressLine2').value || '';
-            const addressCity = document.getElementById('clientAddressCity').value || '';
-            const addressCounty = document.getElementById('clientAddressCounty').value || '';
-            const addressPostcode = document.getElementById('clientAddressPostcode').value || '';
-            const addressCountry = document.getElementById('clientAddressCountry').value || 'United Kingdom';
-            
             // Format address
             let formattedAddress = '';
             if (addressStreet) formattedAddress += addressStreet + '<br>';
@@ -2819,7 +2811,6 @@ if ($invoices_result) {
             // Generate invoice HTML
             const invoiceDate = new Date().toLocaleDateString('en-GB');
             const invoiceNumber = 'INV-' + Date.now();
-            const clientId = document.getElementById('clientId').value;
             
             // Save invoice to database
             const invoiceDateISO = new Date().toISOString().split('T')[0];
