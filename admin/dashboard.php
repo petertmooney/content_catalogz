@@ -711,11 +711,21 @@ if ($invoices_result) {
         <div class="sidebar">
             <a href="#" onclick="showSection('dashboard'); return false;" id="nav-dashboard" class="active">📋 Dashboard</a>
             
+            <a href="#" onclick="showSection('clients'); return false;" id="nav-clients">📝 Quote Requests</a>
+            
             <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'clients-submenu'); return false;">👥 Clients</a>
             <div class="submenu" id="clients-submenu">
-                <a href="#" onclick="showSection('clients'); return false;" id="nav-clients">📝 Quote Requests</a>
                 <a href="#" onclick="showSection('existing-clients'); return false;" id="nav-existing-clients">👤 Existing Clients</a>
                 <a href="#" onclick="openAddClientModal(); return false;" id="nav-add-client">➕ Add New Client</a>
+            </div>
+            
+            <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'email-submenu'); return false;">📧 Email</a>
+            <div class="submenu" id="email-submenu">
+                <a href="#" onclick="showSection('email-inbox'); return false;" id="nav-email-inbox">📥 Inbox</a>
+                <a href="#" onclick="showSection('email-draft'); return false;" id="nav-email-draft">📝 Drafts</a>
+                <a href="#" onclick="showSection('email-sent'); return false;" id="nav-email-sent">📤 Sent</a>
+                <a href="#" onclick="showSection('email-trash'); return false;" id="nav-email-trash">🗑️ Trash</a>
+                <a href="#" onclick="showSection('email-settings'); return false;" id="nav-email-settings">⚙️ Settings</a>
             </div>
             
             <a href="#" onclick="showSection('tasks'); return false;" id="nav-tasks">✅ Tasks & To-Do</a>
@@ -731,15 +741,6 @@ if ($invoices_result) {
             <div class="submenu" id="users-submenu">
                 <a href="#" onclick="showSection('users-list'); return false;" id="nav-users-list">📋 View All Users</a>
                 <a href="#" onclick="openCreateUserModal(); return false;" id="nav-create-user">➕ Create User</a>
-            </div>
-            
-            <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'email-submenu'); return false;">📧 Email</a>
-            <div class="submenu" id="email-submenu">
-                <a href="#" onclick="showSection('email-inbox'); return false;" id="nav-email-inbox">📥 Inbox</a>
-                <a href="#" onclick="showSection('email-draft'); return false;" id="nav-email-draft">📝 Drafts</a>
-                <a href="#" onclick="showSection('email-sent'); return false;" id="nav-email-sent">📤 Sent</a>
-                <a href="#" onclick="showSection('email-trash'); return false;" id="nav-email-trash">🗑️ Trash</a>
-                <a href="#" onclick="showSection('email-settings'); return false;" id="nav-email-settings">⚙️ Settings</a>
             </div>
             
             <a href="/" target="_blank">🌐 View Site</a>
@@ -813,6 +814,7 @@ if ($invoices_result) {
                     <button class="btn btn-primary" onclick="showSection('existing-clients')">Existing Clients</button>
                     <button class="btn btn-primary" onclick="showSection('tasks')">Tasks & To-Do</button>
                     <button class="btn btn-primary" onclick="showSection('invoices')">Invoices</button>
+                    <button class="btn btn-secondary" onclick="openMenuCustomizationModal()" style="margin-left: 10px;">⚙️ Customize Menu</button>
                 </div>
             </div>
 
@@ -1956,6 +1958,26 @@ if ($invoices_result) {
                     <button type="submit" class="btn btn-primary">💾 Save Changes</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Menu Customization Modal -->
+    <div id="menuCustomizationModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>Customize Sidebar Menu</h3>
+                <button class="close-btn" onclick="closeMenuCustomizationModal()">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <p style="color: #666; margin-bottom: 20px;">Drag items to reorder or use arrow buttons. Changes save automatically.</p>
+                <div id="menu-items-list" style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+                    <!-- Menu items will be loaded here -->
+                </div>
+            </div>
+            <div style="padding: 20px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="resetMenuOrder()">Reset to Default</button>
+                <button type="button" class="btn btn-primary" onclick="closeMenuCustomizationModal()">Done</button>
+            </div>
         </div>
     </div>
 
@@ -5063,6 +5085,171 @@ if ($invoices_result) {
                 console.error('Error loading email settings:', err);
             });
         }
+        
+        // ==================== Menu Customization ====================
+        
+        const defaultMenuOrder = [
+            {id: 'nav-dashboard', label: '📋 Dashboard', section: 'dashboard', type: 'link'},
+            {id: 'nav-clients', label: '📝 Quote Requests', section: 'clients', type: 'link'},
+            {id: 'clients-submenu', label: '👥 Clients', type: 'parent', children: [
+                {id: 'nav-existing-clients', label: '👤 Existing Clients', section: 'existing-clients'},
+                {id: 'nav-add-client', label: '➕ Add New Client', action: 'openAddClientModal()'}
+            ]},
+            {id: 'email-submenu', label: '📧 Email', type: 'parent', children: [
+                {id: 'nav-email-inbox', label: '📥 Inbox', section: 'email-inbox'},
+                {id: 'nav-email-draft', label: '📝 Drafts', section: 'email-draft'},
+                {id: 'nav-email-sent', label: '📤 Sent', section: 'email-sent'},
+                {id: 'nav-email-trash', label: '🗑️ Trash', section: 'email-trash'},
+                {id: 'nav-email-settings', label: '⚙️ Settings', section: 'email-settings'}
+            ]},
+            {id: 'nav-tasks', label: '✅ Tasks & To-Do', section: 'tasks', type: 'link'},
+            {id: 'nav-invoices', label: '📄 Invoices', section: 'invoices', type: 'link'},
+            {id: 'pages-submenu', label: '🌐 Website Pages', type: 'parent', children: [
+                {id: 'nav-html-files', label: '📝 Edit Pages', section: 'html-files'},
+                {id: 'nav-new-page', label: '➕ Create New Page', action: 'openNewPageModal()'}
+            ]},
+            {id: 'users-submenu', label: '👤 Users', type: 'parent', children: [
+                {id: 'nav-users-list', label: '📋 View All Users', section: 'users-list'},
+                {id: 'nav-create-user', label: '➕ Create User', action: 'openCreateUserModal()'}
+            ]}
+        ];
+        
+        function openMenuCustomizationModal() {
+            loadMenuItems();
+            document.getElementById('menuCustomizationModal').style.display = 'flex';
+        }
+        
+        function closeMenuCustomizationModal() {
+            document.getElementById('menuCustomizationModal').style.display = 'none';
+        }
+        
+        function loadMenuItems() {
+            fetch('api/get_menu_order.php')
+                .then(res => res.json())
+                .then(data => {
+                    const menuOrder = data.success && data.order ? data.order : defaultMenuOrder;
+                    renderMenuItems(menuOrder);
+                })
+                .catch(() => {
+                    renderMenuItems(defaultMenuOrder);
+                });
+        }
+        
+        function renderMenuItems(items) {
+            const container = document.getElementById('menu-items-list');
+            container.innerHTML = items.map((item, index) => `
+                <div class="menu-config-item" data-index="${index}" style="background: white; padding: 12px; margin-bottom: 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #ddd;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-weight: 500;">${item.label}</span>
+                        ${item.children ? `<span style="font-size: 12px; color: #666;">(${item.children.length} items)</span>` : ''}
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        ${index > 0 ? `<button class="btn btn-sm btn-secondary" onclick="moveMenuItem(${index}, -1)" style="padding: 4px 8px;">↑</button>` : ''}
+                        ${index < items.length - 1 ? `<button class="btn btn-sm btn-secondary" onclick="moveMenuItem(${index}, 1)" style="padding: 4px 8px;">↓</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+            
+            // Store current order in memory
+            window.currentMenuOrder = items;
+        }
+        
+        function moveMenuItem(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= window.currentMenuOrder.length) return;
+            
+            const items = [...window.currentMenuOrder];
+            [items[index], items[newIndex]] = [items[newIndex], items[index]];
+            
+            window.currentMenuOrder = items;
+            renderMenuItems(items);
+            saveMenuOrder(items);
+        }
+        
+        function saveMenuOrder(order) {
+            fetch('api/save_menu_order.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({order: order})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    applySidebarOrder(order);
+                }
+            })
+            .catch(err => console.error('Error saving menu order:', err));
+        }
+        
+        function resetMenuOrder() {
+            if (confirm('Reset menu to default order?')) {
+                saveMenuOrder(defaultMenuOrder);
+                renderMenuItems(defaultMenuOrder);
+            }
+        }
+        
+        function applySidebarOrder(order) {
+            const sidebar = document.querySelector('.sidebar');
+            if (!sidebar) return;
+            
+            // Get all links and submenus
+            const elements = {};
+            sidebar.querySelectorAll('a, .submenu').forEach(el => {
+                if (el.id) elements[el.id] = el;
+            });
+            
+            // Clear sidebar (keep first 2 elements: usually a spacer or header might exist)
+            const viewSiteLink = Array.from(sidebar.children).find(el => el.textContent.includes('View Site'));
+            const logoutLink = Array.from(sidebar.children).find(el => el.textContent.includes('Logout') && !el.querySelector);
+            
+            sidebar.innerHTML = '';
+            
+            // Rebuild in new order
+            order.forEach(item => {
+                if (item.type === 'parent' && item.id) {
+                    // Add parent menu link
+                    const parent = document.createElement('a');
+                    parent.href = '#';
+                    parent.className = 'menu-parent';
+                    parent.textContent = item.label;
+                    parent.onclick = (e) => {
+                        toggleSubmenu(e, item.id);
+                        return false;
+                    };
+                    sidebar.appendChild(parent);
+                    
+                    // Add submenu if exists
+                    if (elements[item.id]) {
+                        sidebar.appendChild(elements[item.id]);
+                    }
+                } else if (item.id && elements[item.id] && !item.id.includes('submenu')) {
+                    sidebar.appendChild(elements[item.id]);
+                }
+            });
+            
+            // Add back View Site and Logout at the end
+            if (viewSiteLink) sidebar.appendChild(viewSiteLink);
+            if (logoutLink) sidebar.appendChild(logoutLink);
+        }
+        
+        // Load and apply saved menu order on page load
+        function initializeMenuOrder() {
+            fetch('api/get_menu_order.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.order) {
+                        applySidebarOrder(data.order);
+                    }
+                })
+                .catch(() => {
+                    // Use default order if no saved order exists
+                });
+        }
+        
+        // Initialize menu order when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeMenuOrder();
+        });
     </script>
 </body>
 </html>
