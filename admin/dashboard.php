@@ -798,6 +798,7 @@ if ($invoices_result) {
 
                 <!-- Email Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">📧 Email</h3>
+                <div id="dashboard-widget-email">
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
                     <div class="stat-card" onclick="showSection('email-inbox')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #007bff; font-size: 14px; margin-bottom: 5px;">Unread Emails</h4>
@@ -815,6 +816,7 @@ if ($invoices_result) {
 
                 <!-- Client & Quotes Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">📊 Clients & Quotes</h3>
+                <div id="dashboard-widget-clients">
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
                     <div class="stat-card" onclick="showSection('clients')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Total Quotes</h4>
@@ -832,6 +834,7 @@ if ($invoices_result) {
 
                 <!-- Tasks Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">✅ Tasks & To-Do</h3>
+                <div id="dashboard-widget-tasks">
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
                     <div class="stat-card" onclick="filterTasksByType('pending')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Pending Tasks</h4>
@@ -863,6 +866,7 @@ if ($invoices_result) {
 
                 <!-- Invoice Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">📄 Invoices</h3>
+                <div id="dashboard-widget-invoices">
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
                     <div class="stat-card" onclick="showFilteredInvoices('outstanding')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Outstanding</h4>
@@ -2130,6 +2134,10 @@ function filterClientsByType(type) {
             <div style="padding: 20px;">
                 <p style="color: #666; margin-bottom: 20px;">Choose which dashboard widgets/stat cards to show or hide. (Feature coming soon!)</p>
                 <div id="dashboard-widgets-list" style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+                        <label style="display:block; margin-bottom:10px;"><input type="checkbox" id="toggle-widget-email" checked> 📧 Email Stats</label>
+                        <label style="display:block; margin-bottom:10px;"><input type="checkbox" id="toggle-widget-clients" checked> 📊 Clients & Quotes</label>
+                        <label style="display:block; margin-bottom:10px;"><input type="checkbox" id="toggle-widget-tasks" checked> ✅ Tasks & To-Do</label>
+                        <label style="display:block; margin-bottom:10px;"><input type="checkbox" id="toggle-widget-invoices" checked> 📄 Invoices</label>
                     <!-- Dashboard widgets will be listed here -->
                 </div>
             </div>
@@ -5550,6 +5558,43 @@ invoices.forEach(invoice => {
         
         // ==================== Menu Customization ====================
                 // ==================== Dashboard Customization ====================
+                        // Widget toggle logic
+                        document.addEventListener('DOMContentLoaded', function() {
+                            // Restore widget visibility from localStorage
+                            const widgets = [
+                                {id: 'toggle-widget-email', section: 'dashboard-widget-email'},
+                                {id: 'toggle-widget-clients', section: 'dashboard-widget-clients'},
+                                {id: 'toggle-widget-tasks', section: 'dashboard-widget-tasks'},
+                                {id: 'toggle-widget-invoices', section: 'dashboard-widget-invoices'}
+                            ];
+                            widgets.forEach(w => {
+                                const cb = document.getElementById(w.id);
+                                const el = document.getElementById(w.section);
+                                if (cb && el) {
+                                    const stored = localStorage.getItem(w.id);
+                                    if (stored === 'false') {
+                                        cb.checked = false;
+                                        el.style.display = 'none';
+                                    }
+                                    cb.addEventListener('change', function() {
+                                        el.style.display = this.checked ? '' : 'none';
+                                        localStorage.setItem(w.id, this.checked);
+                                    });
+                                }
+                            });
+                        });
+                        function resetDashboardWidgets() {
+                            // Reset all widgets to visible
+                            ['toggle-widget-email','toggle-widget-clients','toggle-widget-tasks','toggle-widget-invoices'].forEach(id => {
+                                localStorage.setItem(id, true);
+                                const cb = document.getElementById(id);
+                                if (cb) cb.checked = true;
+                            });
+                            ['dashboard-widget-email','dashboard-widget-clients','dashboard-widget-tasks','dashboard-widget-invoices'].forEach(id => {
+                                const el = document.getElementById(id);
+                                if (el) el.style.display = '';
+                            });
+                        }
                 function openDashboardCustomizationModal() {
                     document.getElementById('dashboardCustomizationModal').style.display = 'flex';
                 }
