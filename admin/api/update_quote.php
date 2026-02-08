@@ -105,10 +105,11 @@ if ($stmt->execute()) {
             $activityType = 'note';
             $activitySubject = 'Client created from quote';
             $activityDescription = "Quote converted to active client. Status changed to In Progress.";
+            $activityDate = date('Y-m-d H:i:s');
             
-            $actStmt = $conn->prepare("INSERT INTO activities (client_id, type, subject, description, created_by) VALUES (?, ?, ?, ?, ?)");
+            $actStmt = $conn->prepare("INSERT INTO activities (client_id, type, subject, description, activity_date, created_by) VALUES (?, ?, ?, ?, ?, ?)");
             if ($actStmt) {
-                $actStmt->bind_param("isssi", $quote_id, $activityType, $activitySubject, $activityDescription, $userId);
+                $actStmt->bind_param("issssi", $quote_id, $activityType, $activitySubject, $activityDescription, $activityDate, $userId);
                 $actStmt->execute();
                 $actStmt->close();
             }
