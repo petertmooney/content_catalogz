@@ -949,15 +949,28 @@ if ($invoices_result) {
                 </div>
 
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="filterClientsByType('active')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Active Clients</h4>
-                        <p id="active-clients-count" style="font-size: 24px; font-weight: bold; color: #28a745;">0</p>
+                        <p id="active-clients-count" style="font-size: 24px; font-weight: bold; color: #28a745; cursor: pointer;">0</p>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="filterClientsByType('completed')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #17a2b8; font-size: 14px; margin-bottom: 5px;">Completed Projects</h4>
-                        <p id="total-projects-count" style="font-size: 24px; font-weight: bold; color: #17a2b8;">0</p>
+                        <p id="total-projects-count" style="font-size: 24px; font-weight: bold; color: #17a2b8; cursor: pointer;">0</p>
                     </div>
                 </div>
+<script>
+function filterClientsByType(type) {
+    // Set filter dropdown if it exists
+    var filter = document.getElementById('clientStatusFilter');
+    if (filter) {
+        if (type === 'active') filter.value = 'active';
+        else if (type === 'completed') filter.value = 'completed';
+        else filter.value = 'all';
+        loadExistingClients();
+    }
+    // If no dropdown, fallback: show all or custom logic
+}
+</script>
 
                 <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <input type="text" id="searchClients" placeholder="Search by name, email, company..." style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ddd; width: 300px;" onkeyup="loadExistingClients()">
