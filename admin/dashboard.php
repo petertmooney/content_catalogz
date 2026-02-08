@@ -1390,7 +1390,7 @@ function filterClientsByType(type) {
             </div>
             <form id="pageForm" onsubmit="savePage(event)">
                 <div class="form-group">
-                    <label for="pageId">Page ID</label>
+                    <label>Page ID</label>
                     <input type="hidden" id="pageId" name="id" value="">
                 </div>
                 <div class="form-group">
