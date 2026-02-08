@@ -33,6 +33,18 @@ $services = isset($data['services']) ? $data['services'] : [];
 $totalCost = isset($data['total_cost']) ? floatval($data['total_cost']) : 0.00;
 $totalPaid = isset($data['total_paid']) ? floatval($data['total_paid']) : 0.00;
 
+// Fetch old services to compare for activity logging
+$oldServices = [];
+$fetchStmt = $conn->prepare("SELECT services FROM quotes WHERE id = ?");
+$fetchStmt->bind_param("i", $clientId);
+$fetchStmt->execute();
+$result = $fetchStmt->get_result();
+if ($row = $result->fetch_assoc()) {
+    $oldServicesJson = $row['services'];
+    $oldServices = $oldServicesJson ? json_decode($oldServicesJson, true) : [];
+}
+$fetchStmt->close();
+
 // Calculate total remaining
 $totalRemaining = $totalCost - $totalPaid;
 
@@ -44,6 +56,31 @@ $stmt = $conn->prepare("UPDATE quotes SET address_street = ?, address_line2 = ?,
 $stmt->bind_param("sssssssdddi", $addressStreet, $addressLine2, $addressCity, $addressCounty, $addressPostcode, $addressCountry, $servicesJson, $totalCost, $totalPaid, $totalRemaining, $clientId);
 
 if ($stmt->execute()) {
+    // Log activity if services changed
+    $servicesChanged = false;
+    $activityDescription = '';
+    
+    // Check if services were added or modified
+    $newServiceNames = array_column($services, 'name');
+    $oldServiceNames = array_column($oldServices, 'name');
+    
+    // Find added services
+    $addedServices = array_diff($newServiceNames, $oldServiceNames);
+    
+    if (!empty($addedServices)) {
+        $servicesChanged = true;
+        $servicesList = implode(', ', $addedServices);
+        $activityDescription = "New service(s) added: " . $servicesList;
+        
+        // Log the activity
+        $userId = $_SESSION['user_id'] ?? 1;
+        $activityStmt = $conn->prepare("INSERT INTO activities (client_id, activity_type, subject, description, activity_date, created_by) VALUES (?, 'note', ?, ?, NOW(), ?)");
+        $activitySubject = "Services Updated";
+        $activityStmt->bind_param("issi", $clientId, $activitySubject, $activityDescription, $userId);
+        $activityStmt->execute();
+        $activityStmt->close();
+    }
+    
     echo json_encode([
         'success' => true, 
         'message' => 'Client information updated successfully',
