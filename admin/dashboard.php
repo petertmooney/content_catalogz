@@ -1313,6 +1313,16 @@ if ($invoices_result) {
                     </div>
                 </div>
 
+                <!-- Payment History -->
+                <div style="background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 15px; color: #333;">💰 Payment History</h4>
+                    <div id="client-payments-list">
+                        <div class="empty-state">
+                            <p>No payments recorded yet.</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div style="display: flex; gap: 10px; justify-content: space-between;">
                     <button type="button" class="btn btn-danger" onclick="confirmDeleteClient()" title="Delete this client and all related data">🗑️ Delete Client</button>
                     <div style="display: flex; gap: 10px;">
@@ -2528,6 +2538,9 @@ if ($invoices_result) {
             document.getElementById('client-tab-details').classList.add('active');
             document.querySelector('.crm-tab[onclick*="details"]').classList.add('active');
             
+            // Load payment history
+            loadClientPayments(currentClientId);
+            
             document.getElementById('clientModal').classList.add('show');
         }
 
@@ -2701,12 +2714,70 @@ if ($invoices_result) {
             });
         }
 
-        function printInvoice() {
+        async function printInvoice() {
             // Get current client data from the form
+            const clientId = document.getElementById('clientId').value;
             const clientName = document.getElementById('clientName').textContent;
             const clientCompany = document.getElementById('clientCompany').textContent;
             const clientEmail = document.getElementById('clientEmail').textContent;
             const clientPhone = document.getElementById('clientPhone').textContent;
+            
+            // Get structured address
+            const addressStreet = document.getElementById('clientAddressStreet').value || '';
+            const addressLine2 = document.getElementById('clientAddressLine2').value || '';
+            const addressCity = document.getElementById('clientAddressCity').value || '';
+            const addressCounty = document.getElementById('clientAddressCounty').value || '';
+            const addressPostcode = document.getElementById('clientAddressPostcode').value || '';
+            const addressCountry = document.getElementById('clientAddressCountry').value || 'United Kingdom';
+            
+            // Fetch payment history
+            let paymentsHTML = '';
+            try {
+                const response = await fetch('api/activities.php?client_id=' + clientId);
+                const data = await response.json();
+                const payments = data.activities ? data.activities.filter(a => a.type === 'payment_received') : [];
+                
+                if (payments.length > 0) {
+                    payments.sort((a, b) => new Date(b.activity_date) - new Date(a.activity_date));
+                    
+                    paymentsHTML = `
+                        <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">Payment History</h3>
+                        <table style="margin-bottom: 30px;">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th style="text-align: right;">Amount</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    payments.forEach(payment => {
+                        const date = new Date(payment.activity_date);
+                        const dateStr = date.toLocaleDateString('en-GB', { 
+                            day: '2-digit', 
+                            month: 'short', 
+                            year: 'numeric' 
+                        });
+                        
+                        const amountMatch = payment.subject.match(/£([\\d,]+\\.\\d{2})/);
+                        const amount = amountMatch ? amountMatch[1] : '0.00';
+                        
+                        paymentsHTML += `
+                            <tr>
+                                <td style="padding: 12px; border-bottom: 1px solid #ddd;">${dateStr}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ddd; text-align: right; font-weight: 600; color: #28a745;">£${amount}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ddd;">${escapeHtml(payment.description || '')}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    paymentsHTML += '</tbody></table>';
+                }
+            } catch (error) {
+                console.error('Error fetching payment history:', error);
+            }
             
             // Get structured address
             const addressStreet = document.getElementById('clientAddressStreet').value || '';
@@ -2968,6 +3039,8 @@ if ($invoices_result) {
                             <td style="text-align: right;">£${totalRemaining.toFixed(2)}</td>
                         </tr>
                     </table>
+                    
+                    ${paymentsHTML}
                     
                     <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666;">
                         <p>Thank you for your business!</p>
@@ -3666,11 +3739,66 @@ if ($invoices_result) {
                 // Reload activities to show the payment
                 loadClientActivities(clientId);
                 
+                // Reload payment history
+                loadClientPayments(clientId);
+                
                 showNotification(`Payment of £${amount.toFixed(2)} recorded successfully`, 'success');
             })
             .catch(err => {
                 console.error('Error:', err);
                 alert('Error recording payment: ' + err.message);
+            });
+        }
+        
+        function loadClientPayments(clientId) {
+            fetch('api/activities.php?client_id=' + clientId)
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('client-payments-list');
+                
+                // Filter only payment activities
+                const payments = data.activities ? data.activities.filter(a => a.type === 'payment_received') : [];
+                
+                if (payments.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><p>No payments recorded yet.</p></div>';
+                    return;
+                }
+                
+                // Sort by date, newest first
+                payments.sort((a, b) => new Date(b.activity_date) - new Date(a.activity_date));
+                
+                let html = '<div style="overflow-x: auto;">';
+                html += '<table style="width: 100%; border-collapse: collapse;">';
+                html += '<thead><tr style="background: #f8f9fa; border-bottom: 2px solid #ddd;">';
+                html += '<th style="padding: 10px; text-align: left;">Date</th>';
+                html += '<th style="padding: 10px; text-align: left;">Amount</th>';
+                html += '<th style="padding: 10px; text-align: left;">Details</th>';
+                html += '</tr></thead><tbody>';
+                
+                payments.forEach(payment => {
+                    const date = new Date(payment.activity_date);
+                    const dateStr = date.toLocaleDateString('en-GB', { 
+                        day: '2-digit', 
+                        month: 'short', 
+                        year: 'numeric' 
+                    });
+                    
+                    // Extract amount from subject (e.g., "Payment Received: £500.00")
+                    const amountMatch = payment.subject.match(/£([\d,]+\.\d{2})/);
+                    const amount = amountMatch ? amountMatch[1] : '0.00';
+                    
+                    html += '<tr style="border-bottom: 1px solid #eee;">';
+                    html += `<td style="padding: 10px;">${dateStr}</td>`;
+                    html += `<td style="padding: 10px; font-weight: bold; color: #28a745;">£${amount}</td>`;
+                    html += `<td style="padding: 10px; color: #666;">${escapeHtml(payment.description || '')}</td>`;
+                    html += '</tr>';
+                });
+                
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+            })
+            .catch(err => {
+                console.error('Error loading payments:', err);
             });
         }
         
