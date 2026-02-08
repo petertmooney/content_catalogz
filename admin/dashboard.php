@@ -5198,9 +5198,16 @@ if ($invoices_result) {
                 if (el.id) elements[el.id] = el;
             });
             
-            // Clear sidebar (keep first 2 elements: usually a spacer or header might exist)
-            const viewSiteLink = Array.from(sidebar.children).find(el => el.textContent.includes('View Site'));
-            const logoutLink = Array.from(sidebar.children).find(el => el.textContent.includes('Logout') && !el.querySelector);
+            // Find footer elements (customize menu, view site, logout)
+            const customizeMenuLink = Array.from(sidebar.children).find(el => 
+                el.textContent && el.textContent.includes('Customize Menu')
+            );
+            const viewSiteLink = Array.from(sidebar.children).find(el => 
+                el.textContent && el.textContent.includes('View Site')
+            );
+            const logoutLink = Array.from(sidebar.children).find(el => 
+                el.textContent && el.textContent.includes('Logout') && !el.querySelector
+            );
             
             sidebar.innerHTML = '';
             
@@ -5227,7 +5234,8 @@ if ($invoices_result) {
                 }
             });
             
-            // Add back View Site and Logout at the end
+            // Add back footer links at the end
+            if (customizeMenuLink) sidebar.appendChild(customizeMenuLink);
             if (viewSiteLink) sidebar.appendChild(viewSiteLink);
             if (logoutLink) sidebar.appendChild(logoutLink);
         }
