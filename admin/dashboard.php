@@ -1714,8 +1714,32 @@ if ($invoices_result) {
                         <input type="text" id="newClientPhone" name="phone" class="form-control" placeholder="+44 123 456 7890">
                     </div>
                     <div class="form-group" style="grid-column: 1 / -1;">
-                        <label for="newClientAddress">Address</label>
-                        <textarea id="newClientAddress" name="address" class="form-control" rows="2" placeholder="Full address"></textarea>
+                        <label for="newClientAddressStreet">Address Street</label>
+                        <input type="text" id="newClientAddressStreet" name="address_street" class="form-control" placeholder="123 Main Street">
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="newClientAddressLine2">Address Line 2</label>
+                        <input type="text" id="newClientAddressLine2" name="address_line2" class="form-control" placeholder="Apt, Suite, Building (optional)">
+                    </div>
+                    <div class="form-group">
+                        <label for="newClientCity">City</label>
+                        <input type="text" id="newClientCity" name="address_city" class="form-control" placeholder="Dublin">
+                    </div>
+                    <div class="form-group">
+                        <label for="newClientCounty">County/State</label>
+                        <input type="text" id="newClientCounty" name="address_county" class="form-control" placeholder="County">
+                    </div>
+                    <div class="form-group">
+                        <label for="newClientPostcode">Postcode</label>
+                        <input type="text" id="newClientPostcode" name="address_postcode" class="form-control" placeholder="D01 A123">
+                    </div>
+                    <div class="form-group">
+                        <label for="newClientCountry">Country</label>
+                        <input type="text" id="newClientCountry" name="address_country" class="form-control" placeholder="Ireland" value="Ireland">
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="newClientMessage">Message/Request</label>
+                        <textarea id="newClientMessage" name="message" class="form-control" rows="2" placeholder="Client's initial inquiry or message"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="newClientService">Service Interested In</label>
@@ -3722,8 +3746,14 @@ if ($invoices_result) {
                 email: document.getElementById('newClientEmail').value,
                 company: document.getElementById('newClientCompany').value,
                 phone: document.getElementById('newClientPhone').value,
-                address: document.getElementById('newClientAddress').value,
-                service_type: document.getElementById('newClientService').value,
+                address_street: document.getElementById('newClientAddressStreet').value,
+                address_line2: document.getElementById('newClientAddressLine2').value,
+                address_city: document.getElementById('newClientCity').value,
+                address_county: document.getElementById('newClientCounty').value,
+                address_postcode: document.getElementById('newClientPostcode').value,
+                address_country: document.getElementById('newClientCountry').value,
+                message: document.getElementById('newClientMessage').value,
+                service: document.getElementById('newClientService').value,
                 status: document.getElementById('newClientStatus').value,
                 notes: document.getElementById('newClientNotes').value
             };
