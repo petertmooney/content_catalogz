@@ -5559,55 +5559,7 @@ invoices.forEach(invoice => {
             });
         }
         
-        // ==================== Menu Customization ====================
-                // ==================== Dashboard Customization ====================
-                        // Widget toggle logic
-                        document.addEventListener('DOMContentLoaded', function() {
-                            // Restore widget visibility from localStorage
-                            const widgets = [
-                                {id: 'toggle-widget-email', section: 'dashboard-widget-email'},
-                                {id: 'toggle-widget-clients', section: 'dashboard-widget-clients'},
-                                {id: 'toggle-widget-tasks', section: 'dashboard-widget-tasks'},
-                                {id: 'toggle-widget-invoices', section: 'dashboard-widget-invoices'}
-                            ];
-                            widgets.forEach(w => {
-                                const cb = document.getElementById(w.id);
-                                const el = document.getElementById(w.section);
-                                if (cb && el) {
-                                    const stored = localStorage.getItem(w.id);
-                                    if (stored === 'false') {
-                                        cb.checked = false;
-                                        el.style.display = 'none';
-                                    }
-                                    cb.addEventListener('change', function() {
-                                        el.style.display = this.checked ? '' : 'none';
-                                        localStorage.setItem(w.id, this.checked);
-                                    });
-                                }
-                            });
-                        });
-                        function resetDashboardWidgets() {
-                            // Reset all widgets to visible
-                            ['toggle-widget-email','toggle-widget-clients','toggle-widget-tasks','toggle-widget-invoices'].forEach(id => {
-                                localStorage.setItem(id, true);
-                                const cb = document.getElementById(id);
-                                if (cb) cb.checked = true;
-                            });
-                            ['dashboard-widget-email','dashboard-widget-clients','dashboard-widget-tasks','dashboard-widget-invoices'].forEach(id => {
-                                const el = document.getElementById(id);
-                                if (el) el.style.display = '';
-                            });
-                        }
-                function openDashboardCustomizationModal() {
-                    document.getElementById('dashboardCustomizationModal').style.display = 'flex';
-                }
-                function closeDashboardCustomizationModal() {
-                    document.getElementById('dashboardCustomizationModal').style.display = 'none';
-                }
-                function resetDashboardWidgets() {
-                    // Placeholder for reset logic
-                    alert('Dashboard widgets reset to default (feature coming soon).');
-                }
+
         
         const defaultMenuOrder = [
             {id: 'nav-dashboard', label: '📋 Dashboard', section: 'dashboard', type: 'link'},
