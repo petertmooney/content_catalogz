@@ -1049,17 +1049,17 @@ if ($invoices_result) {
                 </div>
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="filterTasksByType('pending')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Pending</h4>
-                        <p id="stat-tasks-pending" style="font-size: 24px; font-weight: bold; color: #ffc107;">0</p>
+                        <p id="stat-tasks-pending" style="font-size: 24px; font-weight: bold; color: #ffc107; cursor: pointer; text-decoration: underline;">0</p>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="filterTasksByType('overdue')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #dc3545; font-size: 14px; margin-bottom: 5px;">Overdue</h4>
-                        <p id="stat-tasks-overdue" style="font-size: 24px; font-weight: bold; color: #dc3545;">0</p>
+                        <p id="stat-tasks-overdue" style="font-size: 24px; font-weight: bold; color: #dc3545; cursor: pointer; text-decoration: underline;">0</p>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="filterTasksByType('urgent')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #ff69b4; font-size: 14px; margin-bottom: 5px;">Urgent</h4>
-                        <p id="stat-tasks-urgent" style="font-size: 24px; font-weight: bold; color: #ff69b4;">0</p>
+                        <p id="stat-tasks-urgent" style="font-size: 24px; font-weight: bold; color: #ff69b4; cursor: pointer; text-decoration: underline;">0</p>
                     </div>
                 </div>
 
