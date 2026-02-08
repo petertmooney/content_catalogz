@@ -104,6 +104,14 @@ try {
     $invoiceDate = date('d/m/Y');
     $dueDate = date('d/m/Y', strtotime('+30 days'));
 
+    // Load and encode logo for email embedding
+    $logoPath = __DIR__ . '/../../assets/images/LogoPink.png';
+    $logoData = '';
+    if (file_exists($logoPath)) {
+        $logoBase64 = base64_encode(file_get_contents($logoPath));
+        $logoData = 'data:image/png;base64,' . $logoBase64;
+    }
+
     $emailHtml = '
 <!DOCTYPE html>
 <html>
@@ -120,7 +128,7 @@ try {
                 <p style="color: #666; margin: 5px 0;">' . htmlspecialchars($invoiceNumber) . '</p>
             </td>
             <td style="text-align: right;">
-                <img src="cid:logo" alt="Content Catalogz" style="height: 50px; margin-bottom: 10px;">
+                ' . ($logoData ? '<img src="' . $logoData . '" alt="Content Catalogz" style="height: 50px; margin-bottom: 10px;">' : '<h2 style="margin: 0; color: #333;">Content Catalogz</h2>') . '
                 <p style="color: #666; margin: 5px 0;">Your Business Address</p>
                 <p style="color: #666; margin: 5px 0;">contact@contentcatalogz.com</p>
             </td>
