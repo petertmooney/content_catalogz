@@ -66,45 +66,52 @@ if ($status === 'in_progress' && $oldStatus !== 'in_progress' && $oldStatus !== 
     $clientCreated = true;
 }
 
-// Try full update first (with services and total_cost)
-$sql = "UPDATE quotes SET status = ?, notes = ?, services = ?, total_cost = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
-$stmt = $conn->prepare($sql);
-$useFullUpdate = true;
-
-if (!$stmt) {
-    // Columns might not exist, try simpler update
-    $sql = "UPDATE quotes SET status = ?, notes = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $useFullUpdate = false;
-    
-    if (!$stmt) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Database error: ' . $conn->error
-        ]);
-        exit;
-    }
+// Check which columns exist in the quotes table
+$columnsResult = $conn->query("DESCRIBE quotes");
+$columns = [];
+while ($col = $columnsResult->fetch_assoc()) {
+    $columns[] = $col['Field'];
 }
 
+// Build update query based on available columns
+$useFullUpdate = in_array('services', $columns) && in_array('total_cost', $columns);
+
 if ($useFullUpdate) {
+    $sql = "UPDATE quotes SET status = ?, notes = ?, services = ?, total_cost = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $conn->error]);
+        exit;
+    }
     $stmt->bind_param("sssdi", $status, $notes, $services, $total_cost, $quote_id);
 } else {
+    // Simple update with only status and notes
+    $sql = "UPDATE quotes SET status = ?, notes = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $conn->error]);
+        exit;
+    }
     $stmt->bind_param("ssi", $status, $notes, $quote_id);
 }
 
 if ($stmt->execute()) {
-    // If a new client was created, log the activity
+    // If a new client was created, log the activity (if activities table exists)
     if ($clientCreated) {
-        $userId = $_SESSION['user_id'] ?? null;
-        $activityType = 'note';
-        $activitySubject = 'Client created from quote';
-        $activityDescription = "Quote converted to active client. Status changed to In Progress.";
-        
-        $actStmt = $conn->prepare("INSERT INTO activities (client_id, type, subject, description, created_by) VALUES (?, ?, ?, ?, ?)");
-        if ($actStmt) {
-            $actStmt->bind_param("isssi", $quote_id, $activityType, $activitySubject, $activityDescription, $userId);
-            $actStmt->execute();
-            $actStmt->close();
+        // Check if activities table exists
+        $tableCheck = $conn->query("SHOW TABLES LIKE 'activities'");
+        if ($tableCheck && $tableCheck->num_rows > 0) {
+            $userId = $_SESSION['user_id'] ?? null;
+            $activityType = 'note';
+            $activitySubject = 'Client created from quote';
+            $activityDescription = "Quote converted to active client. Status changed to In Progress.";
+            
+            $actStmt = $conn->prepare("INSERT INTO activities (client_id, type, subject, description, created_by) VALUES (?, ?, ?, ?, ?)");
+            if ($actStmt) {
+                $actStmt->bind_param("isssi", $quote_id, $activityType, $activitySubject, $activityDescription, $userId);
+                $actStmt->execute();
+                $actStmt->close();
+            }
         }
     }
     
