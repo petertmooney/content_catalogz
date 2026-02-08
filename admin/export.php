@@ -14,9 +14,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     header('Content-Type: application/json');
     
     try {
-        // Check if ZipArchive is available
-        if (!class_exists('ZipArchive')) {
-            throw new Exception('ZipArchive extension is not available on this server');
+        // Check if tar is available
+        if (!function_exists('exec')) {
+            throw new Exception('exec() function is not available on this server');
         }
         
         // Export configuration
@@ -245,31 +245,30 @@ README;
         file_put_contents("{$exportPath}/README.txt", $readme);
         $exportLog[] = "✓ Installation guide created";
         
-        // 5. Create zip archive
-        $exportLog[] = "Creating zip archive...";
-        $zipFile = "{$exportDir}/{$exportName}.zip";
+        // 5. Create tar.gz archive
+        $exportLog[] = "Creating tar.gz archive...";
+        $tarFile = "{$exportDir}/{$exportName}.tar.gz";
         
-        $zip = new ZipArchive();
-        if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
-            throw new Exception("Failed to create zip archive");
+        // Change to export directory to create relative paths
+        $currentDir = getcwd();
+        chdir($exportPath);
+        
+        // Create tar.gz using system tar command
+        $escapedTarFile = escapeshellarg($tarFile);
+        $command = "tar -czf {$escapedTarFile} .";
+        $output = [];
+        $returnCode = 0;
+        exec($command, $output, $returnCode);
+        
+        // Return to original directory
+        chdir($currentDir);
+        
+        if ($returnCode !== 0 || !file_exists($tarFile)) {
+            throw new Exception("Failed to create tar.gz archive");
         }
         
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($exportPath),
-            RecursiveIteratorIterator::LEAVES_ONLY
-        );
-        
-        foreach ($files as $file) {
-            if (!$file->isDir()) {
-                $filePath = $file->getRealPath();
-                $relativePath = substr($filePath, strlen($exportPath) + 1);
-                $zip->addFile($filePath, $relativePath);
-            }
-        }
-        
-        $zip->close();
-        $zipSize = filesize($zipFile);
-        $exportLog[] = "✓ Zip archive created (" . $formatBytes($zipSize) . ")";
+        $tarSize = filesize($tarFile);
+        $exportLog[] = "✓ Tar.gz archive created (" . $formatBytes($tarSize) . ")";
         
         // Clean up temporary export folder
         $deleteDirectory($exportPath);
@@ -278,9 +277,9 @@ README;
         echo json_encode([
             'success' => true,
             'log' => $exportLog,
-            'filename' => basename($zipFile),
-            'size' => $zipSize,
-            'download_url' => '../exports/' . basename($zipFile)
+            'filename' => basename($tarFile),
+            'size' => $tarSize,
+            'download_url' => '../exports/' . basename($tarFile)
         ]);
         exit;
         
@@ -310,7 +309,7 @@ $exportDir = __DIR__ . '/../exports';
 // List existing exports
 $existingExports = [];
 if (file_exists($exportDir)) {
-    $files = glob($exportDir . '/*.zip');
+    $files = glob($exportDir . '/*.tar.gz');
     foreach ($files as $file) {
         $existingExports[] = [
             'name' => basename($file),
@@ -433,9 +432,9 @@ if (file_exists($exportDir)) {
         <div class="instructions">
             <h3>📘 After Export:</h3>
             <ol>
-                <li>Download the generated .zip file</li>
+                <li>Download the generated .tar.gz file</li>
                 <li>Upload to your production server via FTP/SFTP</li>
-                <li>Extract the zip file in your web root directory</li>
+                <li>Extract the archive in your web root directory: <code>tar -xzf filename.tar.gz</code></li>
                 <li>Follow the README.txt instructions included in the package</li>
                 <li>Update database credentials in admin/config/db.php</li>
                 <li>Import database.sql into your production database</li>
