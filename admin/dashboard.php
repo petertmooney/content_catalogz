@@ -810,6 +810,23 @@ if ($invoices_result) {
                     </div>
                 </div>
 
+                <!-- Email Stats -->
+                <h3 style="color: #333; margin-bottom: 15px;">📧 Email</h3>
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                    <div class="stat-card" onclick="showSection('email-inbox')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
+                        <h4 style="color: #007bff; font-size: 14px; margin-bottom: 5px;">Unread Emails</h4>
+                        <p class="stat-number" id="dash-emails-unread" style="font-size: 28px; font-weight: bold; color: #007bff;">0</p>
+                    </div>
+                    <div class="stat-card" onclick="showSection('email-inbox')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
+                        <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Total Emails</h4>
+                        <p class="stat-number" id="dash-emails-total" style="font-size: 28px; font-weight: bold; color: #28a745;">0</p>
+                    </div>
+                    <div class="stat-card" onclick="showSection('email-draft')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
+                        <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Drafts</h4>
+                        <p class="stat-number" id="dash-emails-drafts" style="font-size: 28px; font-weight: bold; color: #ffc107;">0</p>
+                    </div>
+                </div>
+
                 <div class="btn-group">
                     <button class="btn btn-primary" onclick="showSection('clients')">Quote Requests</button>
                     <button class="btn btn-primary" onclick="showSection('existing-clients')">Existing Clients</button>
@@ -3909,6 +3926,12 @@ if ($invoices_result) {
                     }
                 })
                 .catch(err => console.error('Error loading quote stats:', err));
+            
+            // Load email stats (placeholder until email storage is implemented)
+            // For now, showing 0 - can be connected to actual email data later
+            document.getElementById('dash-emails-unread').textContent = 0;
+            document.getElementById('dash-emails-total').textContent = 0;
+            document.getElementById('dash-emails-drafts').textContent = 0;
         }
         
         // ==================== CRM Functions ====================
