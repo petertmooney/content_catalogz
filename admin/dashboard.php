@@ -4213,30 +4213,31 @@ invoices.forEach(invoice => {
                                         <button class="btn btn-secondary" type="button" onclick="printInvoiceFromModal()">🖨️ Print</button>
                                         <button class="btn btn-secondary" type="button" onclick="emailInvoiceFromModal()">📧 Email</button>
                                     </div>
-                                            // Print and Email handlers for modal
-                                            window.printInvoiceFromModal = function() {
-                                                // Print only the invoice modal content
-                                                const modal = document.getElementById('invoiceModalBody');
-                                                const printWindow = window.open('', '', 'width=900,height=700');
-                                                printWindow.document.write('<html><head><title>Print Invoice</title>');
-                                                printWindow.document.write('<link rel="stylesheet" href="/assets/css/styles.css">');
-                                                printWindow.document.write('</head><body >');
-                                                printWindow.document.write(modal.innerHTML);
-                                                printWindow.document.write('</body></html>');
-                                                printWindow.document.close();
-                                                printWindow.focus();
-                                                printWindow.print();
-                                                printWindow.close();
-                                            };
-
-                                            window.emailInvoiceFromModal = function() {
-                                                // Use the existing emailInvoice function if available, or trigger backend
-                                                if (typeof emailInvoice === 'function') {
-                                                    emailInvoice();
-                                                } else {
-                                                    alert('Email functionality not implemented.');
-                                                }
-                                            };
+                                            // Print and Email handlers for modal (attach only once)
+                                            if (!window.printInvoiceFromModal) {
+                                                window.printInvoiceFromModal = function() {
+                                                    const modal = document.getElementById('invoiceModalBody');
+                                                    const printWindow = window.open('', '', 'width=900,height=700');
+                                                    printWindow.document.write('<html><head><title>Print Invoice</title>');
+                                                    printWindow.document.write('<link rel="stylesheet" href="/assets/css/styles.css">');
+                                                    printWindow.document.write('</head><body >');
+                                                    printWindow.document.write(modal.innerHTML);
+                                                    printWindow.document.write('</body></html>');
+                                                    printWindow.document.close();
+                                                    printWindow.focus();
+                                                    printWindow.print();
+                                                    printWindow.close();
+                                                };
+                                            }
+                                            if (!window.emailInvoiceFromModal) {
+                                                window.emailInvoiceFromModal = function() {
+                                                    if (typeof emailInvoice === 'function') {
+                                                        emailInvoice();
+                                                    } else {
+                                                        alert('Email functionality not implemented.');
+                                                    }
+                                                };
+                                            }
                                     </form>
                                 `;
                                 // Save handler
