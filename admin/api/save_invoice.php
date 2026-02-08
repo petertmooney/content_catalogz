@@ -1,12 +1,25 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Set JSON header first
 header('Content-Type: application/json');
 
-include __DIR__ . '/../config/auth.php';
+// Include database connection  
 include __DIR__ . '/../config/db.php';
+include __DIR__ . '/../config/auth.php';
+
+// Check database connection
+if (!isset($conn) || $conn->connect_error) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Database connection failed']);
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -15,6 +28,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $data = json_decode(file_get_contents('php://input'), true);
+
+if (json_last_error() !== JSON_ERROR_NONE) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Invalid JSON: ' . json_last_error_msg()]);
+    exit;
+}
 
 if (!isset($data['client_id']) || !isset($data['invoice_number'])) {
     http_response_code(400);

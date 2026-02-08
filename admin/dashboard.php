@@ -3384,7 +3384,23 @@ if ($invoices_result) {
                     total_paid: totalPaid
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                // Log the response for debugging
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                // Try to get the response as text first to see what we're getting
+                return response.text().then(text => {
+                    console.log('Response text:', text);
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error('JSON parse error:', e);
+                        console.error('Response was not valid JSON:', text);
+                        throw new Error('Server returned invalid JSON: ' + text.substring(0, 100));
+                    }
+                });
+            })
             .then(data => {
                 if (data.success) {
                     if (data.exists) {
