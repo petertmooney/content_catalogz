@@ -1,0 +1,6 @@
+# Protect exports directory
+Options -Indexes
+<FilesMatch "\.(zip|sql|json)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>

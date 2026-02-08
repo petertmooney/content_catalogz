@@ -781,7 +781,8 @@ if ($invoices_result) {
                 <a href="#" onclick="openCreateUserModal(); return false;" id="nav-create-user">➕ Create User</a>
             </div>
             
-            <a href="#" onclick="openMenuCustomizationModal(); return false;" id="nav-customize-menu" style="border-top: 1px solid #444; margin-top: 10px; padding-top: 10px;">⚙️ Customize Menu</a>
+            <a href="export.php" id="nav-export" style="border-top: 1px solid #444; margin-top: 10px; padding-top: 10px;">📦 Export Website</a>
+            <a href="#" onclick="openMenuCustomizationModal(); return false;" id="nav-customize-menu">⚙️ Customize Menu</a>
             <a href="/" target="_blank" id="nav-view-site">🌐 View Site</a>
             <a href="api/logout.php" id="nav-logout">🚪 Logout</a>
         </div>
