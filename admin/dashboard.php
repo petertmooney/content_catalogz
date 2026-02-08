@@ -3425,7 +3425,7 @@ if ($invoices_result) {
                         container.innerHTML = data.notes.map(note => `
                             <div class="note-item ${note.is_important ? 'important' : ''}">
                                 ${note.is_important ? '<span class="note-important-badge">⭐ IMPORTANT</span>' : ''}
-                                <div class="note-text">${note.note}</div>
+                                <div class="note-text">${note.note_text}</div>
                                 <div class="note-meta">
                                     <span>📅 ${new Date(note.created_at).toLocaleString()} by ${note.created_by_username || 'Unknown'}</span>
                                     <a href="javascript:void(0)" class="note-delete" onclick="deleteNote(${note.id})">Delete</a>
@@ -3485,8 +3485,12 @@ if ($invoices_result) {
         function deleteNote(noteId) {
             if (!confirm('Delete this note?')) return;
             
-            fetch(`api/notes.php?id=${noteId}`, {
-                method: 'DELETE'
+            fetch('api/notes.php', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({id: noteId})
             })
             .then(res => res.json())
             .then(data => {
