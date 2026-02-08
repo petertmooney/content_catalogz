@@ -2188,6 +2188,19 @@ if ($invoices_result) {
         </div>
     </div>
 
+    <!-- Invoice Modal -->
+    <div id="invoiceModal" class="modal">
+      <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+          <h3>Invoice Details</h3>
+          <button class="close-btn" onclick="closeInvoiceModal()">&times;</button>
+        </div>
+        <div id="invoiceModalBody">
+          <!-- Invoice details will be loaded here -->
+        </div>
+      </div>
+    </div>
+
     <script>
         // Dashboard initialization and error handling
         console.log('%c Dashboard Script Loading...', 'background: #667eea; color: white; padding: 2px 8px; border-radius: 3px;');
@@ -4010,35 +4023,21 @@ if ($invoices_result) {
             html += '<th>Invoice Number</th><th>Client Name</th><th>Company</th><th>Invoice Date</th><th>Total Cost</th><th>Total Paid</th><th>Balance Due</th><th>Actions</th>';
             html += '</tr></thead><tbody>';
 
-            invoices.forEach(invoice => {
-                const invoiceDate = new Date(invoice.invoice_date).toLocaleDateString('en-GB');
-                const balanceColor = invoice.total_remaining > 0 ? '#dc3545' : '#28a745';
-                html += '<tr>';
-                html += `<td><a href="#" onclick="openInvoiceModal(${invoice.id});return false;"><strong>${escapeHtml(invoice.invoice_number)}</strong></a></td>`;
-                html += '<td>' + escapeHtml(invoice.name) + '</td>';
-                html += '<td>' + (invoice.company ? escapeHtml(invoice.company) : '<em>N/A</em>') + '</td>';
-                html += '<td>' + invoiceDate + '</td>';
-                html += '<td>£' + parseFloat(invoice.total_cost).toFixed(2) + '</td>';
-                html += '<td>£' + parseFloat(invoice.total_paid).toFixed(2) + '</td>';
-                html += '<td style="color: ' + balanceColor + '; font-weight: bold;">£' + parseFloat(invoice.total_remaining).toFixed(2) + '</td>';
-                html += '<td>';
-                html += `<button class="btn btn-primary btn-sm" onclick="openInvoiceModal(${invoice.id})">Edit</button> `;
-                html += `<button class="btn btn-danger btn-sm" onclick="confirmDeleteInvoice(${invoice.id})">Delete</button>`;
-                html += '</td>';
-                html += '</tr>';
-            });
-// Modal for viewing/editing invoice
-function openInvoiceModal(invoiceId) {
-    // TODO: Fetch invoice details and populate modal
-    alert('Open invoice modal for ID: ' + invoiceId);
-}
-
-function confirmDeleteInvoice(invoiceId) {
-    if (confirm('Are you sure you want to delete this invoice?')) {
-        // TODO: Call API to delete invoice
-        alert('Delete invoice ID: ' + invoiceId);
-    }
-}
+invoices.forEach(invoice => {
+    const invoiceDate = new Date(invoice.invoice_date).toLocaleDateString('en-GB');
+    const balanceColor = invoice.total_remaining > 0 ? '#dc3545' : '#28a745';
+    
+    html += '<tr>';
+    html += `<td><a href="#" class="invoice-link" onclick="openInvoiceModal(${invoice.id});return false;"><strong>${escapeHtml(invoice.invoice_number)}</strong></a></td>`;
+    html += '<td>' + escapeHtml(invoice.name) + '</td>';
+    html += '<td>' + (invoice.company ? escapeHtml(invoice.company) : '<em>N/A</em>') + '</td>';
+    html += '<td>' + invoiceDate + '</td>';
+    html += '<td>£' + parseFloat(invoice.total_cost).toFixed(2) + '</td>';
+    html += '<td>£' + parseFloat(invoice.total_paid).toFixed(2) + '</td>';
+    html += '<td style="color: ' + balanceColor + '; font-weight: bold;">£' + parseFloat(invoice.total_remaining).toFixed(2) + '</td>';
+    html += `<td><button class="btn btn-primary btn-sm" onclick="openInvoiceModal(${invoice.id})">Edit</button> <button class="btn btn-danger btn-sm" onclick="deleteInvoice(${invoice.id})">Delete</button></td>`;
+    html += '</tr>';
+});
 
             html += '</tbody></table></div>';
             container.innerHTML = html;
@@ -4105,6 +4104,22 @@ function confirmDeleteInvoice(invoiceId) {
                 console.error('%c Error during initialization:', 'color: red; font-weight: bold;', error);
             }
         });
+
+        // ==================== Invoice Modal Handlers ====================
+        function openInvoiceModal(invoiceId) {
+          // TODO: Fetch invoice details via AJAX and populate modal
+          document.getElementById('invoiceModalBody').innerHTML = '<p>Loading invoice #' + invoiceId + '...</p>';
+          document.getElementById('invoiceModal').classList.add('show');
+        }
+        function closeInvoiceModal() {
+          document.getElementById('invoiceModal').classList.remove('show');
+        }
+        function deleteInvoice(invoiceId) {
+          if (confirm('Are you sure you want to delete this invoice?')) {
+            // TODO: Implement AJAX delete
+            alert('Delete invoice ' + invoiceId + ' (not yet implemented)');
+          }
+        }
         
         // Load all dashboard stats
         function loadDashboardStats() {
