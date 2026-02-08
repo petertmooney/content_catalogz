@@ -49,7 +49,7 @@ elseif ($method === 'POST') {
     $isImportant = isset($data['is_important']) ? (bool)$data['is_important'] : false;
     $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
     
-    $stmt = $conn->prepare("INSERT INTO client_notes (client_id, note, is_important, created_by) VALUES (?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO client_notes (client_id, note_text, is_important, created_by) VALUES (?, ?, ?, ?)");
     $stmt->bind_param("isii", $clientId, $note, $isImportant, $userId);
     
     if ($stmt->execute()) {
@@ -81,7 +81,7 @@ elseif ($method === 'PUT') {
     $types = '';
     
     if ($note !== null) {
-        $updates[] = "note = ?";
+        $updates[] = "note_text = ?";
         $params[] = $note;
         $types .= 's';
     }
