@@ -4105,7 +4105,21 @@ invoices.forEach(invoice => {
         // Load HTML files count and quotes on page load
         window.addEventListener('DOMContentLoaded', function() {
             console.log('%c Dashboard Loaded', 'background: #28a745; color: white; font-weight: bold; padding: 4px 12px; border-radius: 4px;');
-            
+            // Force show dashboard section and widgets
+            var dashboardSection = document.getElementById('section-dashboard');
+            if (dashboardSection) {
+                dashboardSection.classList.add('active');
+                dashboardSection.style.display = 'block';
+                console.log('✓ Forced dashboard section to be visible');
+            }
+            // Force show all dashboard widgets
+            ['dashboard-widget-email','dashboard-widget-clients','dashboard-widget-tasks','dashboard-widget-invoices'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) {
+                    el.style.display = '';
+                    console.log('✓ Forced widget visible:', id);
+                }
+            });
             // Check if required elements exist
             const requiredElements = [
                 'section-dashboard',
@@ -4113,7 +4127,6 @@ invoices.forEach(invoice => {
                 'quotes-count',
                 'nav-dashboard'
             ];
-            
             let allElementsFound = true;
             requiredElements.forEach(id => {
                 const el = document.getElementById(id);
@@ -4124,37 +4137,19 @@ invoices.forEach(invoice => {
                     console.log('✓ Found element:', id);
                 }
             });
-            
             if (!allElementsFound) {
                 console.error('%c Some required elements are missing!', 'color: red; font-weight: bold;');
             }
-            
-            // Ensure dashboard section is visible
-            const dashboardSection = document.getElementById('section-dashboard');
-            if (dashboardSection) {
-                if (!dashboardSection.classList.contains('active')) {
-                    dashboardSection.classList.add('active');
-                    dashboardSection.style.display = 'block';
-                    console.log('✓ Dashboard section set to active');
-                }
-            } else {
-                console.error('❌ Dashboard section not found!');
-            }
-            
             // Load initial data
             try {
                 console.log('Loading HTML files...');
                 loadHtmlFiles();
-                
                 console.log('Loading quotes...');
                 loadQuotes();
-                
                 console.log('Loading dashboard stats...');
                 loadDashboardStats();
-
                 // Load all invoices on dashboard load
                 showFilteredInvoices('all');
-                
                 console.log('%c All data loading functions called successfully', 'background: #667eea; color: white; padding: 2px 8px; border-radius: 3px;');
             } catch (error) {
                 console.error('%c Error during initialization:', 'color: red; font-weight: bold;', error);
