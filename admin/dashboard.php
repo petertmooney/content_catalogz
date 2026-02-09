@@ -747,43 +747,36 @@ if ($invoices_result) {
 
     <div class="container">
         <div class="sidebar">
-            <a href="#" onclick="showSection('dashboard'); return false;" id="nav-dashboard" class="active">📋 Dashboard</a>
-            
-            <a href="#" onclick="showSection('clients'); return false;" id="nav-clients">📝 Quote Requests</a>
-            
-            <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'clients-submenu'); return false;">👥 Clients</a>
+            <a href="#" id="nav-dashboard" class="active">📋 Dashboard</a>
+            <a href="#" id="nav-clients">📝 Quote Requests</a>
+            <a href="#" class="menu-parent" id="nav-clients-parent">👥 Clients</a>
             <div class="submenu" id="clients-submenu">
-                <a href="#" onclick="showSection('existing-clients'); return false;" id="nav-existing-clients">👤 Existing Clients</a>
-                <a href="#" onclick="openAddClientModal(); return false;" id="nav-add-client">➕ Add New Client</a>
+                <a href="#" id="nav-existing-clients">👤 Existing Clients</a>
+                <a href="#" id="nav-add-client">➕ Add New Client</a>
             </div>
-            
-            <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'email-submenu'); return false;">📧 Email</a>
+            <a href="#" class="menu-parent" id="nav-email-parent">📧 Email</a>
             <div class="submenu" id="email-submenu">
-                <a href="#" onclick="showSection('email-inbox'); return false;" id="nav-email-inbox">📥 Inbox</a>
-                <a href="#" onclick="showSection('email-draft'); return false;" id="nav-email-draft">📝 Drafts</a>
-                <a href="#" onclick="showSection('email-sent'); return false;" id="nav-email-sent">📤 Sent</a>
-                <a href="#" onclick="showSection('email-trash'); return false;" id="nav-email-trash">🗑️ Trash</a>
-                <a href="#" onclick="showSection('email-settings'); return false;" id="nav-email-settings">⚙️ Settings</a>
+                <a href="#" id="nav-email-inbox">📥 Inbox</a>
+                <a href="#" id="nav-email-draft">📝 Drafts</a>
+                <a href="#" id="nav-email-sent">📤 Sent</a>
+                <a href="#" id="nav-email-trash">🗑️ Trash</a>
+                <a href="#" id="nav-email-settings">⚙️ Settings</a>
             </div>
-            
-            <a href="#" onclick="showSection('tasks'); return false;" id="nav-tasks">✅ Tasks & To-Do</a>
-            <a href="#" onclick="showSection('invoices'); return false;" id="nav-invoices">📄 Invoices</a>
-            
-            <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'pages-submenu'); return false;">🌐 Website Pages</a>
+            <a href="#" id="nav-tasks">✅ Tasks & To-Do</a>
+            <a href="#" id="nav-invoices">📄 Invoices</a>
+            <a href="#" class="menu-parent" id="nav-pages-parent">🌐 Website Pages</a>
             <div class="submenu" id="pages-submenu">
-                <a href="#" onclick="showSection('html-files'); return false;" id="nav-html-files">📝 Edit Pages</a>
-                <a href="#" onclick="openNewPageModal(); return false;" id="nav-new-page">➕ Create New Page</a>
+                <a href="#" id="nav-html-files">📝 Edit Pages</a>
+                <a href="#" id="nav-new-page">➕ Create New Page</a>
             </div>
-            
-            <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'users-submenu'); return false;">👤 Users</a>
+            <a href="#" class="menu-parent" id="nav-users-parent">👤 Users</a>
             <div class="submenu" id="users-submenu">
-                <a href="#" onclick="showSection('users-list'); return false;" id="nav-users-list">📋 View All Users</a>
-                <a href="#" onclick="openCreateUserModal(); return false;" id="nav-create-user">➕ Create User</a>
+                <a href="#" id="nav-users-list">📋 View All Users</a>
+                <a href="#" id="nav-create-user">➕ Create User</a>
             </div>
-            
             <a href="export.php" id="nav-export" style="border-top: 1px solid #444; margin-top: 10px; padding-top: 10px;">📦 Export Website</a>
-            <a href="#" onclick="showSection('newsletter'); return false;" id="nav-newsletter">📰 Newsletter</a>
-            <a href="#" onclick="openMenuCustomizationModal(); return false;" id="nav-customize-menu">⚙️ Customize Menu</a>
+            <a href="#" id="nav-newsletter">📰 Newsletter</a>
+            <a href="#" id="nav-customize-menu">⚙️ Customize Menu</a>
             <a href="/" target="_blank" id="nav-view-site">🌐 View Site</a>
             <a href="api/logout.php" id="nav-logout">🚪 Logout</a>
         </div>
@@ -2227,6 +2220,46 @@ if ($invoices_result) {
     </div>
 
     <script>
+                // Sidebar navigation event delegation
+                document.addEventListener('DOMContentLoaded', function() {
+                    const sidebar = document.querySelector('.sidebar');
+                    if (!sidebar) return;
+                    sidebar.addEventListener('click', function(e) {
+                        const target = e.target.closest('a');
+                        if (!target) return;
+                        const id = target.id;
+                        if (!id) return;
+                        e.preventDefault();
+                        e.stopPropagation();
+                        // Submenu toggles
+                        if (target.classList.contains('menu-parent')) {
+                            const submenu = document.getElementById(id.replace('nav-', '') + '-submenu');
+                            if (submenu) {
+                                submenu.classList.toggle('open');
+                                target.classList.toggle('open');
+                            }
+                            return;
+                        }
+                        // Section navigation
+                        if (id.startsWith('nav-')) {
+                            const section = id.replace('nav-', '');
+                            if (section === 'add-client') {
+                                openAddClientModal();
+                            } else if (section === 'new-page') {
+                                openNewPageModal();
+                            } else if (section === 'create-user') {
+                                openCreateUserModal();
+                            } else if (section === 'customize-menu') {
+                                openMenuCustomizationModal();
+                            } else if (section === 'export' || section === 'view-site' || section === 'logout') {
+                                // Let default action occur for these
+                                window.location = target.href;
+                            } else {
+                                showSection(section);
+                            }
+                        }
+                    });
+                });
         // Dashboard initialization and error handling
         console.log('%c Dashboard Script Loading...', 'background: #667eea; color: white; padding: 2px 8px; border-radius: 3px;');
         
