@@ -811,7 +811,31 @@ if ($invoices_result) {
                         <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Drafts</h4>
                         <p class="stat-number" id="dash-emails-drafts" style="font-size: 28px; font-weight: bold; color: #ffc107;">0</p>
                     </div>
-                </div>
+                    </div>
+
+                    <!-- Newsletter Section -->
+                    <div id="section-newsletter" class="content-section" style="display: none;">
+                        <div class="page-header">
+                            <h2>Newsletter</h2>
+                            <p>Create and send newsletters to your subscribers.</p>
+                        </div>
+                        <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); max-width: 600px; margin-bottom: 30px;">
+                            <form id="newsletterForm" onsubmit="sendNewsletter(event)">
+                                <div class="form-group">
+                                    <label for="newsletterSubject">Subject *</label>
+                                    <input type="text" id="newsletterSubject" class="form-control" required placeholder="Newsletter subject...">
+                                </div>
+                                <div class="form-group">
+                                    <label for="newsletterMessage">Message *</label>
+                                    <textarea id="newsletterMessage" class="form-control" rows="8" required placeholder="Type your newsletter message here..."></textarea>
+                                </div>
+                                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                                    <button type="submit" class="btn btn-primary">📧 Send Newsletter</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div id="newsletterStatus"></div>
+                    </div>
 
                 <!-- Client & Quotes Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">📊 Clients & Quotes</h3>
@@ -2516,6 +2540,38 @@ if ($invoices_result) {
 
         function closeNewPageModal() {
             document.getElementById('newPageModal').style.display = 'none';
+        }
+
+        // Newsletter form logic
+        function sendNewsletter(event) {
+            event.preventDefault();
+            const subject = document.getElementById('newsletterSubject').value.trim();
+            const message = document.getElementById('newsletterMessage').value.trim();
+            const statusDiv = document.getElementById('newsletterStatus');
+            statusDiv.innerHTML = '';
+            if (!subject || !message) {
+                statusDiv.innerHTML = '<div class="error">Please fill in both subject and message.</div>';
+                return;
+            }
+            statusDiv.innerHTML = '<div class="success">Sending newsletter...</div>';
+            fetch('api/send_newsletter.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({subject, message})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    statusDiv.innerHTML = '<div class="success">Newsletter sent successfully!</div>';
+                    document.getElementById('newsletterForm').reset();
+                } else {
+                    statusDiv.innerHTML = '<div class="error">Error: ' + (data.message || 'Failed to send newsletter.') + '</div>';
+                }
+            })
+            .catch(err => {
+                statusDiv.innerHTML = '<div class="error">Network error: ' + err.message + '</div>';
+            });
+        }
         }
 
         // Update filename preview as user types
