@@ -2247,7 +2247,17 @@ if ($invoices_result) {
                             for (let i = 0; i < firstDay; i++) html += '<td></td>';
                             for (let day = 1; day <= daysInMonth; day++) {
                                 if ((firstDay + day - 1) % 7 === 0 && day !== 1) html += '</tr><tr>';
-                                html += `<td style="padding:8px; border:1px solid #eee; cursor:pointer;" onclick="showTasksForDay(${year},${month},${day})">${day}</td>`;
+                                const dateKey = `${year}-${month+1}-${day}`;
+                                const tasks = window.calendarTasks?.[dateKey] || [];
+                                let taskHtml = '';
+                                if (tasks.length > 0) {
+                                    taskHtml = '<ul style="margin:4px 0 0 0; padding:0; list-style:none;">';
+                                    tasks.forEach((task, idx) => {
+                                        taskHtml += `<li style="font-size:12px; background:#eef; margin-bottom:2px; border-radius:3px; padding:2px 4px; cursor:pointer;" onclick="showTasksForDay(${year},${month},${day})">${task}</li>`;
+                                    });
+                                    taskHtml += '</ul>';
+                                }
+                                html += `<td style="padding:8px; border:1px solid #eee; vertical-align:top; cursor:pointer;${tasks.length > 0 ? 'background:#f9f9ff;' : ''}" onclick="showTasksForDay(${year},${month},${day})"><div style="font-weight:bold;">${day}</div>${taskHtml}</td>`;
                             }
                             html += '</tr></table>';
                             container.innerHTML = html;
