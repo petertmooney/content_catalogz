@@ -2609,7 +2609,6 @@ if ($invoices_result) {
                 statusDiv.innerHTML = '<div class="error">Network error: ' + err.message + '</div>';
             });
         }
-        }
 
         // Update filename preview as user types
         document.addEventListener('DOMContentLoaded', function() {
