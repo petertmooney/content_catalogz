@@ -2301,55 +2301,54 @@ if ($invoices_result) {
                             // ...existing code...
                         }
 
-                        // Ensure calendar is rendered on load if section-calendar is visible
-                        document.addEventListener('DOMContentLoaded', function() {
-                            const calendarSection = document.getElementById('section-calendar');
-                            if (calendarSection && calendarSection.style.display !== 'none') {
-                                const now = new Date();
-                                renderCalendar(now.getFullYear(), now.getMonth());
-                                showTasksForDay(now.getFullYear(), now.getMonth(), now.getDate());
-                            }
-                        });
-                // Sidebar navigation event delegation (fixed)
-        // Sidebar navigation event delegation (robust)
+        // Unified DOMContentLoaded handler for sidebar and calendar
         document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar navigation event delegation
             const sidebar = document.querySelector('.sidebar');
-            if (!sidebar) return;
-            sidebar.addEventListener('click', function(e) {
-                let target = e.target;
-                // Only handle anchor elements
-                if (target.tagName !== 'A') target = target.closest('a');
-                if (!target) return;
-                // Allow default for export, view site, logout
-                if (['nav-export','nav-view-site','nav-logout'].includes(target.id)) {
-                    return;
-                }
-                e.preventDefault();
-                e.stopPropagation();
-                // Submenu toggles
-                if (target.classList.contains('menu-parent')) {
-                    const submenuId = target.id.replace('nav-', '') + '-submenu';
-                    const submenu = document.getElementById(submenuId);
-                    if (submenu) {
-                        submenu.classList.toggle('open');
-                        target.classList.toggle('open');
+            if (sidebar) {
+                sidebar.addEventListener('click', function(e) {
+                    let target = e.target;
+                    // Only handle anchor elements
+                    if (target.tagName !== 'A') target = target.closest('a');
+                    if (!target) return;
+                    // Allow default for export, view site, logout
+                    if (['nav-export','nav-view-site','nav-logout'].includes(target.id)) {
+                        return;
                     }
-                    return;
-                }
-                // Section navigation
-                const section = target.id.replace('nav-', '');
-                if (section === 'add-client') {
-                    openAddClientModal();
-                } else if (section === 'new-page') {
-                    openNewPageModal();
-                } else if (section === 'create-user') {
-                    openCreateUserModal();
-                } else if (section === 'customize-menu') {
-                    openMenuCustomizationModal();
-                } else {
-                    showSection(section);
-                }
-            });
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Submenu toggles
+                    if (target.classList.contains('menu-parent')) {
+                        const submenuId = target.id.replace('nav-', '') + '-submenu';
+                        const submenu = document.getElementById(submenuId);
+                        if (submenu) {
+                            submenu.classList.toggle('open');
+                            target.classList.toggle('open');
+                        }
+                        return;
+                    }
+                    // Section navigation
+                    const section = target.id.replace('nav-', '');
+                    if (section === 'add-client') {
+                        openAddClientModal();
+                    } else if (section === 'new-page') {
+                        openNewPageModal();
+                    } else if (section === 'create-user') {
+                        openCreateUserModal();
+                    } else if (section === 'customize-menu') {
+                        openMenuCustomizationModal();
+                    } else {
+                        showSection(section);
+                    }
+                });
+            }
+            // Calendar: render if calendar section is visible
+            const calendarSection = document.getElementById('section-calendar');
+            if (calendarSection && calendarSection.style.display !== 'none') {
+                const now = new Date();
+                renderCalendar(now.getFullYear(), now.getMonth());
+                showTasksForDay(now.getFullYear(), now.getMonth(), now.getDate());
+            }
         });
         // Dashboard initialization and error handling
         console.log('%c Dashboard Script Loading...', 'background: #667eea; color: white; padding: 2px 8px; border-radius: 3px;');
