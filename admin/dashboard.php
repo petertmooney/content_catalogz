@@ -817,7 +817,11 @@ if ($invoices_result) {
                         <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Drafts</h4>
                         <p class="stat-number" id="dash-emails-drafts" style="font-size: 28px; font-weight: bold; color: #ffc107;">0</p>
                     </div>
-                    </div>
+                </div>
+                <!-- Add missing html-count element -->
+                <div style="margin-top: 10px;">
+                    <span id="html-count" style="font-weight: bold; color: #667eea;">0</span> HTML pages
+                </div>
 
                     <!-- Newsletter Section -->
                     <div id="section-newsletter" class="content-section" style="display: none;">
