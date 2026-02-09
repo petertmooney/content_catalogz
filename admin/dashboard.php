@@ -2220,43 +2220,47 @@ if ($invoices_result) {
     </div>
 
     <script>
-                // Sidebar navigation event delegation
+                // Sidebar navigation event delegation (fixed)
                 document.addEventListener('DOMContentLoaded', function() {
                     const sidebar = document.querySelector('.sidebar');
                     if (!sidebar) return;
                     sidebar.addEventListener('click', function(e) {
-                        const target = e.target.closest('a');
-                        if (!target) return;
-                        const id = target.id;
-                        if (!id) return;
-                        e.preventDefault();
-                        e.stopPropagation();
-                        // Submenu toggles
+                        let target = e.target;
+                        // Handle submenu toggles
                         if (target.classList.contains('menu-parent')) {
-                            const submenu = document.getElementById(id.replace('nav-', '') + '-submenu');
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const submenuId = target.id.replace('nav-', '') + '-submenu';
+                            const submenu = document.getElementById(submenuId);
                             if (submenu) {
                                 submenu.classList.toggle('open');
                                 target.classList.toggle('open');
                             }
                             return;
                         }
+                        // Handle links inside submenu
+                        if (target.parentElement && target.parentElement.classList.contains('submenu')) {
+                            target = target.closest('a');
+                        }
+                        if (!target || !target.id) return;
+                        // Allow default for export, view site, logout
+                        if (['nav-export','nav-view-site','nav-logout'].includes(target.id)) {
+                            return;
+                        }
+                        e.preventDefault();
+                        e.stopPropagation();
                         // Section navigation
-                        if (id.startsWith('nav-')) {
-                            const section = id.replace('nav-', '');
-                            if (section === 'add-client') {
-                                openAddClientModal();
-                            } else if (section === 'new-page') {
-                                openNewPageModal();
-                            } else if (section === 'create-user') {
-                                openCreateUserModal();
-                            } else if (section === 'customize-menu') {
-                                openMenuCustomizationModal();
-                            } else if (section === 'export' || section === 'view-site' || section === 'logout') {
-                                // Let default action occur for these
-                                window.location = target.href;
-                            } else {
-                                showSection(section);
-                            }
+                        const section = target.id.replace('nav-', '');
+                        if (section === 'add-client') {
+                            openAddClientModal();
+                        } else if (section === 'new-page') {
+                            openNewPageModal();
+                        } else if (section === 'create-user') {
+                            openCreateUserModal();
+                        } else if (section === 'customize-menu') {
+                            openMenuCustomizationModal();
+                        } else {
+                            showSection(section);
                         }
                     });
                 });
