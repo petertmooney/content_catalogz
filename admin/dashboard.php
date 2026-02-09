@@ -747,6 +747,7 @@ if ($invoices_result) {
 
     <div class="container">
         <div class="sidebar">
+                        <a href="#" id="nav-calendar">📅 Calendar</a>
             <a href="#" id="nav-dashboard" class="active">📋 Dashboard</a>
             <a href="#" id="nav-clients">📝 Quote Requests</a>
             <a href="#" class="menu-parent" id="nav-clients-parent">👥 Clients</a>
@@ -782,6 +783,18 @@ if ($invoices_result) {
         </div>
 
         <div class="main-content">
+                        <!-- Calendar Section -->
+                        <div id="section-calendar" class="content-section" style="display: none;">
+                            <div class="page-header">
+                                <h2>Calendar</h2>
+                                <p>View your tasks and deadlines by day.</p>
+                            </div>
+                            <div id="calendar-container" style="margin-bottom: 30px;"></div>
+                            <div id="calendar-tasks">
+                                <h3>Tasks Due</h3>
+                                <ul id="calendar-task-list"></ul>
+                            </div>
+                        </div>
             <!-- Dashboard Section -->
             <div id="section-dashboard" class="content-section active">
                 <div class="page-header">
@@ -2220,6 +2233,59 @@ if ($invoices_result) {
     </div>
 
     <script>
+                        // Calendar rendering logic
+                        function renderCalendar(year, month) {
+                            const container = document.getElementById('calendar-container');
+                            if (!container) return;
+                            container.innerHTML = '';
+                            const date = new Date(year, month, 1);
+                            const daysInMonth = new Date(year, month + 1, 0).getDate();
+                            const firstDay = date.getDay();
+                            let html = '<table class="calendar-table" style="width:100%; border-collapse:collapse;">';
+                            html += '<tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>';
+                            html += '<tr>';
+                            for (let i = 0; i < firstDay; i++) html += '<td></td>';
+                            for (let day = 1; day <= daysInMonth; day++) {
+                                if ((firstDay + day - 1) % 7 === 0 && day !== 1) html += '</tr><tr>';
+                                html += `<td style="padding:8px; border:1px solid #eee; cursor:pointer;" onclick="showTasksForDay(${year},${month},${day})">${day}</td>`;
+                            }
+                            html += '</tr></table>';
+                            container.innerHTML = html;
+                        }
+
+                        function showTasksForDay(year, month, day) {
+                            // Example: fetch tasks for the day
+                            const taskList = document.getElementById('calendar-task-list');
+                            if (!taskList) return;
+                            taskList.innerHTML = '';
+                            // Replace with real task fetching logic
+                            const tasks = window.calendarTasks?.[`${year}-${month+1}-${day}`] || [];
+                            if (tasks.length === 0) {
+                                taskList.innerHTML = '<li>No tasks due.</li>';
+                            } else {
+                                tasks.forEach(task => {
+                                    taskList.innerHTML += `<li>${task}</li>`;
+                                });
+                            }
+                        }
+
+                        // Example task data
+                        window.calendarTasks = {
+                            // Format: 'YYYY-M-D': [task1, task2]
+                            [`${new Date().getFullYear()}-${new Date().getMonth()+1}-10`]: ['Submit invoice', 'Call client'],
+                            [`${new Date().getFullYear()}-${new Date().getMonth()+1}-15`]: ['Prepare newsletter'],
+                        };
+
+                        // Show calendar section and render calendar
+                        function showSection(sectionName) {
+                            // ...existing code...
+                            if (sectionName === 'calendar') {
+                                const now = new Date();
+                                renderCalendar(now.getFullYear(), now.getMonth());
+                                showTasksForDay(now.getFullYear(), now.getMonth(), now.getDate());
+                            }
+                            // ...existing code...
+                        }
                 // Sidebar navigation event delegation (fixed)
                 document.addEventListener('DOMContentLoaded', function() {
                     const sidebar = document.querySelector('.sidebar');
