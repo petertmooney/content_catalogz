@@ -789,10 +789,10 @@ if ($invoices_result) {
                                 <h2>Calendar</h2>
                                 <p>View your tasks and deadlines by day.</p>
                             </div>
-                            <div id="calendar-container" style="margin-bottom: 30px;"></div>
+                            <div id="calendar-container" style="margin-bottom: 30px; min-height: 320px;"></div>
                             <div id="calendar-tasks">
                                 <h3>Tasks Due</h3>
-                                <ul id="calendar-task-list"></ul>
+                                <ul id="calendar-task-list" style="min-height: 40px;"></ul>
                             </div>
                         </div>
             <!-- Dashboard Section -->
