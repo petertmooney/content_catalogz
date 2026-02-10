@@ -5573,15 +5573,40 @@ invoices.forEach(invoice => {
         }
         
         function loadMenuItems() {
-            fetch('api/get_menu_order.php')
-                .then(res => res.json())
-                .then(data => {
-                    const menuOrder = data.success && data.order ? data.order : defaultMenuOrder;
-                    renderMenuItems(menuOrder);
-                })
-                .catch(() => {
-                    renderMenuItems(defaultMenuOrder);
-                });
+            // Dynamically build menu items from sidebar DOM
+            const sidebar = document.querySelector('.sidebar');
+            if (!sidebar) {
+                renderMenuItems(defaultMenuOrder);
+                return;
+            }
+            const items = [];
+            sidebar.querySelectorAll('a, .submenu').forEach(el => {
+                if (el.id && !el.id.includes('nav-customize-menu') && !el.id.includes('nav-view-site') && !el.id.includes('nav-logout')) {
+                    // If submenu, treat as parent
+                    if (el.classList.contains('submenu')) {
+                        // Find parent menu link
+                        const parent = sidebar.querySelector('.menu-parent[onclick*="'"], .menu-parent');
+                        items.push({
+                            id: el.id,
+                            label: parent ? parent.textContent : el.id,
+                            type: 'parent',
+                            children: Array.from(el.querySelectorAll('a')).map(child => ({
+                                id: child.id,
+                                label: child.textContent,
+                                section: child.id.replace('nav-', '').replace('-','_')
+                            }))
+                        });
+                    } else {
+                        items.push({
+                            id: el.id,
+                            label: el.textContent,
+                            section: el.id.replace('nav-', '').replace('-','_'),
+                            type: 'link'
+                        });
+                    }
+                }
+            });
+            renderMenuItems(items.length ? items : defaultMenuOrder);
         }
         
         function renderMenuItems(items) {
