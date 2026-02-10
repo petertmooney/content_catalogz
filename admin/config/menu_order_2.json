@@ -12,18 +12,6 @@
         "type": "link"
     },
     {
-        "id": "nav-calendar",
-        "label": "\ud83d\udcc5 Calendar",
-        "section": "calendar",
-        "type": "link"
-    },
-    {
-        "id": "nav-clients-parent",
-        "label": "\ud83d\udc65 Clients",
-        "section": "clients_parent",
-        "type": "link"
-    },
-    {
         "id": "clients-submenu",
         "label": "\ud83d\udc65 Clients",
         "type": "parent",
@@ -31,32 +19,14 @@
             {
                 "id": "nav-existing-clients",
                 "label": "\ud83d\udc64 Existing Clients",
-                "section": "existing_clients"
+                "section": "existing-clients"
             },
             {
                 "id": "nav-add-client",
                 "label": "\u2795 Add New Client",
-                "section": "add_client"
+                "action": "openAddClientModal()"
             }
         ]
-    },
-    {
-        "id": "nav-existing-clients",
-        "label": "\ud83d\udc64 Existing Clients",
-        "section": "existing_clients",
-        "type": "link"
-    },
-    {
-        "id": "nav-add-client",
-        "label": "\u2795 Add New Client",
-        "section": "add_client",
-        "type": "link"
-    },
-    {
-        "id": "nav-email-parent",
-        "label": "\ud83d\udce7 Email",
-        "section": "email_parent",
-        "type": "link"
     },
     {
         "id": "email-submenu",
@@ -66,59 +36,29 @@
             {
                 "id": "nav-email-inbox",
                 "label": "\ud83d\udce5 Inbox",
-                "section": "email_inbox"
+                "section": "email-inbox"
             },
             {
                 "id": "nav-email-draft",
                 "label": "\ud83d\udcdd Drafts",
-                "section": "email_draft"
+                "section": "email-draft"
             },
             {
                 "id": "nav-email-sent",
                 "label": "\ud83d\udce4 Sent",
-                "section": "email_sent"
+                "section": "email-sent"
             },
             {
                 "id": "nav-email-trash",
                 "label": "\ud83d\uddd1\ufe0f Trash",
-                "section": "email_trash"
+                "section": "email-trash"
             },
             {
                 "id": "nav-email-settings",
                 "label": "\u2699\ufe0f Settings",
-                "section": "email_settings"
+                "section": "email-settings"
             }
         ]
-    },
-    {
-        "id": "nav-email-inbox",
-        "label": "\ud83d\udce5 Inbox",
-        "section": "email_inbox",
-        "type": "link"
-    },
-    {
-        "id": "nav-email-draft",
-        "label": "\ud83d\udcdd Drafts",
-        "section": "email_draft",
-        "type": "link"
-    },
-    {
-        "id": "nav-email-sent",
-        "label": "\ud83d\udce4 Sent",
-        "section": "email_sent",
-        "type": "link"
-    },
-    {
-        "id": "nav-email-trash",
-        "label": "\ud83d\uddd1\ufe0f Trash",
-        "section": "email_trash",
-        "type": "link"
-    },
-    {
-        "id": "nav-email-settings",
-        "label": "\u2699\ufe0f Settings",
-        "section": "email_settings",
-        "type": "link"
     },
     {
         "id": "nav-tasks",
@@ -133,10 +73,21 @@
         "type": "link"
     },
     {
-        "id": "nav-pages-parent",
-        "label": "\ud83c\udf10 Website Pages",
-        "section": "pages_parent",
-        "type": "link"
+        "id": "users-submenu",
+        "label": "\ud83d\udc64 Users",
+        "type": "parent",
+        "children": [
+            {
+                "id": "nav-users-list",
+                "label": "\ud83d\udccb View All Users",
+                "section": "users-list"
+            },
+            {
+                "id": "nav-create-user",
+                "label": "\u2795 Create User",
+                "action": "openCreateUserModal()"
+            }
+        ]
     },
     {
         "id": "pages-submenu",
@@ -146,83 +97,13 @@
             {
                 "id": "nav-html-files",
                 "label": "\ud83d\udcdd Edit Pages",
-                "section": "html_files"
+                "section": "html-files"
             },
             {
                 "id": "nav-new-page",
                 "label": "\u2795 Create New Page",
-                "section": "new_page"
-            },
-            {
-                "id": "nav-page-1",
-                "label": "\ud83d\udcc4 Welcome to Content Catalogz",
-                "section": "page_1"
+                "action": "openNewPageModal()"
             }
         ]
-    },
-    {
-        "id": "nav-html-files",
-        "label": "\ud83d\udcdd Edit Pages",
-        "section": "html_files",
-        "type": "link"
-    },
-    {
-        "id": "nav-new-page",
-        "label": "\u2795 Create New Page",
-        "section": "new_page",
-        "type": "link"
-    },
-    {
-        "id": "nav-page-1",
-        "label": "\ud83d\udcc4 Welcome to Content Catalogz",
-        "section": "page_1",
-        "type": "link"
-    },
-    {
-        "id": "nav-users-parent",
-        "label": "\ud83d\udc64 Users",
-        "section": "users_parent",
-        "type": "link"
-    },
-    {
-        "id": "users-submenu",
-        "label": "\ud83d\udc64 Users",
-        "type": "parent",
-        "children": [
-            {
-                "id": "nav-users-list",
-                "label": "\ud83d\udccb View All Users",
-                "section": "users_list"
-            },
-            {
-                "id": "nav-create-user",
-                "label": "\u2795 Create User",
-                "section": "create_user"
-            }
-        ]
-    },
-    {
-        "id": "nav-users-list",
-        "label": "\ud83d\udccb View All Users",
-        "section": "users_list",
-        "type": "link"
-    },
-    {
-        "id": "nav-create-user",
-        "label": "\u2795 Create User",
-        "section": "create_user",
-        "type": "link"
-    },
-    {
-        "id": "nav-export",
-        "label": "\ud83d\udce6 Export Website",
-        "section": "export",
-        "type": "link"
-    },
-    {
-        "id": "nav-newsletter",
-        "label": "\ud83d\udcf0 Newsletter",
-        "section": "newsletter",
-        "type": "link"
     }
 ]

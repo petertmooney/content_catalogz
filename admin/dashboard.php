@@ -747,67 +747,47 @@ if ($invoices_result) {
 
     <div class="container">
         <div class="sidebar">
-                        <a href="#" id="nav-calendar" onclick="showSection('calendar'); return false;">📅 Calendar</a>
-                        <a href="#" id="nav-dashboard" class="active" onclick="showSection('dashboard'); return false;">📋 Dashboard</a>
-                        <a href="#" id="nav-clients" onclick="showSection('clients'); return false;">📝 Quote Requests</a>
-                        <a href="#" class="menu-parent" id="nav-clients-parent" onclick="toggleSubmenu(event, 'clients-submenu'); return false;">👥 Clients</a>
-                        <div class="submenu" id="clients-submenu">
-                            <a href="#" id="nav-existing-clients" onclick="showSection('existing-clients'); return false;">👤 Existing Clients</a>
-                            <a href="#" id="nav-add-client" onclick="openAddClientModal(); return false;">➕ Add New Client</a>
-                        </div>
-                        <a href="#" class="menu-parent" id="nav-email-parent" onclick="toggleSubmenu(event, 'email-submenu'); return false;">📧 Email</a>
-                        <div class="submenu" id="email-submenu">
-                            <a href="#" id="nav-email-inbox" onclick="showSection('email-inbox'); return false;">📥 Inbox</a>
-                            <a href="#" id="nav-email-draft" onclick="showSection('email-draft'); return false;">📝 Drafts</a>
-                            <a href="#" id="nav-email-sent" onclick="showSection('email-sent'); return false;">📤 Sent</a>
-                            <a href="#" id="nav-email-trash" onclick="showSection('email-trash'); return false;">🗑️ Trash</a>
-                            <a href="#" id="nav-email-settings" onclick="showSection('email-settings'); return false;">⚙️ Settings</a>
-                        </div>
-                        <a href="#" id="nav-tasks" onclick="showSection('tasks'); return false;">✅ Tasks & To-Do</a>
-                        <a href="#" id="nav-invoices" onclick="showSection('invoices'); return false;">📄 Invoices</a>
-                        <a href="#" class="menu-parent" id="nav-pages-parent" onclick="toggleSubmenu(event, 'pages-submenu'); return false;">🌐 Website Pages</a>
-                        <div class="submenu" id="pages-submenu">
-                            <a href="#" id="nav-html-files" onclick="showSection('html-files'); return false;">📝 Edit Pages</a>
-                            <a href="#" id="nav-new-page" onclick="openNewPageModal(); return false;">➕ Create New Page</a>
-                            <?php foreach ($pages as $page): ?>
-                                <a href="#" id="nav-page-<?php echo $page['id']; ?>" onclick="showSection('page-<?php echo $page['id']; ?>'); return false;">📄 <?php echo htmlspecialchars($page['title']); ?></a>
-                            <?php endforeach; ?>
-                        </div>
-                        <a href="#" class="menu-parent" id="nav-users-parent" onclick="toggleSubmenu(event, 'users-submenu'); return false;">👤 Users</a>
-                        <div class="submenu" id="users-submenu">
-                            <a href="#" id="nav-users-list" onclick="showSection('users-list'); return false;">📋 View All Users</a>
-                            <a href="#" id="nav-create-user" onclick="openCreateUserModal(); return false;">➕ Create User</a>
-                        </div>
-                        <a href="export.php" id="nav-export" style="border-top: 1px solid #444; margin-top: 10px; padding-top: 10px;">📦 Export Website</a>
-                        <a href="#" id="nav-newsletter" onclick="showSection('newsletter'); return false;">📰 Newsletter</a>
-                        <a href="#" id="nav-customize-menu" onclick="openMenuCustomizationModal(); return false;">⚙️ Customize Menu</a>
-                        <a href="/" target="_blank" id="nav-view-site">🌐 View Site</a>
-                        <a href="api/logout.php" id="nav-logout">🚪 Logout</a>
+            <a href="#" onclick="showSection('dashboard'); return false;" id="nav-dashboard" class="active">📋 Dashboard</a>
+            
+            <a href="#" onclick="showSection('clients'); return false;" id="nav-clients">📝 Quote Requests</a>
+            
+            <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'clients-submenu'); return false;">👥 Clients</a>
+            <div class="submenu" id="clients-submenu">
+                <a href="#" onclick="showSection('existing-clients'); return false;" id="nav-existing-clients">👤 Existing Clients</a>
+                <a href="#" onclick="openAddClientModal(); return false;" id="nav-add-client">➕ Add New Client</a>
+            </div>
+            
+            <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'email-submenu'); return false;">📧 Email</a>
+            <div class="submenu" id="email-submenu">
+                <a href="#" onclick="showSection('email-inbox'); return false;" id="nav-email-inbox">📥 Inbox</a>
+                <a href="#" onclick="showSection('email-draft'); return false;" id="nav-email-draft">📝 Drafts</a>
+                <a href="#" onclick="showSection('email-sent'); return false;" id="nav-email-sent">📤 Sent</a>
+                <a href="#" onclick="showSection('email-trash'); return false;" id="nav-email-trash">🗑️ Trash</a>
+                <a href="#" onclick="showSection('email-settings'); return false;" id="nav-email-settings">⚙️ Settings</a>
+            </div>
+            
+            <a href="#" onclick="showSection('tasks'); return false;" id="nav-tasks">✅ Tasks & To-Do</a>
+            <a href="#" onclick="showSection('invoices'); return false;" id="nav-invoices">📄 Invoices</a>
+            
+            <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'pages-submenu'); return false;">🌐 Website Pages</a>
+            <div class="submenu" id="pages-submenu">
+                <a href="#" onclick="showSection('html-files'); return false;" id="nav-html-files">📝 Edit Pages</a>
+                <a href="#" onclick="openNewPageModal(); return false;" id="nav-new-page">➕ Create New Page</a>
+            </div>
+            
+            <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'users-submenu'); return false;">👤 Users</a>
+            <div class="submenu" id="users-submenu">
+                <a href="#" onclick="showSection('users-list'); return false;" id="nav-users-list">📋 View All Users</a>
+                <a href="#" onclick="openCreateUserModal(); return false;" id="nav-create-user">➕ Create User</a>
+            </div>
+            
+            <a href="export.php" id="nav-export" style="border-top: 1px solid #444; margin-top: 10px; padding-top: 10px;">📦 Export Website</a>
+            <a href="#" onclick="openMenuCustomizationModal(); return false;" id="nav-customize-menu">⚙️ Customize Menu</a>
+            <a href="/" target="_blank" id="nav-view-site">🌐 View Site</a>
+            <a href="api/logout.php" id="nav-logout">🚪 Logout</a>
         </div>
 
         <div class="main-content">
-            <!-- Calendar Section -->
-            <div id="section-calendar" class="content-section" style="display: none;">
-                <div class="page-header">
-                    <h2>Calendar</h2>
-                    <p>View your tasks and deadlines by day.</p>
-                </div>
-                <div id="calendar-container" style="margin-bottom: 30px; min-height: 320px;"></div>
-                <div id="calendar-tasks">
-                    <h3>Tasks Due</h3>
-                    <ul id="calendar-task-list" style="min-height: 40px;"></ul>
-                </div>
-            </div>
-            <?php foreach ($pages as $page): ?>
-            <div id="section-page-<?php echo $page['id']; ?>" class="content-section" style="display: none;">
-                <div class="page-header">
-                    <h2><?php echo htmlspecialchars($page['title']); ?></h2>
-                </div>
-                <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                    <?php echo $page['content']; ?>
-                </div>
-            </div>
-            <?php endforeach; ?>
             <!-- Dashboard Section -->
             <div id="section-dashboard" class="content-section active">
                 <div class="page-header">
@@ -831,34 +811,6 @@ if ($invoices_result) {
                         <p class="stat-number" id="dash-emails-drafts" style="font-size: 28px; font-weight: bold; color: #ffc107;">0</p>
                     </div>
                 </div>
-                <!-- Add missing html-count element -->
-                <div style="margin-top: 10px;">
-                    <span id="html-count" style="font-weight: bold; color: #667eea;">0</span> HTML pages
-                </div>
-
-                    <!-- Newsletter Section -->
-                    <div id="section-newsletter" class="content-section" style="display: none;">
-                        <div class="page-header">
-                            <h2>Newsletter</h2>
-                            <p>Create and send newsletters to your subscribers.</p>
-                        </div>
-                        <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); max-width: 600px; margin-bottom: 30px;">
-                            <form id="newsletterForm" onsubmit="sendNewsletter(event)">
-                                <div class="form-group">
-                                    <label for="newsletterSubject">Subject *</label>
-                                    <input type="text" id="newsletterSubject" class="form-control" required placeholder="Newsletter subject...">
-                                </div>
-                                <div class="form-group">
-                                    <label for="newsletterMessage">Message *</label>
-                                    <textarea id="newsletterMessage" class="form-control" rows="8" required placeholder="Type your newsletter message here..."></textarea>
-                                </div>
-                                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                                    <button type="submit" class="btn btn-primary">📧 Send Newsletter</button>
-                                </div>
-                            </form>
-                        </div>
-                        <div id="newsletterStatus"></div>
-                    </div>
 
                 <!-- Client & Quotes Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">📊 Clients & Quotes</h3>
@@ -2250,119 +2202,6 @@ if ($invoices_result) {
     </div>
 
     <script>
-                        // Calendar rendering logic
-                        function renderCalendar(year, month) {
-                            const container = document.getElementById('calendar-container');
-                            if (!container) return;
-                            container.innerHTML = '';
-                            const date = new Date(year, month, 1);
-                            const daysInMonth = new Date(year, month + 1, 0).getDate();
-                            const firstDay = date.getDay();
-                            let html = '<table class="calendar-table" style="width:100%; border-collapse:collapse;">';
-                            html += '<tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>';
-                            html += '<tr>';
-                            for (let i = 0; i < firstDay; i++) html += '<td></td>';
-                            for (let day = 1; day <= daysInMonth; day++) {
-                                if ((firstDay + day - 1) % 7 === 0 && day !== 1) html += '</tr><tr>';
-                                const dateKey = `${year}-${month+1}-${day}`;
-                                const tasks = window.calendarTasks?.[dateKey] || [];
-                                let taskHtml = '';
-                                if (tasks.length > 0) {
-                                    taskHtml = '<ul style="margin:4px 0 0 0; padding:0; list-style:none;">';
-                                    tasks.forEach((task, idx) => {
-                                        taskHtml += `<li style="font-size:12px; background:#eef; margin-bottom:2px; border-radius:3px; padding:2px 4px; cursor:pointer;" onclick="showTasksForDay(${year},${month},${day})">${task}</li>`;
-                                    });
-                                    taskHtml += '</ul>';
-                                }
-                                html += `<td style="padding:8px; border:1px solid #eee; vertical-align:top; cursor:pointer;${tasks.length > 0 ? 'background:#f9f9ff;' : ''}" onclick="showTasksForDay(${year},${month},${day})"><div style="font-weight:bold;">${day}</div>${taskHtml}</td>`;
-                            }
-                            html += '</tr></table>';
-                            container.innerHTML = html;
-                        }
-
-                        function showTasksForDay(year, month, day) {
-                            // Example: fetch tasks for the day
-                            const taskList = document.getElementById('calendar-task-list');
-                            if (!taskList) return;
-                            taskList.innerHTML = '';
-                            // Replace with real task fetching logic
-                            const tasks = window.calendarTasks?.[`${year}-${month+1}-${day}`] || [];
-                            if (tasks.length === 0) {
-                                taskList.innerHTML = '<li>No tasks due.</li>';
-                            } else {
-                                tasks.forEach(task => {
-                                    taskList.innerHTML += `<li>${task}</li>`;
-                                });
-                            }
-                        }
-
-                        // Example task data
-                        window.calendarTasks = {
-                            // Format: 'YYYY-M-D': [task1, task2]
-                            [`${new Date().getFullYear()}-${new Date().getMonth()+1}-10`]: ['Submit invoice', 'Call client'],
-                            [`${new Date().getFullYear()}-${new Date().getMonth()+1}-15`]: ['Prepare newsletter'],
-                        };
-
-                        // Show calendar section and render calendar
-                        function showSection(sectionName) {
-                            // ...existing code...
-                            if (sectionName === 'calendar') {
-                                const now = new Date();
-                                renderCalendar(now.getFullYear(), now.getMonth());
-                                showTasksForDay(now.getFullYear(), now.getMonth(), now.getDate());
-                            }
-                            // ...existing code...
-                        }
-
-        // Unified DOMContentLoaded handler for sidebar and calendar
-        document.addEventListener('DOMContentLoaded', function() {
-            // Sidebar navigation event delegation
-            const sidebar = document.querySelector('.sidebar');
-            if (sidebar) {
-                sidebar.addEventListener('click', function(e) {
-                    let target = e.target;
-                    // Only handle anchor elements
-                    if (target.tagName !== 'A') target = target.closest('a');
-                    if (!target) return;
-                    // Allow default for export, view site, logout
-                    if (['nav-export','nav-view-site','nav-logout'].includes(target.id)) {
-                        return;
-                    }
-                    e.preventDefault();
-                    e.stopPropagation();
-                    // Submenu toggles
-                    if (target.classList.contains('menu-parent')) {
-                        const submenuId = target.id.replace('nav-', '') + '-submenu';
-                        const submenu = document.getElementById(submenuId);
-                        if (submenu) {
-                            submenu.classList.toggle('open');
-                            target.classList.toggle('open');
-                        }
-                        return;
-                    }
-                    // Section navigation
-                    const section = target.id.replace('nav-', '');
-                    if (section === 'add-client') {
-                        openAddClientModal();
-                    } else if (section === 'new-page') {
-                        openNewPageModal();
-                    } else if (section === 'create-user') {
-                        openCreateUserModal();
-                    } else if (section === 'customize-menu') {
-                        openMenuCustomizationModal();
-                    } else {
-                        showSection(section);
-                    }
-                });
-            }
-            // Calendar: render if calendar section is visible
-            const calendarSection = document.getElementById('section-calendar');
-            if (calendarSection && calendarSection.style.display !== 'none') {
-                const now = new Date();
-                renderCalendar(now.getFullYear(), now.getMonth());
-                showTasksForDay(now.getFullYear(), now.getMonth(), now.getDate());
-            }
-        });
         // Dashboard initialization and error handling
         console.log('%c Dashboard Script Loading...', 'background: #667eea; color: white; padding: 2px 8px; border-radius: 3px;');
         
@@ -2479,33 +2318,29 @@ if ($invoices_result) {
         // Section switching
         function showSection(sectionName) {
             console.log('showSection called with:', sectionName);
+            
             try {
                 // Hide all sections
                 document.querySelectorAll('.content-section').forEach(section => {
                     section.style.display = 'none';
                 });
+                
                 // Remove active class from all nav items
                 document.querySelectorAll('.sidebar a').forEach(link => {
                     link.classList.remove('active');
                 });
+                
                 // Show selected section
-                let targetSection = document.getElementById('section-' + sectionName);
-                // Handle database-driven pages: sectionName may be 'page-XX'
-                if (!targetSection && sectionName.startsWith('page-')) {
-                    targetSection = document.getElementById('section-' + sectionName);
-                }
+                const targetSection = document.getElementById('section-' + sectionName);
                 if (!targetSection) {
                     console.error('Section not found:', 'section-' + sectionName);
                     return;
                 }
+                
                 targetSection.style.display = 'block';
                 console.log('✓ Section displayed:', sectionName);
-                // Activate nav link
-                let navElement = document.getElementById('nav-' + sectionName);
-                // Handle database-driven pages: nav-page-XX
-                if (!navElement && sectionName.startsWith('page-')) {
-                    navElement = document.getElementById('nav-' + sectionName);
-                }
+                
+                const navElement = document.getElementById('nav-' + sectionName);
                 if (navElement) {
                     navElement.classList.add('active');
                     console.log('✓ Nav item activated:', sectionName);
@@ -2525,15 +2360,6 @@ if ($invoices_result) {
                         loadQuotes();
                     } else if (sectionName === 'existing-clients') {
                         loadExistingClients();
-                    }
-                }
-                // Auto-expand pages submenu for database-driven pages
-                if (sectionName.startsWith('page-')) {
-                    const submenu = document.getElementById('pages-submenu');
-                    const parent = document.getElementById('pages-parent');
-                    if (submenu && !submenu.classList.contains('open')) {
-                        submenu.classList.add('open');
-                        if (parent) parent.classList.add('open');
                     }
                 }
                 
@@ -2689,37 +2515,6 @@ if ($invoices_result) {
 
         function closeNewPageModal() {
             document.getElementById('newPageModal').style.display = 'none';
-        }
-
-        // Newsletter form logic
-        function sendNewsletter(event) {
-            event.preventDefault();
-            const subject = document.getElementById('newsletterSubject').value.trim();
-            const message = document.getElementById('newsletterMessage').value.trim();
-            const statusDiv = document.getElementById('newsletterStatus');
-            statusDiv.innerHTML = '';
-            if (!subject || !message) {
-                statusDiv.innerHTML = '<div class="error">Please fill in both subject and message.</div>';
-                return;
-            }
-            statusDiv.innerHTML = '<div class="success">Sending newsletter...</div>';
-            fetch('api/send_newsletter.php', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({subject, message})
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    statusDiv.innerHTML = '<div class="success">Newsletter sent successfully!</div>';
-                    document.getElementById('newsletterForm').reset();
-                } else {
-                    statusDiv.innerHTML = '<div class="error">Error: ' + (data.message || 'Failed to send newsletter.') + '</div>';
-                }
-            })
-            .catch(err => {
-                statusDiv.innerHTML = '<div class="error">Network error: ' + err.message + '</div>';
-            });
         }
 
         // Update filename preview as user types
@@ -5599,53 +5394,15 @@ invoices.forEach(invoice => {
         }
         
         function loadMenuItems() {
-            // Dynamically build menu items from sidebar DOM
-            const sidebar = document.querySelector('.sidebar');
-            if (!sidebar) {
-                renderMenuItems(defaultMenuOrder);
-                return;
-            }
-            const items = [];
-            sidebar.querySelectorAll('a, .submenu').forEach(el => {
-                if (el.id && !el.id.includes('nav-customize-menu') && !el.id.includes('nav-view-site') && !el.id.includes('nav-logout')) {
-                    // If submenu, treat as parent
-                    if (el.classList.contains('submenu')) {
-                        // Find parent menu link (assume previous sibling)
-                        let parent = el.previousElementSibling;
-                        if (parent && parent.classList.contains('menu-parent')) {
-                            items.push({
-                                id: el.id,
-                                label: parent.textContent,
-                                type: 'parent',
-                                children: Array.from(el.querySelectorAll('a')).map(child => ({
-                                    id: child.id,
-                                    label: child.textContent,
-                                    section: child.id.replace('nav-', '').replace('-','_')
-                                }))
-                            });
-                        } else {
-                            items.push({
-                                id: el.id,
-                                label: el.id,
-                                type: 'parent',
-                                children: Array.from(el.querySelectorAll('a')).map(child => ({
-                                    id: child.id,
-                                    label: child.textContent,
-                                    section: child.id.replace('nav-', '').replace('-','_')
-                                }))
-                            });
-                        }
-                    } else {
-                        items.push({
-                            id: el.id,
-                            label: el.textContent,
-                            section: el.id.replace('nav-', '').replace('-','_'),
-                            type: 'link'
-                        });
-                    }
-                }
-            });
-            renderMenuItems(items.length ? items : defaultMenuOrder);
+            fetch('api/get_menu_order.php')
+                .then(res => res.json())
+                .then(data => {
+                    const menuOrder = data.success && data.order ? data.order : defaultMenuOrder;
+                    renderMenuItems(menuOrder);
+                })
+                .catch(() => {
+                    renderMenuItems(defaultMenuOrder);
+                });
         }
         
         function renderMenuItems(items) {
@@ -5705,21 +5462,10 @@ invoices.forEach(invoice => {
             const sidebar = document.querySelector('.sidebar');
             if (!sidebar) return;
             
-            // Build menu elements from a clean source (not sidebar DOM)
+            // Get all links and submenus with IDs
             const elements = {};
-            // Use defaultMenuOrder as the clean template for static items
-            defaultMenuOrder.forEach(item => {
-                if (item.type === 'parent' && item.id) {
-                    elements[item.id] = document.getElementById(item.id)?.cloneNode(true);
-                } else if (item.id) {
-                    elements[item.id] = document.getElementById(item.id)?.cloneNode(true);
-                }
-            });
-            // Also add database-driven page links/submenus if present
-            document.querySelectorAll('.sidebar a[id^="nav-page-"], .sidebar .submenu[id^="pages-submenu"]').forEach(el => {
-                if (el.id && !elements[el.id]) {
-                    elements[el.id] = el.cloneNode(true);
-                }
+            sidebar.querySelectorAll('a, .submenu').forEach(el => {
+                if (el.id) elements[el.id] = el.cloneNode(true);
             });
             
             // Preserve footer elements
@@ -5727,65 +5473,31 @@ invoices.forEach(invoice => {
             const viewSite = elements['nav-view-site'];
             const logout = elements['nav-logout'];
             
-            // Clear sidebar DOM and remove all children
-            while (sidebar.firstChild) {
-                sidebar.removeChild(sidebar.firstChild);
-            }
-
-            // Track added IDs to prevent duplicates
-            const addedIds = new Set();
+            // Clear and rebuild sidebar
+            sidebar.innerHTML = '';
+            
+            // Add items in custom order
             order.forEach(item => {
-                if (item.type === 'parent' && item.id && !addedIds.has(item.id)) {
+                if (item.type === 'parent' && item.id) {
                     // Recreate parent menu link
                     const parent = document.createElement('a');
                     parent.href = '#';
                     parent.className = 'menu-parent';
                     parent.textContent = item.label;
-                    parent.id = item.id.replace('-submenu', '-parent');
                     parent.onclick = (e) => {
                         toggleSubmenu(e, item.id);
                         return false;
                     };
                     sidebar.appendChild(parent);
-                    addedIds.add(parent.id);
+                    
                     // Add submenu if exists
-                    if (elements[item.id] && !addedIds.has(item.id)) {
+                    if (elements[item.id]) {
                         const submenu = elements[item.id].cloneNode(true);
-                        // Reattach submenu link handlers
-                        Array.from(submenu.querySelectorAll('a')).forEach(link => {
-                            if (link.id && link.id.startsWith('nav-page-')) {
-                                link.onclick = (e) => {
-                                    showSection(link.id.replace('nav-', ''));
-                                    return false;
-                                };
-                            } else if (link.id && link.id.startsWith('nav-')) {
-                                link.onclick = (e) => {
-                                    const section = link.id.replace('nav-', '').replace('-', '_');
-                                    showSection(section);
-                                    return false;
-                                };
-                            }
-                        });
                         sidebar.appendChild(submenu);
-                        addedIds.add(item.id);
                     }
-                } else if (item.id && elements[item.id] && !item.id.includes('submenu') && !addedIds.has(item.id)) {
+                } else if (item.id && elements[item.id] && !item.id.includes('submenu')) {
                     const link = elements[item.id].cloneNode(true);
-                    // Reattach link handler
-                    if (link.id && link.id.startsWith('nav-page-')) {
-                        link.onclick = (e) => {
-                            showSection(link.id.replace('nav-', ''));
-                            return false;
-                        };
-                    } else if (link.id && link.id.startsWith('nav-') && !link.id.includes('customize-menu') && !link.id.includes('view-site') && !link.id.includes('logout')) {
-                        link.onclick = (e) => {
-                            const section = link.id.replace('nav-', '').replace('-', '_');
-                            showSection(section);
-                            return false;
-                        };
-                    }
                     sidebar.appendChild(link);
-                    addedIds.add(item.id);
                 }
             });
             
