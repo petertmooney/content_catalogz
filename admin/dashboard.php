@@ -5719,9 +5719,10 @@ invoices.forEach(invoice => {
             // Clear and rebuild sidebar
             sidebar.innerHTML = '';
             
-            // Add items in custom order
+            // Track added IDs to prevent duplicates
+            const addedIds = new Set();
             order.forEach(item => {
-                if (item.type === 'parent' && item.id) {
+                if (item.type === 'parent' && item.id && !addedIds.has(item.id)) {
                     // Recreate parent menu link
                     const parent = document.createElement('a');
                     parent.href = '#';
@@ -5733,8 +5734,9 @@ invoices.forEach(invoice => {
                         return false;
                     };
                     sidebar.appendChild(parent);
+                    addedIds.add(parent.id);
                     // Add submenu if exists
-                    if (elements[item.id]) {
+                    if (elements[item.id] && !addedIds.has(item.id)) {
                         const submenu = elements[item.id].cloneNode(true);
                         // Reattach submenu link handlers
                         Array.from(submenu.querySelectorAll('a')).forEach(link => {
@@ -5752,8 +5754,9 @@ invoices.forEach(invoice => {
                             }
                         });
                         sidebar.appendChild(submenu);
+                        addedIds.add(item.id);
                     }
-                } else if (item.id && elements[item.id] && !item.id.includes('submenu')) {
+                } else if (item.id && elements[item.id] && !item.id.includes('submenu') && !addedIds.has(item.id)) {
                     const link = elements[item.id].cloneNode(true);
                     // Reattach link handler
                     if (link.id && link.id.startsWith('nav-page-')) {
@@ -5769,6 +5772,7 @@ invoices.forEach(invoice => {
                         };
                     }
                     sidebar.appendChild(link);
+                    addedIds.add(item.id);
                 }
             });
             
