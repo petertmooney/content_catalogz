@@ -2479,29 +2479,33 @@ if ($invoices_result) {
         // Section switching
         function showSection(sectionName) {
             console.log('showSection called with:', sectionName);
-            
             try {
                 // Hide all sections
                 document.querySelectorAll('.content-section').forEach(section => {
                     section.style.display = 'none';
                 });
-                
                 // Remove active class from all nav items
                 document.querySelectorAll('.sidebar a').forEach(link => {
                     link.classList.remove('active');
                 });
-                
                 // Show selected section
-                const targetSection = document.getElementById('section-' + sectionName);
+                let targetSection = document.getElementById('section-' + sectionName);
+                // Handle database-driven pages: sectionName may be 'page-XX'
+                if (!targetSection && sectionName.startsWith('page-')) {
+                    targetSection = document.getElementById('section-' + sectionName);
+                }
                 if (!targetSection) {
                     console.error('Section not found:', 'section-' + sectionName);
                     return;
                 }
-                
                 targetSection.style.display = 'block';
                 console.log('✓ Section displayed:', sectionName);
-                
-                const navElement = document.getElementById('nav-' + sectionName);
+                // Activate nav link
+                let navElement = document.getElementById('nav-' + sectionName);
+                // Handle database-driven pages: nav-page-XX
+                if (!navElement && sectionName.startsWith('page-')) {
+                    navElement = document.getElementById('nav-' + sectionName);
+                }
                 if (navElement) {
                     navElement.classList.add('active');
                     console.log('✓ Nav item activated:', sectionName);
@@ -2521,6 +2525,15 @@ if ($invoices_result) {
                         loadQuotes();
                     } else if (sectionName === 'existing-clients') {
                         loadExistingClients();
+                    }
+                }
+                // Auto-expand pages submenu for database-driven pages
+                if (sectionName.startsWith('page-')) {
+                    const submenu = document.getElementById('pages-submenu');
+                    const parent = document.getElementById('pages-parent');
+                    if (submenu && !submenu.classList.contains('open')) {
+                        submenu.classList.add('open');
+                        if (parent) parent.classList.add('open');
                     }
                 }
                 
@@ -5597,18 +5610,31 @@ invoices.forEach(invoice => {
                 if (el.id && !el.id.includes('nav-customize-menu') && !el.id.includes('nav-view-site') && !el.id.includes('nav-logout')) {
                     // If submenu, treat as parent
                     if (el.classList.contains('submenu')) {
-                        // Find parent menu link
-                        const parent = sidebar.querySelector('.menu-parent[onclick*="'"], .menu-parent');
-                        items.push({
-                            id: el.id,
-                            label: parent ? parent.textContent : el.id,
-                            type: 'parent',
-                            children: Array.from(el.querySelectorAll('a')).map(child => ({
-                                id: child.id,
-                                label: child.textContent,
-                                section: child.id.replace('nav-', '').replace('-','_')
-                            }))
-                        });
+                        // Find parent menu link (assume previous sibling)
+                        let parent = el.previousElementSibling;
+                        if (parent && parent.classList.contains('menu-parent')) {
+                            items.push({
+                                id: el.id,
+                                label: parent.textContent,
+                                type: 'parent',
+                                children: Array.from(el.querySelectorAll('a')).map(child => ({
+                                    id: child.id,
+                                    label: child.textContent,
+                                    section: child.id.replace('nav-', '').replace('-','_')
+                                }))
+                            });
+                        } else {
+                            items.push({
+                                id: el.id,
+                                label: el.id,
+                                type: 'parent',
+                                children: Array.from(el.querySelectorAll('a')).map(child => ({
+                                    id: child.id,
+                                    label: child.textContent,
+                                    section: child.id.replace('nav-', '').replace('-','_')
+                                }))
+                            });
+                        }
                     } else {
                         items.push({
                             id: el.id,
