@@ -73,23 +73,6 @@
         "type": "link"
     },
     {
-        "id": "users-submenu",
-        "label": "\ud83d\udc64 Users",
-        "type": "parent",
-        "children": [
-            {
-                "id": "nav-users-list",
-                "label": "\ud83d\udccb View All Users",
-                "section": "users-list"
-            },
-            {
-                "id": "nav-create-user",
-                "label": "\u2795 Create User",
-                "action": "openCreateUserModal()"
-            }
-        ]
-    },
-    {
         "id": "pages-submenu",
         "label": "\ud83c\udf10 Website Pages",
         "type": "parent",
@@ -103,6 +86,23 @@
                 "id": "nav-new-page",
                 "label": "\u2795 Create New Page",
                 "action": "openNewPageModal()"
+            }
+        ]
+    },
+    {
+        "id": "users-submenu",
+        "label": "\ud83d\udc64 Users",
+        "type": "parent",
+        "children": [
+            {
+                "id": "nav-users-list",
+                "label": "\ud83d\udccb View All Users",
+                "section": "users-list"
+            },
+            {
+                "id": "nav-create-user",
+                "label": "\u2795 Create User",
+                "action": "openCreateUserModal()"
             }
         ]
     }
