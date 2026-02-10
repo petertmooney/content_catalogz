@@ -755,13 +755,13 @@ if ($invoices_result) {
                 <a href="#" id="nav-existing-clients">👤 Existing Clients</a>
                 <a href="#" id="nav-add-client">➕ Add New Client</a>
             </div>
-            <a href="#" class="menu-parent" id="nav-email-parent">📧 Email</a>
+            <a href="#" class="menu-parent" id="nav-email-parent" onclick="toggleSubmenu(event, 'email-submenu'); return false;">📧 Email</a>
             <div class="submenu" id="email-submenu">
-                <a href="#" id="nav-email-inbox">📥 Inbox</a>
-                <a href="#" id="nav-email-draft">📝 Drafts</a>
-                <a href="#" id="nav-email-sent">📤 Sent</a>
-                <a href="#" id="nav-email-trash">🗑️ Trash</a>
-                <a href="#" id="nav-email-settings">⚙️ Settings</a>
+                <a href="#" id="nav-email-inbox" onclick="showSection('email-inbox'); return false;">📥 Inbox</a>
+                <a href="#" id="nav-email-draft" onclick="showSection('email-draft'); return false;">📝 Drafts</a>
+                <a href="#" id="nav-email-sent" onclick="showSection('email-sent'); return false;">📤 Sent</a>
+                <a href="#" id="nav-email-trash" onclick="showSection('email-trash'); return false;">🗑️ Trash</a>
+                <a href="#" id="nav-email-settings" onclick="showSection('email-settings'); return false;">⚙️ Settings</a>
             </div>
             <a href="#" id="nav-tasks">✅ Tasks & To-Do</a>
             <a href="#" id="nav-invoices">📄 Invoices</a>
