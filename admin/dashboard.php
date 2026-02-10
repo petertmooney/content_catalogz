@@ -5716,9 +5716,11 @@ invoices.forEach(invoice => {
             const viewSite = elements['nav-view-site'];
             const logout = elements['nav-logout'];
             
-            // Clear and rebuild sidebar
-            sidebar.innerHTML = '';
-            
+            // Clear sidebar DOM and remove all children
+            while (sidebar.firstChild) {
+                sidebar.removeChild(sidebar.firstChild);
+            }
+
             // Track added IDs to prevent duplicates
             const addedIds = new Set();
             order.forEach(item => {
