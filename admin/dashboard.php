@@ -747,39 +747,42 @@ if ($invoices_result) {
 
     <div class="container">
         <div class="sidebar">
-                        <a href="#" id="nav-calendar">📅 Calendar</a>
-            <a href="#" id="nav-dashboard" class="active">📋 Dashboard</a>
-            <a href="#" id="nav-clients">📝 Quote Requests</a>
-            <a href="#" class="menu-parent" id="nav-clients-parent">👥 Clients</a>
-            <div class="submenu" id="clients-submenu">
-                <a href="#" id="nav-existing-clients">👤 Existing Clients</a>
-                <a href="#" id="nav-add-client">➕ Add New Client</a>
-            </div>
-            <a href="#" class="menu-parent" id="nav-email-parent" onclick="toggleSubmenu(event, 'email-submenu'); return false;">📧 Email</a>
-            <div class="submenu" id="email-submenu">
-                <a href="#" id="nav-email-inbox" onclick="showSection('email-inbox'); return false;">📥 Inbox</a>
-                <a href="#" id="nav-email-draft" onclick="showSection('email-draft'); return false;">📝 Drafts</a>
-                <a href="#" id="nav-email-sent" onclick="showSection('email-sent'); return false;">📤 Sent</a>
-                <a href="#" id="nav-email-trash" onclick="showSection('email-trash'); return false;">🗑️ Trash</a>
-                <a href="#" id="nav-email-settings" onclick="showSection('email-settings'); return false;">⚙️ Settings</a>
-            </div>
-            <a href="#" id="nav-tasks">✅ Tasks & To-Do</a>
-            <a href="#" id="nav-invoices">📄 Invoices</a>
-            <a href="#" class="menu-parent" id="nav-pages-parent">🌐 Website Pages</a>
-            <div class="submenu" id="pages-submenu">
-                <a href="#" id="nav-html-files">📝 Edit Pages</a>
-                <a href="#" id="nav-new-page">➕ Create New Page</a>
-            </div>
-            <a href="#" class="menu-parent" id="nav-users-parent">👤 Users</a>
-            <div class="submenu" id="users-submenu">
-                <a href="#" id="nav-users-list">📋 View All Users</a>
-                <a href="#" id="nav-create-user">➕ Create User</a>
-            </div>
-            <a href="export.php" id="nav-export" style="border-top: 1px solid #444; margin-top: 10px; padding-top: 10px;">📦 Export Website</a>
-            <a href="#" id="nav-newsletter">📰 Newsletter</a>
-            <a href="#" id="nav-customize-menu" onclick="openMenuCustomizationModal(); return false;">⚙️ Customize Menu</a>
-            <a href="/" target="_blank" id="nav-view-site">🌐 View Site</a>
-            <a href="api/logout.php" id="nav-logout">🚪 Logout</a>
+                        <a href="#" id="nav-calendar" onclick="showSection('calendar'); return false;">📅 Calendar</a>
+                        <a href="#" id="nav-dashboard" class="active" onclick="showSection('dashboard'); return false;">📋 Dashboard</a>
+                        <a href="#" id="nav-clients" onclick="showSection('clients'); return false;">📝 Quote Requests</a>
+                        <a href="#" class="menu-parent" id="nav-clients-parent" onclick="toggleSubmenu(event, 'clients-submenu'); return false;">👥 Clients</a>
+                        <div class="submenu" id="clients-submenu">
+                            <a href="#" id="nav-existing-clients" onclick="showSection('existing-clients'); return false;">👤 Existing Clients</a>
+                            <a href="#" id="nav-add-client" onclick="openAddClientModal(); return false;">➕ Add New Client</a>
+                        </div>
+                        <a href="#" class="menu-parent" id="nav-email-parent" onclick="toggleSubmenu(event, 'email-submenu'); return false;">📧 Email</a>
+                        <div class="submenu" id="email-submenu">
+                            <a href="#" id="nav-email-inbox" onclick="showSection('email-inbox'); return false;">📥 Inbox</a>
+                            <a href="#" id="nav-email-draft" onclick="showSection('email-draft'); return false;">📝 Drafts</a>
+                            <a href="#" id="nav-email-sent" onclick="showSection('email-sent'); return false;">📤 Sent</a>
+                            <a href="#" id="nav-email-trash" onclick="showSection('email-trash'); return false;">🗑️ Trash</a>
+                            <a href="#" id="nav-email-settings" onclick="showSection('email-settings'); return false;">⚙️ Settings</a>
+                        </div>
+                        <a href="#" id="nav-tasks" onclick="showSection('tasks'); return false;">✅ Tasks & To-Do</a>
+                        <a href="#" id="nav-invoices" onclick="showSection('invoices'); return false;">📄 Invoices</a>
+                        <a href="#" class="menu-parent" id="nav-pages-parent" onclick="toggleSubmenu(event, 'pages-submenu'); return false;">🌐 Website Pages</a>
+                        <div class="submenu" id="pages-submenu">
+                            <a href="#" id="nav-html-files" onclick="showSection('html-files'); return false;">📝 Edit Pages</a>
+                            <a href="#" id="nav-new-page" onclick="openNewPageModal(); return false;">➕ Create New Page</a>
+                            <?php foreach ($pages as $page): ?>
+                                <a href="#" id="nav-page-<?php echo $page['id']; ?>" onclick="showSection('page-<?php echo $page['id']; ?>'); return false;">📄 <?php echo htmlspecialchars($page['title']); ?></a>
+                            <?php endforeach; ?>
+                        </div>
+                        <a href="#" class="menu-parent" id="nav-users-parent" onclick="toggleSubmenu(event, 'users-submenu'); return false;">👤 Users</a>
+                        <div class="submenu" id="users-submenu">
+                            <a href="#" id="nav-users-list" onclick="showSection('users-list'); return false;">📋 View All Users</a>
+                            <a href="#" id="nav-create-user" onclick="openCreateUserModal(); return false;">➕ Create User</a>
+                        </div>
+                        <a href="export.php" id="nav-export" style="border-top: 1px solid #444; margin-top: 10px; padding-top: 10px;">📦 Export Website</a>
+                        <a href="#" id="nav-newsletter" onclick="showSection('newsletter'); return false;">📰 Newsletter</a>
+                        <a href="#" id="nav-customize-menu" onclick="openMenuCustomizationModal(); return false;">⚙️ Customize Menu</a>
+                        <a href="/" target="_blank" id="nav-view-site">🌐 View Site</a>
+                        <a href="api/logout.php" id="nav-logout">🚪 Logout</a>
         </div>
 
         <div class="main-content">
