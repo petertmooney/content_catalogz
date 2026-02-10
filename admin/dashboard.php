@@ -5705,10 +5705,21 @@ invoices.forEach(invoice => {
             const sidebar = document.querySelector('.sidebar');
             if (!sidebar) return;
             
-            // Get all links and submenus with IDs
+            // Build menu elements from a clean source (not sidebar DOM)
             const elements = {};
-            sidebar.querySelectorAll('a, .submenu').forEach(el => {
-                if (el.id) elements[el.id] = el.cloneNode(true);
+            // Use defaultMenuOrder as the clean template for static items
+            defaultMenuOrder.forEach(item => {
+                if (item.type === 'parent' && item.id) {
+                    elements[item.id] = document.getElementById(item.id)?.cloneNode(true);
+                } else if (item.id) {
+                    elements[item.id] = document.getElementById(item.id)?.cloneNode(true);
+                }
+            });
+            // Also add database-driven page links/submenus if present
+            document.querySelectorAll('.sidebar a[id^="nav-page-"], .sidebar .submenu[id^="pages-submenu"]').forEach(el => {
+                if (el.id && !elements[el.id]) {
+                    elements[el.id] = el.cloneNode(true);
+                }
             });
             
             // Preserve footer elements
