@@ -777,7 +777,7 @@ if ($invoices_result) {
             </div>
             <a href="export.php" id="nav-export" style="border-top: 1px solid #444; margin-top: 10px; padding-top: 10px;">📦 Export Website</a>
             <a href="#" id="nav-newsletter">📰 Newsletter</a>
-            <a href="#" id="nav-customize-menu">⚙️ Customize Menu</a>
+            <a href="#" id="nav-customize-menu" onclick="openMenuCustomizationModal(); return false;">⚙️ Customize Menu</a>
             <a href="/" target="_blank" id="nav-view-site">🌐 View Site</a>
             <a href="api/logout.php" id="nav-logout">🚪 Logout</a>
         </div>
