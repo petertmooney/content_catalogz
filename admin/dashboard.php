@@ -786,18 +786,28 @@ if ($invoices_result) {
         </div>
 
         <div class="main-content">
-                        <!-- Calendar Section -->
-                        <div id="section-calendar" class="content-section" style="display: none;">
-                            <div class="page-header">
-                                <h2>Calendar</h2>
-                                <p>View your tasks and deadlines by day.</p>
-                            </div>
-                            <div id="calendar-container" style="margin-bottom: 30px; min-height: 320px;"></div>
-                            <div id="calendar-tasks">
-                                <h3>Tasks Due</h3>
-                                <ul id="calendar-task-list" style="min-height: 40px;"></ul>
-                            </div>
-                        </div>
+            <!-- Calendar Section -->
+            <div id="section-calendar" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h2>Calendar</h2>
+                    <p>View your tasks and deadlines by day.</p>
+                </div>
+                <div id="calendar-container" style="margin-bottom: 30px; min-height: 320px;"></div>
+                <div id="calendar-tasks">
+                    <h3>Tasks Due</h3>
+                    <ul id="calendar-task-list" style="min-height: 40px;"></ul>
+                </div>
+            </div>
+            <?php foreach ($pages as $page): ?>
+            <div id="section-page-<?php echo $page['id']; ?>" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h2><?php echo htmlspecialchars($page['title']); ?></h2>
+                </div>
+                <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <?php echo $page['content']; ?>
+                </div>
+            </div>
+            <?php endforeach; ?>
             <!-- Dashboard Section -->
             <div id="section-dashboard" class="content-section active">
                 <div class="page-header">
