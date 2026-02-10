@@ -5688,19 +5688,37 @@ invoices.forEach(invoice => {
                     parent.href = '#';
                     parent.className = 'menu-parent';
                     parent.textContent = item.label;
+                    parent.id = item.id.replace('-submenu', '-parent');
                     parent.onclick = (e) => {
                         toggleSubmenu(e, item.id);
                         return false;
                     };
                     sidebar.appendChild(parent);
-                    
                     // Add submenu if exists
                     if (elements[item.id]) {
                         const submenu = elements[item.id].cloneNode(true);
+                        // Reattach submenu link handlers
+                        Array.from(submenu.querySelectorAll('a')).forEach(link => {
+                            if (link.id && link.id.startsWith('nav-')) {
+                                link.onclick = (e) => {
+                                    const section = link.id.replace('nav-', '').replace('-', '_');
+                                    showSection(section);
+                                    return false;
+                                };
+                            }
+                        });
                         sidebar.appendChild(submenu);
                     }
                 } else if (item.id && elements[item.id] && !item.id.includes('submenu')) {
                     const link = elements[item.id].cloneNode(true);
+                    // Reattach link handler
+                    if (link.id && link.id.startsWith('nav-') && !link.id.includes('customize-menu') && !link.id.includes('view-site') && !link.id.includes('logout')) {
+                        link.onclick = (e) => {
+                            const section = link.id.replace('nav-', '').replace('-', '_');
+                            showSection(section);
+                            return false;
+                        };
+                    }
                     sidebar.appendChild(link);
                 }
             });
