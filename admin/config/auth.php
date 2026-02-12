@@ -1,4 +1,9 @@
 <?php
+// Disable displaying PHP errors in the browser (production-safe)
+ini_set('display_errors', 0);
+// Report all errors but don't display notices/warnings to users
+error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
