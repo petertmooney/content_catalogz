@@ -1039,15 +1039,15 @@ if ($invoices_result) {
                 </div>
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="filterTasks('pending')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer;">
                         <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Pending</h4>
                         <p id="stat-tasks-pending" style="font-size: 24px; font-weight: bold; color: #ffc107;">0</p>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="showOverdueTasks()" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer;">
                         <h4 style="color: #dc3545; font-size: 14px; margin-bottom: 5px;">Overdue</h4>
                         <p id="stat-tasks-overdue" style="font-size: 24px; font-weight: bold; color: #dc3545;">0</p>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="showUrgentTasks()" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer;">
                         <h4 style="color: #ff69b4; font-size: 14px; margin-bottom: 5px;">Urgent</h4>
                         <p id="stat-tasks-urgent" style="font-size: 24px; font-weight: bold; color: #ff69b4;">0</p>
                     </div>
@@ -4715,7 +4715,8 @@ invoices.forEach(invoice => {
             
             const statusFilter = currentTaskFilter === '' || currentTaskFilter === 'all' ? '' : `&status=${currentTaskFilter}`;
             
-            fetch(`api/tasks.php?${statusFilter.substring(1)}`)
+            // return promise so callers (stat-card clicks) can chain further UI filtering
+            return fetch(`api/tasks.php?${statusFilter.substring(1)}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.tasks) {
@@ -4732,9 +4733,11 @@ invoices.forEach(invoice => {
                         // Render tasks list
                         renderTasksList(data.tasks);
                     }
+                    return data;
                 })
                 .catch(err => {
                     console.error('Error loading tasks:', err);
+                    throw err;
                 });
         }
         
@@ -4763,7 +4766,7 @@ invoices.forEach(invoice => {
             container.innerHTML = tasks.map(task => {
                 const priorityColor = priorityColors[task.priority] || '#666';
                 return `
-                <div class="task-item ${task.status === 'completed' || task.status === 'cancelled' ? 'completed' : ''}">
+                <div class="task-item ${task.status === 'completed' || task.status === 'cancelled' ? 'completed' : ''}" data-status="${task.status}" data-priority="${task.priority}" data-due-date="${task.due_date || ''}">
                     <div class="task-left">
                         <div class="task-title ${task.status === 'completed' ? 'completed' : ''}">${task.title}</div>
                         ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
@@ -4787,7 +4790,37 @@ invoices.forEach(invoice => {
         
         function filterTasks(status) {
             currentTaskFilter = status || 'all';
+            const select = document.getElementById('taskStatusFilter');
+            if (select) select.value = currentTaskFilter;
             loadTasks();
+        }
+
+        function showOverdueTasks() {
+            // ensure tasks list is loaded then hide non-overdue items
+            const select = document.getElementById('taskStatusFilter');
+            if (select) select.value = 'all';
+            loadTasks().then(() => {
+                const today = new Date();
+                document.querySelectorAll('#tasks-list .task-item').forEach(el => {
+                    const due = el.dataset.dueDate;
+                    const status = el.dataset.status;
+                    const isOverdue = due && new Date(due) < today && status !== 'completed' && status !== 'cancelled';
+                    el.style.display = isOverdue ? '' : 'none';
+                });
+            }).catch(() => {});
+        }
+
+        function showUrgentTasks() {
+            const select = document.getElementById('taskStatusFilter');
+            if (select) select.value = 'all';
+            loadTasks().then(() => {
+                document.querySelectorAll('#tasks-list .task-item').forEach(el => {
+                    const priority = el.dataset.priority;
+                    const status = el.dataset.status;
+                    const isUrgent = priority === 'urgent' && status !== 'completed' && status !== 'cancelled';
+                    el.style.display = isUrgent ? '' : 'none';
+                });
+            }).catch(() => {});
         }
         
         function openAddTaskModal() {
