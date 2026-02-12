@@ -842,82 +842,7 @@ if ($invoices_result) {
                     <p>Overview of your business at a glance</p>
                 </div>
 
-                <!-- CRM Summary (KPIs + charts + recent activity) -->
-                <div class="crm-summary">
-                    <h3>CRM Summary</h3>
-                    <div class="stats-grid">
-                        <div class="stat-card" style="background:white;padding:14px;border-radius:8px;">
-                            <div class="stat-small">Total Revenue</div>
-                            <div class="stat-number-sm" id="dash-total-revenue">£0.00</div>
-                        </div>
-                        <div class="stat-card" style="background:white;padding:14px;border-radius:8px;">
-                            <div class="stat-small">Pipeline Value</div>
-                            <div class="stat-number-sm" id="dash-pipeline-value">£0.00</div>
-                        </div>
-                        <div class="stat-card" style="background:white;padding:14px;border-radius:8px;">
-                            <div class="stat-small">New Leads</div>
-                            <div class="stat-number-sm" id="dash-new-leads">0</div>
-                        </div>
-                        <div class="stat-card" style="background:white;padding:14px;border-radius:8px;">
-                            <div class="stat-small">Conversion Rate</div>
-                            <div class="stat-number-sm" id="dash-conversion-rate">0%</div>
-                        </div>
-                    </div>
 
-                    <div class="crm-charts">
-                        <div style="background:white;padding:12px;border-radius:8px;">
-                            <div class="stat-small">Quotes by Status</div>
-                            <canvas id="chart-status-breakdown"></canvas>
-                        </div>
-                        <div style="background:white;padding:12px;border-radius:8px;">
-                            <div class="stat-small">Leads by Source</div>
-                            <canvas id="chart-lead-sources"></canvas>
-                        </div>
-                    </div>
-
-                    <div style="display:flex;gap:12px;align-items:flex-start">
-                        <div style="flex:1">
-                            <div class="stat-small">Recent Activities</div>
-                            <ul class="recent-activities" id="dash-recent-activities">
-                                <li>No recent activity</li>
-                            </ul>
-                        </div>
-                        <div style="width:220px">
-                            <div class="stat-small">Upcoming Tasks (7d)</div>
-                            <ul class="recent-activities" id="dash-upcoming-tasks">
-                                <li>No upcoming tasks</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="revenue-trend">
-                        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-                            <div class="stat-small">Revenue trend</div>
-                            <div style="display:flex;gap:8px;align-items:center;">
-                                <label class="stat-small" style="margin-right:6px">Metric</label>
-                                <select id="revenueMetric" style="padding:6px;border-radius:4px;border:1px solid #ddd;background:white;">
-                                    <option value="collected">Collected</option>
-                                    <option value="invoiced">Invoiced</option>
-                                </select>
-                                <label class="stat-small" style="margin-left:8px; margin-right:6px">Range</label>
-                                <select id="revenueRange" style="padding:6px;border-radius:4px;border:1px solid #ddd;background:white;">
-                                    <option value="monthly">Last 12 months</option>
-                                    <option value="yearly">Last 5 years</option>
-                                </select>
-                                <label class="stat-small" style="margin-left:8px; margin-right:6px">Chart</label>
-                                <select id="revenueChartType" style="padding:6px;border-radius:4px;border:1px solid #ddd;background:white;">
-                                    <option value="line">Line (area)</option>
-                                    <option value="bar">Bar</option>
-                                    <option value="stacked">Stacked area</option>
-                                </select>
-                                <button id="downloadRevenueCsv" class="btn btn-primary" style="padding:6px 10px;font-size:13px;">Download CSV</button>
-                            </div>
-                        </div>
-                        <canvas id="chart-revenue-trend"></canvas>
-                    </div>
-                </div>
-
-                <!-- Email Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">📧 Email</h3>
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
                     <div class="stat-card" onclick="showSection('email-inbox')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
@@ -1440,6 +1365,81 @@ if ($invoices_result) {
                     <button type="submit" class="btn btn-primary">Save Task</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- CRM Summary (moved to bottom) -->
+    <div class="crm-summary">
+        <h3>CRM Summary</h3>
+        <div class="stats-grid">
+            <div class="stat-card" style="background:white;padding:14px;border-radius:8px;">
+                <div class="stat-small">Total Revenue</div>
+                <div class="stat-number-sm" id="dash-total-revenue">£0.00</div>
+            </div>
+            <div class="stat-card" style="background:white;padding:14px;border-radius:8px;">
+                <div class="stat-small">Pipeline Value</div>
+                <div class="stat-number-sm" id="dash-pipeline-value">£0.00</div>
+            </div>
+            <div class="stat-card" style="background:white;padding:14px;border-radius:8px;">
+                <div class="stat-small">New Leads</div>
+                <div class="stat-number-sm" id="dash-new-leads">0</div>
+            </div>
+            <div class="stat-card" style="background:white;padding:14px;border-radius:8px;">
+                <div class="stat-small">Conversion Rate</div>
+                <div class="stat-number-sm" id="dash-conversion-rate">0%</div>
+            </div>
+        </div>
+
+        <div class="crm-charts">
+            <div style="background:white;padding:12px;border-radius:8px;">
+                <div class="stat-small">Quotes by Status</div>
+                <canvas id="chart-status-breakdown"></canvas>
+            </div>
+            <div style="background:white;padding:12px;border-radius:8px;">
+                <div class="stat-small">Leads by Source</div>
+                <canvas id="chart-lead-sources"></canvas>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="flex:1">
+                <div class="stat-small">Recent Activities</div>
+                <ul class="recent-activities" id="dash-recent-activities">
+                    <li>No recent activity</li>
+                </ul>
+            </div>
+            <div style="width:220px">
+                <div class="stat-small">Upcoming Tasks (7d)</div>
+                <ul class="recent-activities" id="dash-upcoming-tasks">
+                    <li>No upcoming tasks</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="revenue-trend">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                <div class="stat-small">Revenue trend</div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <label class="stat-small" style="margin-right:6px">Metric</label>
+                    <select id="revenueMetric" style="padding:6px;border-radius:4px;border:1px solid #ddd;background:white;">
+                        <option value="collected">Collected</option>
+                        <option value="invoiced">Invoiced</option>
+                    </select>
+                    <label class="stat-small" style="margin-left:8px; margin-right:6px">Range</label>
+                    <select id="revenueRange" style="padding:6px;border-radius:4px;border:1px solid #ddd;background:white;">
+                        <option value="monthly">Last 12 months</option>
+                        <option value="yearly">Last 5 years</option>
+                    </select>
+                    <label class="stat-small" style="margin-left:8px; margin-right:6px">Chart</label>
+                    <select id="revenueChartType" style="padding:6px;border-radius:4px;border:1px solid #ddd;background:white;">
+                        <option value="line">Line (area)</option>
+                        <option value="bar">Bar</option>
+                        <option value="stacked">Stacked area</option>
+                    </select>
+                    <button id="downloadRevenueCsv" class="btn btn-primary" style="padding:6px 10px;font-size:13px;">Download CSV</button>
+                </div>
+            </div>
+            <canvas id="chart-revenue-trend"></canvas>
         </div>
     </div>
 
