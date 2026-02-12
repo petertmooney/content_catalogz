@@ -2480,6 +2480,27 @@ if ($invoices_result) {
                         parent.classList.add('open');
                     }
                 }
+
+                // Load section-specific data when the section is shown
+                if (sectionName === 'html-files') {
+                    loadHtmlFiles();
+                }
+                if (sectionName === 'tasks') {
+                    loadTasks();
+                }
+                if (sectionName === 'invoices') {
+                    loadInvoiceStats();
+                }
+                if (sectionName === 'users-list') {
+                    loadUsers();
+                }
+
+                // Email-related sections
+                if (sectionName === 'email-inbox') loadInboxEmails();
+                if (sectionName === 'email-draft') loadDraftEmails();
+                if (sectionName === 'email-sent') loadSentEmails();
+                if (sectionName === 'email-trash') loadTrashEmails();
+                if (sectionName === 'email-settings') loadEmailSettings();
             } catch (e) {
                 console.error('Error switching section:', e);
             }
@@ -2506,56 +2527,8 @@ if ($invoices_result) {
                 }, 900);
             } catch (e) { console.error(e); }
         }
-                        submenu.classList.add('open');
-                        parent.classList.add('open');
-                    }
-                    if (sectionName === 'clients') {
-                        loadQuotes();
-                    } else if (sectionName === 'existing-clients') {
-                        loadExistingClients();
-                    }
-                }
-                
-                // Load HTML files if switching to that section
-                if (sectionName === 'html-files') {
-                    loadHtmlFiles();
-                }
-                
-                // Load tasks if switching to tasks section
-                if (sectionName === 'tasks') {
-                    loadTasks();
-                }
-                
-                // Load invoice stats if switching to invoices section
-                if (sectionName === 'invoices') {
-                    loadInvoiceStats();
-                }
-                
-                // Load users if switching to users section
-                if (sectionName === 'users-list') {
-                    loadUsers();
-                }
-                
-                // Load email sections
-                if (sectionName === 'email-inbox') {
-                    loadInboxEmails();
-                }
-                if (sectionName === 'email-draft') {
-                    loadDraftEmails();
-                }
-                if (sectionName === 'email-sent') {
-                    loadSentEmails();
-                }
-                if (sectionName === 'email-trash') {
-                    loadTrashEmails();
-                }
-                if (sectionName === 'email-settings') {
-                    loadEmailSettings();
-                }
-            } catch (error) {
-                console.error('Error in showSection:', error);
-            }
-        }
+
+
 
         // Load HTML files
         function loadHtmlFiles() {
