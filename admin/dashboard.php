@@ -891,7 +891,22 @@ if ($invoices_result) {
                     </div>
 
                     <div class="revenue-trend">
-                        <div class="stat-small">Revenue trend (last 12 months)</div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                            <div class="stat-small">Revenue trend</div>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <label class="stat-small" style="margin-right:6px">Metric</label>
+                                <select id="revenueMetric" style="padding:6px;border-radius:4px;border:1px solid #ddd;background:white;">
+                                    <option value="collected">Collected</option>
+                                    <option value="invoiced">Invoiced</option>
+                                </select>
+                                <label class="stat-small" style="margin-left:8px; margin-right:6px">Range</label>
+                                <select id="revenueRange" style="padding:6px;border-radius:4px;border:1px solid #ddd;background:white;">
+                                    <option value="monthly">Last 12 months</option>
+                                    <option value="yearly">Last 5 years</option>
+                                </select>
+                                <button id="downloadRevenueCsv" class="btn btn-primary" style="padding:6px 10px;font-size:13px;">Download CSV</button>
+                            </div>
+                        </div>
                         <canvas id="chart-revenue-trend"></canvas>
                     </div>
                 </div>
@@ -4342,40 +4357,89 @@ invoices.forEach(invoice => {
                     .catch(err => console.error('Error loading CRM dashboard:', err));
 
                 // Load revenue trends (last 12 months)
-                fetch('api/invoice_trends.php')
-                    .then(res => res.json())
-                    .then(r => {
-                        if (!r.success || !r.months) return;
-                        const months = Object.keys(r.months || {});
-                        const values = months.map(m => parseFloat(r.months[m]) || 0);
+                function loadRevenueTrend() {
+                    const metric = document.getElementById('revenueMetric').value;
+                    const range = document.getElementById('revenueRange').value;
+                    fetch(`api/invoice_trends.php?metric=${encodeURIComponent(metric)}&range=${encodeURIComponent(range)}`)
+                        .then(res => res.json())
+                        .then(r => {
+                            if (!r.success) return;
 
-                        if (!window.revenueTrendChart) {
-                            const ctx = document.getElementById('chart-revenue-trend').getContext('2d');
-                            window.revenueTrendChart = new Chart(ctx, {
-                                type: 'line',
-                                data: {
-                                    labels: months,
-                                    datasets: [{
-                                        label: 'Revenue (collected)',
-                                        data: values,
-                                        borderColor: '#28a745',
-                                        backgroundColor: 'rgba(40,167,69,0.08)',
-                                        tension: 0.25,
-                                        fill: true,
-                                    }]
-                                },
-                                options: {
-                                    scales: { y: { ticks: { callback: v => '£' + Number(v).toFixed(0) } } },
-                                    plugins: { legend: { display: false } }
+                            if (r.range === 'yearly' && r.years) {
+                                const labels = Object.keys(r.years || {});
+                                const values = labels.map(k => parseFloat(r.years[k]) || 0);
+                                const labelText = (r.metric === 'invoiced') ? 'Revenue (invoiced)' : 'Revenue (collected)';
+
+                                if (!window.revenueTrendChart) {
+                                    const ctx = document.getElementById('chart-revenue-trend').getContext('2d');
+                                    window.revenueTrendChart = new Chart(ctx, {
+                                        type: 'line',
+                                        data: { labels: labels, datasets: [{ label: labelText, data: values, borderColor: '#28a745', backgroundColor: 'rgba(40,167,69,0.08)', tension: 0.25, fill: true }] },
+                                        options: { scales: { y: { ticks: { callback: v => '£' + Number(v).toFixed(0) } } }, plugins: { legend: { display: false } } }
+                                    });
+                                } else {
+                                    window.revenueTrendChart.data.labels = labels;
+                                    window.revenueTrendChart.data.datasets[0].label = labelText;
+                                    window.revenueTrendChart.data.datasets[0].data = values;
+                                    window.revenueTrendChart.update();
                                 }
-                            });
-                        } else {
-                            window.revenueTrendChart.data.labels = months;
-                            window.revenueTrendChart.data.datasets[0].data = values;
-                            window.revenueTrendChart.update();
-                        }
-                    })
-                    .catch(err => console.error('Error loading revenue trends:', err));
+
+                                return;
+                            }
+
+                            // monthly
+                            const months = Object.keys(r.months || {});
+                            const values = months.map(m => parseFloat(r.months[m]) || 0);
+                            const labelText = (r.metric === 'invoiced') ? 'Revenue (invoiced)' : 'Revenue (collected)';
+
+                            if (!window.revenueTrendChart) {
+                                const ctx = document.getElementById('chart-revenue-trend').getContext('2d');
+                                window.revenueTrendChart = new Chart(ctx, {
+                                    type: 'line',
+                                    data: { labels: months, datasets: [{ label: labelText, data: values, borderColor: '#28a745', backgroundColor: 'rgba(40,167,69,0.08)', tension: 0.25, fill: true }] },
+                                    options: { scales: { y: { ticks: { callback: v => '£' + Number(v).toFixed(0) } } }, plugins: { legend: { display: false } } }
+                                });
+                            } else {
+                                window.revenueTrendChart.data.labels = months;
+                                window.revenueTrendChart.data.datasets[0].label = labelText;
+                                window.revenueTrendChart.data.datasets[0].data = values;
+                                window.revenueTrendChart.update();
+                            }
+                        })
+                        .catch(err => console.error('Error loading revenue trends:', err));
+                }
+
+                // wire controls
+                document.getElementById('revenueMetric').addEventListener('change', loadRevenueTrend);
+                document.getElementById('revenueRange').addEventListener('change', loadRevenueTrend);
+                document.getElementById('downloadRevenueCsv').addEventListener('click', function () {
+                    const metric = document.getElementById('revenueMetric').value;
+                    const range = document.getElementById('revenueRange').value;
+                    fetch(`api/invoice_trends.php?metric=${encodeURIComponent(metric)}&range=${encodeURIComponent(range)}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            if (!data.success) return alert('No data available');
+                            let csv = '';
+                            if (data.range === 'yearly' && data.years) {
+                                csv += 'year,' + data.metric + '\n';
+                                for (const y in data.years) csv += `${y},${(data.years[y]||0).toFixed(2)}\n`;
+                            } else if (data.months) {
+                                csv += 'month,' + data.metric + '\n';
+                                for (const m in data.months) csv += `${m},${(data.months[m]||0).toFixed(2)}\n`;
+                            }
+                            const blob = new Blob([csv], { type: 'text/csv' });
+                            const a = document.createElement('a');
+                            a.href = URL.createObjectURL(blob);
+                            a.download = `invoice_trends_${metric}_${range}.csv`;
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                        })
+                        .catch(() => alert('Failed to download CSV'));
+                });
+
+                // initial load
+                loadRevenueTrend();
 
             // Load email stats (placeholder until email storage is implemented)
             // For now, showing 0 - can be connected to actual email data later
