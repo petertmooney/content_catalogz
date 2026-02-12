@@ -810,6 +810,14 @@ if ($invoices_result) {
                     <p>Overview of your business at a glance</p>
                 </div>
 
+                <!-- Dashboard greeting (time-aware) -->
+                <div id="dashboardGreeting" style="color: #555; margin-bottom: 14px; font-size: 15px;">
+                    <strong><?php echo !empty($user['first_name']) ? escapeHtml($user['first_name']) : escapeHtml($user['username']); ?></strong>
+                    <span class="role-badge" style="background: <?php echo ($user['role'] === 'superadmin') ? '#dc3545' : '#007bff'; ?>; color: white; padding: 3px 8px; border-radius: 999px; font-size: 12px; margin-left: 8px; vertical-align: middle;">
+                        <?php echo ($user['role'] === 'superadmin') ? 'Super Admin' : 'Admin'; ?>
+                    </span>
+                </div>
+
                 <!-- Email Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">📧 Email</h3>
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
@@ -5677,12 +5685,21 @@ invoices.forEach(invoice => {
 
             // Time-of-day greeting (Good morning/afternoon/evening)
             try {
+                const hour = new Date().getHours();
+                const part = hour < 12 ? 'Good morning' : (hour < 18 ? 'Good afternoon' : 'Good evening');
+
                 const greetingEl = document.getElementById('greeting');
                 if (greetingEl) {
-                    const hour = new Date().getHours();
-                    const part = hour < 12 ? 'Good morning' : (hour < 18 ? 'Good afternoon' : 'Good evening');
-                    // Replace leading 'Welcome' with time-aware greeting but keep the username HTML
                     greetingEl.innerHTML = `${part}, ${greetingEl.querySelector('strong').outerHTML}`;
+                }
+
+                // Update dashboard greeting (keeps role badge if present)
+                const dg = document.getElementById('dashboardGreeting');
+                if (dg) {
+                    const nameHtml = dg.querySelector('strong') ? dg.querySelector('strong').outerHTML : '';
+                    const roleEl = dg.querySelector('.role-badge');
+                    const roleHtml = roleEl ? (' ' + roleEl.outerHTML) : '';
+                    dg.innerHTML = `${part}, ${nameHtml}${roleHtml}`;
                 }
             } catch (e) { /* ignore */ }
         });
