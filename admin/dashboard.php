@@ -339,6 +339,17 @@ if ($invoices_result) {
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            transform-origin: center top;
+            will-change: transform, opacity;
+        }
+
+        /* subtle entrance for modals so newly-opened dialog feels forefront */
+        .modal.show .modal-content {
+            animation: modalIn 160ms cubic-bezier(.2,.8,.2,1);
+        }
+        @keyframes modalIn {
+            from { transform: translateY(-8px) scale(.99); opacity: 0; }
+            to   { transform: none; opacity: 1; }
         }
 
         .modal-header {
@@ -4836,6 +4847,8 @@ invoices.forEach(invoice => {
             
             bringModalToFront('taskModal');
             document.getElementById('taskModal').style.display = 'flex';
+            // autofocus first field when modal appears
+            setTimeout(() => { const f = document.getElementById('taskTitle'); if (f) f.focus(); }, 50);
         }
         
         function editTask(taskId) {
@@ -4870,6 +4883,8 @@ invoices.forEach(invoice => {
                         
                         bringModalToFront('taskModal');
                         document.getElementById('taskModal').style.display = 'flex';
+                        // autofocus first field when modal appears
+                        setTimeout(() => { const f = document.getElementById('taskTitle'); if (f) f.focus(); }, 50);
                     }
                 })
                 .catch(err => {
