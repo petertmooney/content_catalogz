@@ -4453,45 +4453,58 @@ invoices.forEach(invoice => {
                         .catch(err => console.error('Error loading revenue trends:', err));
                 }
 
-                // wire controls
-                document.getElementById('revenueMetric').addEventListener('change', () => { loadRevenueTrend(); });
-                document.getElementById('revenueRange').addEventListener('change', () => { loadRevenueTrend(); });
-                document.getElementById('revenueChartType').addEventListener('change', function () {
-                    // redraw chart with same data but different presentation
-                    const type = this.value;
-                    // set a data-* attribute to remember chart mode
-                    document.getElementById('chart-revenue-trend').dataset.mode = type;
+                // Safely attach revenue chart controls (guard elements may not exist when script runs)
+                function attachRevenueControls() {
+                    const rm = document.getElementById('revenueMetric');
+                    const rr = document.getElementById('revenueRange');
+                    const rt = document.getElementById('revenueChartType');
+                    const dl = document.getElementById('downloadRevenueCsv');
+                    const canvas = document.getElementById('chart-revenue-trend');
+                    if (!rm || !rr || !rt || !dl || !canvas) return false;
+
+                    rm.addEventListener('change', () => { loadRevenueTrend(); });
+                    rr.addEventListener('change', () => { loadRevenueTrend(); });
+                    rt.addEventListener('change', function () {
+                        const type = this.value;
+                        canvas.dataset.mode = type;
+                        loadRevenueTrend();
+                    });
+
+                    dl.addEventListener('click', function () {
+                        const metric = rm.value;
+                        const range = rr.value;
+                        fetch(`api/invoice_trends.php?metric=${encodeURIComponent(metric)}&range=${encodeURIComponent(range)}`)
+                            .then(r => r.json())
+                            .then(data => {
+                                if (!data.success) return alert('No data available');
+                                let csv = '';
+                                if (data.range === 'yearly' && data.years) {
+                                    csv += 'year,' + data.metric + '\n';
+                                    for (const y in data.years) csv += `${y},${(data.years[y]||0).toFixed(2)}\n`;
+                                } else if (data.months) {
+                                    csv += 'month,' + data.metric + '\n';
+                                    for (const m in data.months) csv += `${m},${(data.months[m]||0).toFixed(2)}\n`;
+                                }
+                                const blob = new Blob([csv], { type: 'text/csv' });
+                                const a = document.createElement('a');
+                                a.href = URL.createObjectURL(blob);
+                                a.download = `invoice_trends_${metric}_${range}.csv`;
+                                document.body.appendChild(a);
+                                a.click();
+                                a.remove();
+                            })
+                            .catch(() => alert('Failed to download CSV'));
+                    });
+
+                    // initial load
                     loadRevenueTrend();
-                });
+                    return true;
+                }
 
-                document.getElementById('downloadRevenueCsv').addEventListener('click', function () {
-                    const metric = document.getElementById('revenueMetric').value;
-                    const range = document.getElementById('revenueRange').value;
-                    fetch(`api/invoice_trends.php?metric=${encodeURIComponent(metric)}&range=${encodeURIComponent(range)}`)
-                        .then(r => r.json())
-                        .then(data => {
-                            if (!data.success) return alert('No data available');
-                            let csv = '';
-                            if (data.range === 'yearly' && data.years) {
-                                csv += 'year,' + data.metric + '\n';
-                                for (const y in data.years) csv += `${y},${(data.years[y]||0).toFixed(2)}\n`;
-                            } else if (data.months) {
-                                csv += 'month,' + data.metric + '\n';
-                                for (const m in data.months) csv += `${m},${(data.months[m]||0).toFixed(2)}\n`;
-                            }
-                            const blob = new Blob([csv], { type: 'text/csv' });
-                            const a = document.createElement('a');
-                            a.href = URL.createObjectURL(blob);
-                            a.download = `invoice_trends_${metric}_${range}.csv`;
-                            document.body.appendChild(a);
-                            a.click();
-                            a.remove();
-                        })
-                        .catch(() => alert('Failed to download CSV'));
-                });
-
-                // initial load
-                loadRevenueTrend();
+                // Try to attach immediately, otherwise defer until DOMContentLoaded
+                if (!attachRevenueControls() && document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', attachRevenueControls);
+                }
 
             // Load email stats (placeholder until email storage is implemented)
             // For now, showing 0 - can be connected to actual email data later
