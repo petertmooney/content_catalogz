@@ -105,5 +105,22 @@
                 "action": "openCreateUserModal()"
             }
         ]
+    },
+    {
+        "id": "settings-submenu",
+        "label": "\u2699\ufe0f Settings",
+        "type": "parent",
+        "children": [
+            {
+                "id": "nav-export",
+                "label": "\ud83d\udce6 Export Website",
+                "action": "location.href='export.php'"
+            },
+            {
+                "id": "nav-customize-menu",
+                "label": "\u2699\ufe0f Customize Menu",
+                "action": "openMenuCustomizationModal()"
+            }
+        ]
     }
 ]
