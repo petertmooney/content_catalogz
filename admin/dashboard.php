@@ -5461,47 +5461,105 @@ invoices.forEach(invoice => {
         function applySidebarOrder(order) {
             const sidebar = document.querySelector('.sidebar');
             if (!sidebar) return;
-            
-            // Get all links and submenus with IDs
+
+            // Capture available elements (preserve original DOM order)
             const elements = {};
+            const originalOrder = [];
             sidebar.querySelectorAll('a, .submenu').forEach(el => {
-                if (el.id) elements[el.id] = el.cloneNode(true);
+                if (el.id) {
+                    elements[el.id] = el.cloneNode(true);
+                    originalOrder.push(el.id);
+                }
             });
-            
-            // Preserve footer elements
+
+            // Preserve footer elements (they will be re-appended)
             const customizeMenu = elements['nav-customize-menu'];
             const viewSite = elements['nav-view-site'];
             const logout = elements['nav-logout'];
-            
-            // Clear and rebuild sidebar
+
+            // If saved order is missing or invalid, fall back to defaultMenuOrder
+            const savedOrder = Array.isArray(order) ? order : [];
+
+            // Build a merged order: start with saved items that still exist, then append any default items missing from saved order
+            const merged = [];
+            const addedIds = new Set();
+
+            // Helper to add an item (marking its id and — for parents — their children)
+            function pushItem(item) {
+                if (!item || !item.id || addedIds.has(item.id)) return;
+                merged.push(item);
+                addedIds.add(item.id);
+
+                // If this is a parent menu, also mark its children as "added" so they aren't re-appended later
+                if (item.type === 'parent' && item.children && Array.isArray(item.children)) {
+                    item.children.forEach(c => { if (c && c.id) addedIds.add(c.id); });
+                }
+            }
+
+            // 1) keep saved items only if corresponding DOM element exists (prevents lost items when user-saved order is stale)
+            savedOrder.forEach(it => {
+                if (!it || !it.id) return;
+                if (it.type === 'parent') {
+                    if (elements[it.id] || (it.children && it.children.some(c => elements[c.id]))) pushItem(it);
+                } else {
+                    if (elements[it.id]) pushItem(it);
+                }
+            });
+
+            // 2) append any defaults that aren't already in merged (restore missing items)
+            (window.defaultMenuOrder || []).forEach(def => {
+                if (!def || !def.id) return;
+                if (!addedIds.has(def.id)) {
+                    if (def.type === 'parent') {
+                        if (elements[def.id] || (def.children && def.children.some(c => elements[c.id]))) pushItem(def);
+                    } else {
+                        if (elements[def.id]) pushItem(def);
+                    }
+                }
+            });
+
+            // Clear and rebuild sidebar from merged order
             sidebar.innerHTML = '';
-            
-            // Add items in custom order
-            order.forEach(item => {
+
+            merged.forEach(item => {
                 if (item.type === 'parent' && item.id) {
-                    // Recreate parent menu link
                     const parent = document.createElement('a');
                     parent.href = '#';
                     parent.className = 'menu-parent';
                     parent.textContent = item.label;
-                    parent.onclick = (e) => {
-                        toggleSubmenu(e, item.id);
-                        return false;
-                    };
+                    parent.onclick = (e) => { toggleSubmenu(e, item.id); return false; };
                     sidebar.appendChild(parent);
-                    
-                    // Add submenu if exists
+
                     if (elements[item.id]) {
-                        const submenu = elements[item.id].cloneNode(true);
-                        sidebar.appendChild(submenu);
+                        // append submenu clone and mark any anchor children as added (prevents later duplication)
+                        const submenuClone = elements[item.id].cloneNode(true);
+                        // mark child anchor ids so final sweep won't re-append them
+                        submenuClone.querySelectorAll('a[id]').forEach(a => addedIds.add(a.id));
+                        sidebar.appendChild(submenuClone);
+                    } else {
+                        const submenu = document.createElement('div');
+                        submenu.className = 'submenu';
+                        submenu.id = item.id;
+                        if (item.children && item.children.length) {
+                            item.children.forEach(c => {
+                                if (elements[c.id]) submenu.appendChild(elements[c.id].cloneNode(true));
+                            });
+                        }
+                        if (submenu.children.length) sidebar.appendChild(submenu);
                     }
                 } else if (item.id && elements[item.id] && !item.id.includes('submenu')) {
-                    const link = elements[item.id].cloneNode(true);
-                    sidebar.appendChild(link);
+                    sidebar.appendChild(elements[item.id].cloneNode(true));
                 }
             });
-            
-            // Add footer links at the end (always in this order)
+
+            // 3) append any remaining *anchor* DOM elements that weren't included (skip standalone submenu divs)
+            originalOrder.forEach(id => {
+                if (!addedIds.has(id) && elements[id] && elements[id].tagName === 'A') {
+                    sidebar.appendChild(elements[id].cloneNode(true));
+                }
+            });
+
+            // Re-append footer controls in a sensible order (customize, view site, logout)
             if (customizeMenu) {
                 const cm = customizeMenu.cloneNode(true);
                 cm.onclick = (e) => { openMenuCustomizationModal(); return false; };
