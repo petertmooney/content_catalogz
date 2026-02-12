@@ -193,7 +193,17 @@ if ($invoices_result) {
         .page-header h2 {
             color: #333;
             margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: 600;
         }
+
+        /* Dashboard greeting should be more prominent than the page title */
+        #dashboardGreeting {
+            font-size: 26px;
+            font-weight: 700;
+            color: #222;
+        }
+        #dashboardGreeting .role-badge { font-size: 13px; padding: 4px 10px; }
 
         .btn-group {
             margin-bottom: 20px;
