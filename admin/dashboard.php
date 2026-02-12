@@ -199,7 +199,13 @@ if ($invoices_result) {
 
         /* Dashboard greeting should be more prominent than the page title */
         #dashboardGreeting {
-            font-size: 26px;
+            font-size: 36px;
+            font-weight: 700;
+            color: #222;
+        }
+        /* Keep top-right navbar greeting visually consistent */
+        #greeting {
+            font-size: 36px;
             font-weight: 700;
             color: #222;
         }
@@ -816,7 +822,7 @@ if ($invoices_result) {
             <!-- Dashboard Section -->
             <div id="section-dashboard" class="content-section active">
                 <!-- Dashboard greeting (time-aware) -->
-                <div id="dashboardGreeting" style="color: #555; margin-bottom: 8px; font-size: 15px;">
+                <div id="dashboardGreeting" style="margin-bottom: 8px;">
                     <strong><?php echo !empty($user['first_name']) ? escapeHtml($user['first_name']) : escapeHtml($user['username']); ?></strong>
                     <span class="role-badge" style="background: <?php echo (!empty($user['role']) && $user['role'] === 'superadmin') ? '#dc3545' : '#007bff'; ?>; color: white; padding: 3px 8px; border-radius: 999px; font-size: 12px; margin-left: 8px; vertical-align: middle;">
                         <?php echo (!empty($user['role']) && $user['role'] === 'superadmin') ? 'Super Admin' : 'Admin'; ?>
