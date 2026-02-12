@@ -8,14 +8,31 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 include __DIR__ . '/../config/db.php';
 include __DIR__ . '/../config/auth.php';
 
-requireLogin();
-header('Content-Type: application/json');
-
+// Allow either an authenticated session OR a valid token for automation
 $input = $_POST ?: json_decode(file_get_contents('php://input'), true) ?: [];
+$tokenOk = false;
+
+// token can be provided via `token` POST field or `X-Export-Token` header
+$providedToken = $input['token'] ?? ($_SERVER['HTTP_X_EXPORT_TOKEN'] ?? null);
+$tokenFile = __DIR__ . '/../config/scheduled_export_token.txt';
+if ($providedToken && is_readable($tokenFile)) {
+    $expected = trim(file_get_contents($tokenFile));
+    if ($expected && hash_equals($expected, trim($providedToken))) {
+        $tokenOk = true;
+    }
+}
+
+// If not token-authorized, require login
+if (!$tokenOk) {
+    requireLogin();
+}
+
+header('Content-Type: application/json');
 $type = $input['type'] ?? 'invoice_trends';
 $metric = $input['metric'] ?? 'collected';
 $range = $input['range'] ?? 'monthly';
-$webhook = $input['webhook_url'] ?? null;
+$webhook = $input['webhook_url'] ?? ($input['webhook'] ?? null);
+$triggeredBy = $tokenOk ? 'token' : 'session';
 
 $timestamp = date('Ymd_His');
 $filename = "export_{$type}_{$metric}_{$range}_{$timestamp}.csv";
@@ -57,7 +74,7 @@ if ($type === 'invoice_trends') {
 // save CSV
 file_put_contents($savePath, $csv);
 
-$response = ['success' => true, 'filename' => $filename, 'path' => "exports/{$filename}"];
+$response = ['success' => true, 'filename' => $filename, 'path' => "exports/{$filename}", 'triggered_by' => $triggeredBy];
 
 // optionally POST to webhook
 if ($webhook) {

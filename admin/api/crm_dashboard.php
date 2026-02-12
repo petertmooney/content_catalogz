@@ -8,13 +8,31 @@ header('Content-Type: application/json');
 include __DIR__ . '/../config/auth.php';
 include __DIR__ . '/../config/db.php';
 
-// Simple file-cache (5 minutes)
-$cacheFile = __DIR__ . '/../cache/crm_dashboard.json';
+// Caching: prefer Redis if available, otherwise fall back to file cache.
 $cacheTtl = 300; // seconds
-if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < $cacheTtl)) {
-    echo file_get_contents($cacheFile);
-    $conn->close();
-    exit;
+$cacheKey = 'crm_dashboard_v1';
+$servedFromCache = false;
+
+try {
+    if (class_exists('Redis')) {
+        $r = new Redis();
+        @$r->connect('127.0.0.1', 6379, 1);
+        $cached = @$r->get($cacheKey);
+        if ($cached) {
+            echo $cached;
+            $conn->close();
+            exit;
+        }
+    } else {
+        $cacheFile = __DIR__ . '/../cache/crm_dashboard.json';
+        if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < $cacheTtl)) {
+            echo file_get_contents($cacheFile);
+            $conn->close();
+            exit;
+        }
+    }
+} catch (Exception $e) {
+    // ignore cache errors and continue to build fresh response
 }
 
 // Get CRM dashboard statistics
@@ -97,8 +115,18 @@ while ($row = $stmt->fetch_assoc()) {
 $stats['status_breakdown'] = $status_breakdown;
 
 $out = json_encode(['success' => true, 'stats' => $stats]);
-// write cache
-@file_put_contents($cacheFile, $out);
+
+// write cache (Redis preferred)
+try {
+    if (isset($r) && $r instanceof Redis) {
+        @$r->setex($cacheKey, $cacheTtl, $out);
+    } else {
+        @file_put_contents(__DIR__ . '/../cache/crm_dashboard.json', $out);
+    }
+} catch (Exception $e) {
+    // ignore cache write failures
+}
+
 echo $out;
 
 $conn->close();

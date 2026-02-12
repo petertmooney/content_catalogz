@@ -1,0 +1,12 @@
+[Unit]
+Description=Refresh Content Catalogz dashboard cache
+After=network.target
+
+[Service]
+Type=oneshot
+User=www-data
+WorkingDirectory=/workspaces/content_catalogz
+ExecStart=/usr/bin/php /workspaces/content_catalogz/admin/scripts/refresh_dashboard_cache.php
+
+[Install]
+WantedBy=multi-user.target

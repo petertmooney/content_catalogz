@@ -20,14 +20,18 @@ $range = $_GET['range'] ?? 'monthly'; // 'monthly' or 'yearly'
 $metric_col = ($metric === 'invoiced') ? 'total_cost' : 'total_paid';
 
 if ($range === 'yearly') {
-    // cache key per metric+range
-    $cacheFile = __DIR__ . '/../cache/invoice_trends_yearly_' . $metric . '.json';
+    // cache key per metric+range (Redis preferred)
     $cacheTtl = 600;
-    if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < $cacheTtl)) {
-        echo file_get_contents($cacheFile);
-        $conn->close();
-        exit;
-    }
+    try {
+        if (class_exists('Redis')) {
+            if (!isset($redis)) { $redis = new Redis(); @$redis->connect('127.0.0.1', 6379, 1); }
+            $cached = @$redis->get($cacheKeyYearly);
+            if ($cached) { echo $cached; $conn->close(); exit; }
+        } else {
+            $cacheFile = __DIR__ . '/../cache/invoice_trends_yearly_' . $metric . '.json';
+            if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < $cacheTtl)) { echo file_get_contents($cacheFile); $conn->close(); exit; }
+        }
+    } catch (Exception $e) { /* ignore cache errors */ }
 
     // Return last 5 years totals
     $years = [];
@@ -51,7 +55,11 @@ if ($range === 'yearly') {
     }
 
     $out = json_encode(['success' => true, 'range' => 'yearly', 'metric' => $metric, 'years' => $years]);
-    @file_put_contents($cacheFile, $out);
+    try {
+        if (isset($redis) && $redis instanceof Redis) { @$redis->setex($cacheKeyYearly, $cacheTtl, $out); }
+        else { @file_put_contents(__DIR__ . '/../cache/invoice_trends_yearly_' . $metric . '.json', $out); }
+    } catch (Exception $e) { /* ignore */ }
+
     echo $out;
     $conn->close();
     exit;
@@ -70,12 +78,31 @@ $sql = "SELECT DATE_FORMAT(invoice_date, '%Y-%m') as ym, COALESCE(SUM($metric_co
         GROUP BY ym
         ORDER BY ym ASC";
 
-$cacheFile = __DIR__ . '/../cache/invoice_trends_monthly_' . $metric . '.json';
+// Prefer Redis cache if available, otherwise file-cache
 $cacheTtl = 600;
-if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < $cacheTtl)) {
-    echo file_get_contents($cacheFile);
-    $conn->close();
-    exit;
+$cacheKeyMonthly = 'invoice_trends:monthly:' . $metric;
+$cacheKeyYearly = 'invoice_trends:yearly:' . $metric;
+
+try {
+    if (class_exists('Redis')) {
+        $redis = new Redis();
+        @$redis->connect('127.0.0.1', 6379, 1);
+        $cached = $redis->get($cacheKeyMonthly);
+        if ($cached && $range === 'monthly') {
+            echo $cached;
+            $conn->close();
+            exit;
+        }
+    } else {
+        $cacheFile = __DIR__ . '/../cache/invoice_trends_monthly_' . $metric . '.json';
+        if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < $cacheTtl)) {
+            echo file_get_contents($cacheFile);
+            $conn->close();
+            exit;
+        }
+    }
+} catch (Exception $e) {
+    // ignore cache errors
 }
 
 $result = $conn->query($sql);
@@ -89,7 +116,16 @@ if ($result) {
 }
 
 $out = json_encode(['success' => true, 'range' => 'monthly', 'metric' => $metric, 'months' => $months]);
-@file_put_contents($cacheFile, $out);
+
+try {
+    if (isset($redis) && $redis instanceof Redis) {
+        @$redis->setex($cacheKeyMonthly, $cacheTtl, $out);
+    } else {
+        @file_put_contents(__DIR__ . '/../cache/invoice_trends_monthly_' . $metric . '.json', $out);
+    }
+} catch (Exception $e) {
+    // ignore cache write failures
+}
 
 echo $out;
 
