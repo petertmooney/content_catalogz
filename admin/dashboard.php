@@ -4834,6 +4834,7 @@ invoices.forEach(invoice => {
                     }
                 });
             
+            bringModalToFront('taskModal');
             document.getElementById('taskModal').style.display = 'flex';
         }
         
@@ -4867,6 +4868,7 @@ invoices.forEach(invoice => {
                                 }
                             });
                         
+                        bringModalToFront('taskModal');
                         document.getElementById('taskModal').style.display = 'flex';
                     }
                 })
@@ -4877,7 +4879,26 @@ invoices.forEach(invoice => {
         }
         
         function closeTaskModal() {
-            document.getElementById('taskModal').style.display = 'none';
+            const m = document.getElementById('taskModal');
+            if (m) {
+                m.style.display = 'none';
+                // remove any inline zIndex we may have set when bringing to front
+                m.style.zIndex = '';
+            }
+        }
+
+        // Bring a modal element to the top of modal stack so it appears forefront
+        function bringModalToFront(modalId) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            let maxZ = 1000; // base z-index used by .modal
+            document.querySelectorAll('.modal').forEach(m => {
+                const z = window.getComputedStyle(m).zIndex;
+                const zi = parseInt(z, 10);
+                if (!isNaN(zi) && zi > maxZ) maxZ = zi;
+            });
+            // give this modal a slightly higher z-index
+            modal.style.zIndex = (maxZ + 10).toString();
         }
         
         function saveTask(event) {
