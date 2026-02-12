@@ -205,6 +205,18 @@ if ($invoices_result) {
         }
         #dashboardGreeting .role-badge { font-size: 13px; padding: 4px 10px; }
 
+        /* CRM summary styles */
+        .crm-summary { margin: 18px 0 28px; background: #fafafa; padding: 18px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.03); }
+        .crm-summary h3 { margin: 0 0 12px; font-size: 16px; color: #333; }
+        .crm-summary .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 14px; }
+        .crm-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+        .crm-charts canvas { width: 100% !important; height: 220px !important; }
+        .recent-activities { max-height: 220px; overflow: auto; border-top: 1px solid #eee; padding-top: 12px; }
+        .recent-activities li { padding: 8px 0; border-bottom: 1px solid #f3f3f3; font-size: 13px; color: #444; }
+        .stat-small { font-size: 13px; color: #666; }
+        .stat-number-sm { font-size: 20px; font-weight: 700; }
+
+
         .btn-group {
             margin-bottom: 20px;
         }
@@ -746,6 +758,7 @@ if ($invoices_result) {
             font-size: 13px;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     
@@ -825,6 +838,55 @@ if ($invoices_result) {
                 <div class="page-header">
                     <h2>Dashboard</h2>
                     <p>Overview of your business at a glance</p>
+                </div>
+
+                <!-- CRM Summary (KPIs + charts + recent activity) -->
+                <div class="crm-summary">
+                    <h3>CRM Summary</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card" style="background:white;padding:14px;border-radius:8px;">
+                            <div class="stat-small">Total Revenue</div>
+                            <div class="stat-number-sm" id="dash-total-revenue">£0.00</div>
+                        </div>
+                        <div class="stat-card" style="background:white;padding:14px;border-radius:8px;">
+                            <div class="stat-small">Pipeline Value</div>
+                            <div class="stat-number-sm" id="dash-pipeline-value">£0.00</div>
+                        </div>
+                        <div class="stat-card" style="background:white;padding:14px;border-radius:8px;">
+                            <div class="stat-small">New Leads</div>
+                            <div class="stat-number-sm" id="dash-new-leads">0</div>
+                        </div>
+                        <div class="stat-card" style="background:white;padding:14px;border-radius:8px;">
+                            <div class="stat-small">Conversion Rate</div>
+                            <div class="stat-number-sm" id="dash-conversion-rate">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="crm-charts">
+                        <div style="background:white;padding:12px;border-radius:8px;">
+                            <div class="stat-small">Quotes by Status</div>
+                            <canvas id="chart-status-breakdown"></canvas>
+                        </div>
+                        <div style="background:white;padding:12px;border-radius:8px;">
+                            <div class="stat-small">Leads by Source</div>
+                            <canvas id="chart-lead-sources"></canvas>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;gap:12px;align-items:flex-start">
+                        <div style="flex:1">
+                            <div class="stat-small">Recent Activities</div>
+                            <ul class="recent-activities" id="dash-recent-activities">
+                                <li>No recent activity</li>
+                            </ul>
+                        </div>
+                        <div style="width:220px">
+                            <div class="stat-small">Upcoming Tasks (7d)</div>
+                            <ul class="recent-activities" id="dash-upcoming-tasks">
+                                <li>No upcoming tasks</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Email Stats -->
@@ -4193,7 +4255,85 @@ invoices.forEach(invoice => {
                     }
                 })
                 .catch(err => console.error('Error loading quote stats:', err));
-            
+
+                // Load CRM dashboard stats (KPIs + charts)
+                fetch('api/crm_dashboard.php')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.success || !data.stats) return;
+                        const s = data.stats;
+
+                        // KPIs
+                        document.getElementById('dash-total-revenue').textContent = '£' + (parseFloat(s.total_revenue) || 0).toFixed(2);
+                        document.getElementById('dash-pipeline-value').textContent = '£' + (parseFloat(s.pipeline_value) || 0).toFixed(2);
+                        const newLeads = (s.status_breakdown && s.status_breakdown.new) ? s.status_breakdown.new : 0;
+                        document.getElementById('dash-new-leads').textContent = newLeads;
+                        const conv = s.total_clients ? ((s.won_deals / s.total_clients) * 100) : 0;
+                        document.getElementById('dash-conversion-rate').textContent = (conv).toFixed(1) + '%';
+
+                        // Recent activities
+                        const raEl = document.getElementById('dash-recent-activities');
+                        raEl.innerHTML = '';
+                        if (s.recent_activities && s.recent_activities.length) {
+                            s.recent_activities.forEach(a => {
+                                const li = document.createElement('li');
+                                li.textContent = `${a.activity_date} — ${a.activity_type} — ${a.client_name || 'General'}${a.note ? ' — ' + a.note : ''}`;
+                                raEl.appendChild(li);
+                            });
+                        } else {
+                            raEl.innerHTML = '<li>No recent activity</li>';
+                        }
+
+                        // Upcoming tasks
+                        const utEl = document.getElementById('dash-upcoming-tasks');
+                        utEl.innerHTML = '';
+                        if (s.upcoming_tasks && s.upcoming_tasks.length) {
+                            s.upcoming_tasks.forEach(t => {
+                                const li = document.createElement('li');
+                                li.textContent = `${t.due_date} — ${t.title} (${t.client_name || 'General'})`;
+                                utEl.appendChild(li);
+                            });
+                        } else {
+                            utEl.innerHTML = '<li>No upcoming tasks</li>';
+                        }
+
+                        // Charts (create or update)
+                        try {
+                            const statusLabels = Object.keys(s.status_breakdown || {});
+                            const statusData = statusLabels.map(k => s.status_breakdown[k] || 0);
+
+                            if (!window.crmStatusChart) {
+                                const ctx = document.getElementById('chart-status-breakdown').getContext('2d');
+                                window.crmStatusChart = new Chart(ctx, {
+                                    type: 'doughnut',
+                                    data: { labels: statusLabels, datasets: [{ data: statusData, backgroundColor: ['#007bff','#17a2b8','#ffc107','#28a745','#dc3545'] }] },
+                                    options: { plugins: { legend: { position: 'bottom' } } }
+                                });
+                            } else {
+                                window.crmStatusChart.data.labels = statusLabels;
+                                window.crmStatusChart.data.datasets[0].data = statusData;
+                                window.crmStatusChart.update();
+                            }
+
+                            const leadLabels = (s.lead_sources || []).map(r => r.lead_source || 'Unknown');
+                            const leadData = (s.lead_sources || []).map(r => parseInt(r.count || 0));
+
+                            if (!window.crmLeadChart) {
+                                const ctx2 = document.getElementById('chart-lead-sources').getContext('2d');
+                                window.crmLeadChart = new Chart(ctx2, {
+                                    type: 'pie',
+                                    data: { labels: leadLabels, datasets: [{ data: leadData, backgroundColor: ['#667eea','#34d399','#f6ad55','#f472b6','#60a5fa'] }] },
+                                    options: { plugins: { legend: { position: 'bottom' } } }
+                                });
+                            } else {
+                                window.crmLeadChart.data.labels = leadLabels;
+                                window.crmLeadChart.data.datasets[0].data = leadData;
+                                window.crmLeadChart.update();
+                            }
+                        } catch (e) { console.error('Error rendering CRM charts', e); }
+                    })
+                    .catch(err => console.error('Error loading CRM dashboard:', err));
+
             // Load email stats (placeholder until email storage is implemented)
             // For now, showing 0 - can be connected to actual email data later
             document.getElementById('dash-emails-unread').textContent = 0;
