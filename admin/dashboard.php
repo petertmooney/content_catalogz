@@ -4650,8 +4650,9 @@ invoices.forEach(invoice => {
         }
         
         function openAddClientTaskModal() {
-            // Pre-fill client in regular task modal
-            document.getElementById('taskClientId').value = currentClientId;
+            // Mark that the task modal was opened from a client and remember the client id
+            window._taskOpenedForClient = true;
+            window._preselectedTaskClientId = currentClientId;
             openTaskModal();
         }
         
@@ -4843,12 +4844,27 @@ invoices.forEach(invoice => {
                             clientSelect.innerHTML += `<option value="${client.id}">${client.name}${client.company ? ' (' + client.company + ')' : ''}</option>`;
                         });
                     }
+
+                    // If a client was preselected (opened from client details), set it here
+                    if (window._preselectedTaskClientId) {
+                        clientSelect.value = window._preselectedTaskClientId;
+                        // clear the temporary value so subsequent opens are normal
+                        delete window._preselectedTaskClientId;
+                    }
                 });
             
             bringModalToFront('taskModal');
             document.getElementById('taskModal').style.display = 'flex';
-            // autofocus first field when modal appears
-            setTimeout(() => { const f = document.getElementById('taskTitle'); if (f) f.focus(); }, 50);
+            // autofocus: if opened from client details, focus Due Date; otherwise focus Title
+            setTimeout(() => {
+                if (window._taskOpenedForClient) {
+                    const due = document.getElementById('taskDueDate'); if (due) due.focus();
+                    // clear flag after use
+                    delete window._taskOpenedForClient;
+                } else {
+                    const f = document.getElementById('taskTitle'); if (f) f.focus();
+                }
+            }, 50);
         }
         
         function editTask(taskId) {
