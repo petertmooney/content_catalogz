@@ -813,8 +813,8 @@ if ($invoices_result) {
                 <!-- Dashboard greeting (time-aware) -->
                 <div id="dashboardGreeting" style="color: #555; margin-bottom: 14px; font-size: 15px;">
                     <strong><?php echo !empty($user['first_name']) ? escapeHtml($user['first_name']) : escapeHtml($user['username']); ?></strong>
-                    <span class="role-badge" style="background: <?php echo ($user['role'] === 'superadmin') ? '#dc3545' : '#007bff'; ?>; color: white; padding: 3px 8px; border-radius: 999px; font-size: 12px; margin-left: 8px; vertical-align: middle;">
-                        <?php echo ($user['role'] === 'superadmin') ? 'Super Admin' : 'Admin'; ?>
+                    <span class="role-badge" style="background: <?php echo (!empty($user['role']) && $user['role'] === 'superadmin') ? '#dc3545' : '#007bff'; ?>; color: white; padding: 3px 8px; border-radius: 999px; font-size: 12px; margin-left: 8px; vertical-align: middle;">
+                        <?php echo (!empty($user['role']) && $user['role'] === 'superadmin') ? 'Super Admin' : 'Admin'; ?>
                     </span>
                 </div>
 
