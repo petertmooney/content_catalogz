@@ -748,7 +748,7 @@ if ($invoices_result) {
         </div>
         <div class="navbar-right">
             <div class="user-info">
-                <span>Welcome, <strong><?php echo !empty($user['first_name']) ? escapeHtml($user['first_name']) : escapeHtml($user['username']); ?></strong></span>
+                <span id="greeting">Welcome, <strong><?php echo !empty($user['first_name']) ? escapeHtml($user['first_name']) : escapeHtml($user['username']); ?></strong></span>
                 <form method="POST" action="api/logout.php" style="margin: 0;">
                     <button type="submit" class="logout-btn">Logout</button>
                 </form>
@@ -5674,6 +5674,17 @@ invoices.forEach(invoice => {
         // Initialize menu order when page loads
         document.addEventListener('DOMContentLoaded', () => {
             initializeMenuOrder();
+
+            // Time-of-day greeting (Good morning/afternoon/evening)
+            try {
+                const greetingEl = document.getElementById('greeting');
+                if (greetingEl) {
+                    const hour = new Date().getHours();
+                    const part = hour < 12 ? 'Good morning' : (hour < 18 ? 'Good afternoon' : 'Good evening');
+                    // Replace leading 'Welcome' with time-aware greeting but keep the username HTML
+                    greetingEl.innerHTML = `${part}, ${greetingEl.querySelector('strong').outerHTML}`;
+                }
+            } catch (e) { /* ignore */ }
         });
     </script>
 </body>
