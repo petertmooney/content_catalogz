@@ -783,7 +783,7 @@ if ($invoices_result) {
     <div class="container">
         <div class="sidebar">
             <a href="#" onclick="showSection('dashboard'); return false;" id="nav-dashboard" class="active">📋 Dashboard</a>
-            
+            <a href="#" onclick="scrollToCRM(); return false;" id="nav-crm">📈 CRM Summary</a>
             <a href="#" onclick="showSection('clients'); return false;" id="nav-clients">📝 Quote Requests</a>
             
             <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'clients-submenu'); return false;">👥 Clients</a>
@@ -1369,7 +1369,7 @@ if ($invoices_result) {
     </div>
 
     <!-- CRM Summary (moved to bottom) -->
-    <div class="crm-summary">
+    <div id="crm-summary" class="crm-summary">
         <h3>CRM Summary</h3>
         <div class="stats-grid">
             <div class="stat-card" style="background:white;padding:14px;border-radius:8px;">
@@ -2468,6 +2468,36 @@ if ($invoices_result) {
                     const submenu = document.getElementById('clients-submenu');
                     const parent = document.querySelector('.sidebar .menu-parent');
                     if (submenu && !submenu.classList.contains('open')) {
+                        submenu.classList.add('open');
+                        parent.classList.add('open');
+                    }
+                }
+            } catch (e) {
+                console.error('Error switching section:', e);
+            }
+        }
+
+        // Scroll to CRM summary (ensures dashboard is visible first)
+        function scrollToCRM() {
+            try {
+                // Make sure dashboard section is visible
+                showSection('dashboard');
+
+                const el = document.getElementById('crm-summary');
+                if (!el) return;
+
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // briefly highlight the CRM tile
+                el.style.transition = 'box-shadow 0.3s, transform 0.3s';
+                el.style.boxShadow = '0 6px 20px rgba(0,0,0,0.12)';
+                el.style.transform = 'translateY(-3px)';
+                setTimeout(() => {
+                    el.style.boxShadow = '';
+                    el.style.transform = '';
+                }, 900);
+            } catch (e) { console.error(e); }
+        }
                         submenu.classList.add('open');
                         parent.classList.add('open');
                     }
@@ -5720,6 +5750,7 @@ invoices.forEach(invoice => {
         
         const defaultMenuOrder = [
             {id: 'nav-dashboard', label: '📋 Dashboard', section: 'dashboard', type: 'link'},
+            {id: 'nav-crm', label: '📈 CRM Summary', section: 'crm', type: 'link'},
             {id: 'nav-clients', label: '📝 Quote Requests', section: 'clients', type: 'link'},
             {id: 'clients-submenu', label: '👥 Clients', type: 'parent', children: [
                 {id: 'nav-existing-clients', label: '👤 Existing Clients', section: 'existing-clients'},
