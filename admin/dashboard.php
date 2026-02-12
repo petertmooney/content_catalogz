@@ -203,12 +203,6 @@ if ($invoices_result) {
             font-weight: 400; /* not bold */
             color: #222;
         }
-        /* Keep top-right navbar greeting visually consistent */
-        #greeting {
-            font-size: 30px;
-            font-weight: 400; /* not bold */
-            color: #222;
-        }
         #dashboardGreeting .role-badge { font-size: 13px; padding: 4px 10px; }
 
         .btn-group {
@@ -764,7 +758,6 @@ if ($invoices_result) {
         </div>
         <div class="navbar-right">
             <div class="user-info">
-                <span id="greeting">Welcome, <?php echo !empty($user['first_name']) ? escapeHtml($user['first_name']) : escapeHtml($user['username']); ?></span>
                 <form method="POST" action="api/logout.php" style="margin: 0;">
                     <button type="submit" class="logout-btn">Logout</button>
                 </form>
@@ -5704,18 +5697,13 @@ invoices.forEach(invoice => {
                 const hour = new Date().getHours();
                 const part = hour < 12 ? 'Good morning' : (hour < 18 ? 'Good afternoon' : 'Good evening');
 
-                const greetingEl = document.getElementById('greeting');
-                if (greetingEl) {
-                    greetingEl.innerHTML = `${part}, ${greetingEl.querySelector('strong').outerHTML}`;
-                }
-
                 // Update dashboard greeting (keeps role badge if present)
                 const dg = document.getElementById('dashboardGreeting');
                 if (dg) {
-                    const nameHtml = dg.querySelector('strong') ? dg.querySelector('strong').outerHTML : '';
                     const roleEl = dg.querySelector('.role-badge');
                     const roleHtml = roleEl ? (' ' + roleEl.outerHTML) : '';
-                    dg.innerHTML = `${part}, ${nameHtml}${roleHtml}`;
+                    const nameText = dg.childNodes[0] ? dg.childNodes[0].textContent.trim() : '';
+                    dg.innerHTML = `${part}, ${nameText}${roleHtml}`;
                 }
             } catch (e) { /* ignore */ }
         });
