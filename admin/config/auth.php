@@ -19,13 +19,47 @@ function requireLogin() {
 
 // Get current user
 function getCurrentUser() {
-    if (isLoggedIn()) {
-        return [
-            'id' => $_SESSION['user_id'],
-            'username' => $_SESSION['username']
-        ];
+    if (!isLoggedIn()) return null;
+
+    // Prefer fetching full user record from DB so templates can rely on fields like role/first_name
+    try {
+        if (isset($GLOBALS['conn']) && $GLOBALS['conn'] instanceof mysqli) {
+            $stmt = $GLOBALS['conn']->prepare("SELECT id, username, email, role, full_name, first_name, last_name FROM users WHERE id = ? LIMIT 1");
+            if ($stmt) {
+                $stmt->bind_param('i', $_SESSION['user_id']);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $row = $result->fetch_assoc();
+                $stmt->close();
+
+                // ensure at least username/id are present
+                if ($row) {
+                    return [
+                        'id' => $row['id'] ?? $_SESSION['user_id'],
+                        'username' => $row['username'] ?? $_SESSION['username'],
+                        'email' => $row['email'] ?? '',
+                        'role' => $row['role'] ?? 'admin',
+                        'full_name' => $row['full_name'] ?? '',
+                        'first_name' => $row['first_name'] ?? '',
+                        'last_name' => $row['last_name'] ?? ''
+                    ];
+                }
+            }
+        }
+    } catch (Exception $e) {
+        // fall back to session values
     }
-    return null;
+
+    // Fallback when DB not available or query failed
+    return [
+        'id' => $_SESSION['user_id'],
+        'username' => $_SESSION['username'],
+        'email' => '',
+        'role' => 'admin',
+        'full_name' => '',
+        'first_name' => '',
+        'last_name' => ''
+    ];
 }
 
 // Logout user
