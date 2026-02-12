@@ -211,6 +211,8 @@ if ($invoices_result) {
         .crm-summary .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 14px; }
         .crm-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
         .crm-charts canvas { width: 100% !important; height: 220px !important; }
+        .revenue-trend { margin-top: 12px; background: white; padding: 12px; border-radius: 8px; }
+        .revenue-trend canvas { width: 100% !important; height: 220px !important; }
         .recent-activities { max-height: 220px; overflow: auto; border-top: 1px solid #eee; padding-top: 12px; }
         .recent-activities li { padding: 8px 0; border-bottom: 1px solid #f3f3f3; font-size: 13px; color: #444; }
         .stat-small { font-size: 13px; color: #666; }
@@ -886,6 +888,11 @@ if ($invoices_result) {
                                 <li>No upcoming tasks</li>
                             </ul>
                         </div>
+                    </div>
+
+                    <div class="revenue-trend">
+                        <div class="stat-small">Revenue trend (last 12 months)</div>
+                        <canvas id="chart-revenue-trend"></canvas>
                     </div>
                 </div>
 
@@ -4333,6 +4340,42 @@ invoices.forEach(invoice => {
                         } catch (e) { console.error('Error rendering CRM charts', e); }
                     })
                     .catch(err => console.error('Error loading CRM dashboard:', err));
+
+                // Load revenue trends (last 12 months)
+                fetch('api/invoice_trends.php')
+                    .then(res => res.json())
+                    .then(r => {
+                        if (!r.success || !r.months) return;
+                        const months = Object.keys(r.months || {});
+                        const values = months.map(m => parseFloat(r.months[m]) || 0);
+
+                        if (!window.revenueTrendChart) {
+                            const ctx = document.getElementById('chart-revenue-trend').getContext('2d');
+                            window.revenueTrendChart = new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: months,
+                                    datasets: [{
+                                        label: 'Revenue (collected)',
+                                        data: values,
+                                        borderColor: '#28a745',
+                                        backgroundColor: 'rgba(40,167,69,0.08)',
+                                        tension: 0.25,
+                                        fill: true,
+                                    }]
+                                },
+                                options: {
+                                    scales: { y: { ticks: { callback: v => '£' + Number(v).toFixed(0) } } },
+                                    plugins: { legend: { display: false } }
+                                }
+                            });
+                        } else {
+                            window.revenueTrendChart.data.labels = months;
+                            window.revenueTrendChart.data.datasets[0].data = values;
+                            window.revenueTrendChart.update();
+                        }
+                    })
+                    .catch(err => console.error('Error loading revenue trends:', err));
 
             // Load email stats (placeholder until email storage is implemented)
             // For now, showing 0 - can be connected to actual email data later
