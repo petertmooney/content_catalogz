@@ -781,8 +781,12 @@ if ($invoices_result) {
                 <a href="#" onclick="openCreateUserModal(); return false;" id="nav-create-user">➕ Create User</a>
             </div>
             
-            <a href="export.php" id="nav-export" style="border-top: 1px solid #444; margin-top: 10px; padding-top: 10px;">📦 Export Website</a>
-            <a href="#" onclick="openMenuCustomizationModal(); return false;" id="nav-customize-menu">⚙️ Customize Menu</a>
+            <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'settings-submenu'); return false;">⚙️ Settings</a>
+            <div class="submenu" id="settings-submenu">
+                <a href="export.php" id="nav-export">📦 Export Website</a>
+                <a href="#" onclick="openMenuCustomizationModal(); return false;" id="nav-customize-menu">⚙️ Customize Menu</a>
+            </div>
+
             <a href="/" target="_blank" id="nav-view-site">🌐 View Site</a>
             <a href="api/logout.php" id="nav-logout">🚪 Logout</a>
         </div>
@@ -5381,6 +5385,10 @@ invoices.forEach(invoice => {
             {id: 'users-submenu', label: '👤 Users', type: 'parent', children: [
                 {id: 'nav-users-list', label: '📋 View All Users', section: 'users-list'},
                 {id: 'nav-create-user', label: '➕ Create User', action: 'openCreateUserModal()'}
+            ]},
+            {id: 'settings-submenu', label: '⚙️ Settings', type: 'parent', children: [
+                {id: 'nav-export', label: '📦 Export Website', action: "location.href='export.php'"},
+                {id: 'nav-customize-menu', label: '⚙️ Customize Menu', action: 'openMenuCustomizationModal()'}
             ]}
         ];
         
@@ -5553,20 +5561,22 @@ invoices.forEach(invoice => {
             });
 
             // 3) append any remaining *anchor* DOM elements that weren't included (skip standalone submenu divs)
+            //    — do not re-append footer controls (customize/view-site/logout) which are added separately below
+            const footerIds = new Set(['nav-customize-menu', 'nav-view-site', 'nav-logout']);
             originalOrder.forEach(id => {
-                if (!addedIds.has(id) && elements[id] && elements[id].tagName === 'A') {
+                if (!addedIds.has(id) && elements[id] && elements[id].tagName === 'A' && !footerIds.has(id)) {
                     sidebar.appendChild(elements[id].cloneNode(true));
                 }
             });
 
             // Re-append footer controls in a sensible order (customize, view site, logout)
-            if (customizeMenu) {
+            if (customizeMenu && !addedIds.has('nav-customize-menu')) {
                 const cm = customizeMenu.cloneNode(true);
                 cm.onclick = (e) => { openMenuCustomizationModal(); return false; };
                 sidebar.appendChild(cm);
             }
-            if (viewSite) sidebar.appendChild(viewSite.cloneNode(true));
-            if (logout) sidebar.appendChild(logout.cloneNode(true));
+            if (viewSite && !addedIds.has('nav-view-site')) sidebar.appendChild(viewSite.cloneNode(true));
+            if (logout && !addedIds.has('nav-logout')) sidebar.appendChild(logout.cloneNode(true));
         }
         
         // Load and apply saved menu order on page load
