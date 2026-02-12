@@ -748,7 +748,7 @@ if ($invoices_result) {
         </div>
         <div class="navbar-right">
             <div class="user-info">
-                <span>Welcome, <strong><?php echo escapeHtml($user['username']); ?></strong></span>
+                <span>Welcome, <strong><?php echo !empty($user['first_name']) ? escapeHtml($user['first_name']) : escapeHtml($user['username']); ?></strong></span>
                 <form method="POST" action="api/logout.php" style="margin: 0;">
                     <button type="submit" class="logout-btn">Logout</button>
                 </form>
