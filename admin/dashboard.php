@@ -120,6 +120,8 @@ if ($invoices_result) {
             background: white;
             padding: 20px 0;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+            position: relative;
+            z-index: 5; /* keep sidebar above dashboard panels */
         }
 
         .sidebar a {
@@ -176,6 +178,8 @@ if ($invoices_result) {
         .main-content {
             flex: 1;
             padding: 30px;
+            position: relative; /* contain children */
+            overflow-x: hidden; /* prevent horizontal overflow that can cover the sidebar */
         }
 
         .content-section {
@@ -206,7 +210,7 @@ if ($invoices_result) {
         #dashboardGreeting .role-badge { font-size: 13px; padding: 4px 10px; }
 
         /* CRM summary styles */
-        .crm-summary { margin: 18px 0 28px; background: #fafafa; padding: 18px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.03); }
+        .crm-summary { margin: 18px 0 28px; background: #fafafa; padding: 18px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.03); position: relative; z-index: 0; max-width: 100%; box-sizing: border-box; overflow: hidden; }
         .crm-summary h3 { margin: 0 0 12px; font-size: 16px; color: #333; }
         .crm-summary .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 14px; }
         .crm-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
@@ -2486,7 +2490,7 @@ if ($invoices_result) {
                 const el = document.getElementById('crm-summary');
                 if (!el) return;
 
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
 
                 // briefly highlight the CRM tile
                 el.style.transition = 'box-shadow 0.3s, transform 0.3s';
