@@ -8,6 +8,15 @@ header('Content-Type: application/json');
 include __DIR__ . '/../config/auth.php';
 include __DIR__ . '/../config/db.php';
 
+// Simple file-cache (5 minutes)
+$cacheFile = __DIR__ . '/../cache/crm_dashboard.json';
+$cacheTtl = 300; // seconds
+if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < $cacheTtl)) {
+    echo file_get_contents($cacheFile);
+    $conn->close();
+    exit;
+}
+
 // Get CRM dashboard statistics
 $stats = [];
 
@@ -87,6 +96,9 @@ while ($row = $stmt->fetch_assoc()) {
 }
 $stats['status_breakdown'] = $status_breakdown;
 
-echo json_encode(['success' => true, 'stats' => $stats]);
+$out = json_encode(['success' => true, 'stats' => $stats]);
+// write cache
+@file_put_contents($cacheFile, $out);
+echo $out;
 
 $conn->close();

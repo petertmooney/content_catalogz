@@ -904,6 +904,12 @@ if ($invoices_result) {
                                     <option value="monthly">Last 12 months</option>
                                     <option value="yearly">Last 5 years</option>
                                 </select>
+                                <label class="stat-small" style="margin-left:8px; margin-right:6px">Chart</label>
+                                <select id="revenueChartType" style="padding:6px;border-radius:4px;border:1px solid #ddd;background:white;">
+                                    <option value="line">Line (area)</option>
+                                    <option value="bar">Bar</option>
+                                    <option value="stacked">Stacked area</option>
+                                </select>
                                 <button id="downloadRevenueCsv" class="btn btn-primary" style="padding:6px 10px;font-size:13px;">Download CSV</button>
                             </div>
                         </div>
@@ -4410,8 +4416,16 @@ invoices.forEach(invoice => {
                 }
 
                 // wire controls
-                document.getElementById('revenueMetric').addEventListener('change', loadRevenueTrend);
-                document.getElementById('revenueRange').addEventListener('change', loadRevenueTrend);
+                document.getElementById('revenueMetric').addEventListener('change', () => { loadRevenueTrend(); });
+                document.getElementById('revenueRange').addEventListener('change', () => { loadRevenueTrend(); });
+                document.getElementById('revenueChartType').addEventListener('change', function () {
+                    // redraw chart with same data but different presentation
+                    const type = this.value;
+                    // set a data-* attribute to remember chart mode
+                    document.getElementById('chart-revenue-trend').dataset.mode = type;
+                    loadRevenueTrend();
+                });
+
                 document.getElementById('downloadRevenueCsv').addEventListener('click', function () {
                     const metric = document.getElementById('revenueMetric').value;
                     const range = document.getElementById('revenueRange').value;

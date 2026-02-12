@@ -20,6 +20,15 @@ $range = $_GET['range'] ?? 'monthly'; // 'monthly' or 'yearly'
 $metric_col = ($metric === 'invoiced') ? 'total_cost' : 'total_paid';
 
 if ($range === 'yearly') {
+    // cache key per metric+range
+    $cacheFile = __DIR__ . '/../cache/invoice_trends_yearly_' . $metric . '.json';
+    $cacheTtl = 600;
+    if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < $cacheTtl)) {
+        echo file_get_contents($cacheFile);
+        $conn->close();
+        exit;
+    }
+
     // Return last 5 years totals
     $years = [];
     for ($y = date('Y') - 4; $y <= date('Y'); $y++) {
@@ -41,7 +50,9 @@ if ($range === 'yearly') {
         }
     }
 
-    echo json_encode(['success' => true, 'range' => 'yearly', 'metric' => $metric, 'years' => $years]);
+    $out = json_encode(['success' => true, 'range' => 'yearly', 'metric' => $metric, 'years' => $years]);
+    @file_put_contents($cacheFile, $out);
+    echo $out;
     $conn->close();
     exit;
 }
@@ -59,6 +70,14 @@ $sql = "SELECT DATE_FORMAT(invoice_date, '%Y-%m') as ym, COALESCE(SUM($metric_co
         GROUP BY ym
         ORDER BY ym ASC";
 
+$cacheFile = __DIR__ . '/../cache/invoice_trends_monthly_' . $metric . '.json';
+$cacheTtl = 600;
+if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < $cacheTtl)) {
+    echo file_get_contents($cacheFile);
+    $conn->close();
+    exit;
+}
+
 $result = $conn->query($sql);
 if ($result) {
     while ($row = $result->fetch_assoc()) {
@@ -69,6 +88,9 @@ if ($result) {
     }
 }
 
-echo json_encode(['success' => true, 'range' => 'monthly', 'metric' => $metric, 'months' => $months]);
+$out = json_encode(['success' => true, 'range' => 'monthly', 'metric' => $metric, 'months' => $months]);
+@file_put_contents($cacheFile, $out);
+
+echo $out;
 
 $conn->close();
