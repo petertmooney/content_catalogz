@@ -1,7 +1,9 @@
 <?php
 // Disable displaying PHP errors in the browser (production-safe)
 ini_set('display_errors', 0);
-// Report all errors but don't display notices/warnings to users
+// Log errors to file and keep reporting enabled (don't show notices/warnings to users)
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/../logs/php_errors.log');
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
 // Start session if not already started
