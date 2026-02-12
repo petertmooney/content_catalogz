@@ -5997,6 +5997,16 @@ invoices.forEach(invoice => {
                     const nameText = dg.childNodes[0] ? dg.childNodes[0].textContent.trim() : '';
                     dg.innerHTML = `${part}, ${nameText}${roleHtml}`;
                 }
+
+                // Auto-scroll to CRM if URL indicates it (supports ?view=crm and #crm)
+                try {
+                    const params = new URLSearchParams(window.location.search);
+                    const wantCRM = (params.get('view') || '').toLowerCase() === 'crm' || window.location.hash === '#crm';
+                    if (wantCRM) {
+                        // Give the page a moment to render then scroll
+                        setTimeout(() => { if (typeof scrollToCRM === 'function') scrollToCRM(); }, 250);
+                    }
+                } catch (err) { /* ignore */ }
             } catch (e) { /* ignore */ }
         });
     </script>
