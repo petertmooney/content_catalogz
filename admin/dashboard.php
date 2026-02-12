@@ -199,14 +199,14 @@ if ($invoices_result) {
 
         /* Dashboard greeting should be more prominent than the page title */
         #dashboardGreeting {
-            font-size: 36px;
-            font-weight: 700;
+            font-size: 30px;
+            font-weight: 400; /* not bold */
             color: #222;
         }
         /* Keep top-right navbar greeting visually consistent */
         #greeting {
-            font-size: 36px;
-            font-weight: 700;
+            font-size: 30px;
+            font-weight: 400; /* not bold */
             color: #222;
         }
         #dashboardGreeting .role-badge { font-size: 13px; padding: 4px 10px; }
@@ -764,7 +764,7 @@ if ($invoices_result) {
         </div>
         <div class="navbar-right">
             <div class="user-info">
-                <span id="greeting">Welcome, <strong><?php echo !empty($user['first_name']) ? escapeHtml($user['first_name']) : escapeHtml($user['username']); ?></strong></span>
+                <span id="greeting">Welcome, <?php echo !empty($user['first_name']) ? escapeHtml($user['first_name']) : escapeHtml($user['username']); ?></span>
                 <form method="POST" action="api/logout.php" style="margin: 0;">
                     <button type="submit" class="logout-btn">Logout</button>
                 </form>
@@ -823,7 +823,7 @@ if ($invoices_result) {
             <div id="section-dashboard" class="content-section active">
                 <!-- Dashboard greeting (time-aware) -->
                 <div id="dashboardGreeting" style="margin-bottom: 8px;">
-                    <strong><?php echo !empty($user['first_name']) ? escapeHtml($user['first_name']) : escapeHtml($user['username']); ?></strong>
+                    <?php echo !empty($user['first_name']) ? escapeHtml($user['first_name']) : escapeHtml($user['username']); ?>
                     <span class="role-badge" style="background: <?php echo (!empty($user['role']) && $user['role'] === 'superadmin') ? '#dc3545' : '#007bff'; ?>; color: white; padding: 3px 8px; border-radius: 999px; font-size: 12px; margin-left: 8px; vertical-align: middle;">
                         <?php echo (!empty($user['role']) && $user['role'] === 'superadmin') ? 'Super Admin' : 'Admin'; ?>
                     </span>
