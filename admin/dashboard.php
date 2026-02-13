@@ -2465,11 +2465,27 @@ if ($invoices_result) {
         function toggleSubmenu(event, submenuId) {
             event.preventDefault();
             event.stopPropagation();
-            
+
             const submenu = document.getElementById(submenuId);
             const parent = event.currentTarget;
-            
-            // Toggle submenu
+
+            // Close all other submenus and remove open class from their parents
+            const allSubmenus = document.querySelectorAll('.sidebar .submenu');
+            const allParents = document.querySelectorAll('.sidebar .menu-parent');
+
+            allSubmenus.forEach(sub => {
+                if (sub.id !== submenuId) {
+                    sub.classList.remove('open');
+                }
+            });
+
+            allParents.forEach(parentEl => {
+                if (parentEl !== parent) {
+                    parentEl.classList.remove('open');
+                }
+            });
+
+            // Toggle the clicked submenu
             submenu.classList.toggle('open');
             parent.classList.toggle('open');
         }
@@ -2606,6 +2622,24 @@ if ($invoices_result) {
                 
                 // Auto-expand submenu if section is in a submenu
                 if (sectionName === 'clients' || sectionName === 'existing-clients') {
+                    // Close all other submenus first
+                    const allSubmenus = document.querySelectorAll('.sidebar .submenu');
+                    const allParents = document.querySelectorAll('.sidebar .menu-parent');
+
+                    allSubmenus.forEach(sub => {
+                        if (sub.id !== 'clients-submenu') {
+                            sub.classList.remove('open');
+                        }
+                    });
+
+                    allParents.forEach(parentEl => {
+                        const parentSubmenu = parentEl.nextElementSibling;
+                        if (parentSubmenu && parentSubmenu.id !== 'clients-submenu') {
+                            parentEl.classList.remove('open');
+                        }
+                    });
+
+                    // Then open the clients submenu
                     const submenu = document.getElementById('clients-submenu');
                     const parent = document.querySelector('.sidebar .menu-parent');
                     if (submenu && !submenu.classList.contains('open')) {
