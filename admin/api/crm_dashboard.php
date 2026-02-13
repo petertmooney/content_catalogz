@@ -20,7 +20,8 @@ try {
         if (@$r->connect('127.0.0.1', 6379, 1)) {
             $cached = false;
             if (is_object($r) && method_exists($r, 'get')) {
-                $cached = @$r->get($cacheKey);
+                // call dynamically to avoid static-analyzer/IDE errors about an unknown Redis extension
+                $cached = @call_user_func([$r, 'get'], $cacheKey);
             }
             if ($cached) {
                 echo $cached;

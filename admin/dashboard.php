@@ -4575,54 +4575,68 @@ invoices.forEach(invoice => {
                     .catch(err => console.error('Error loading CRM dashboard:', err));
 
                 // Load revenue trends (last 12 months)
-                function loadRevenueTrend() {
-                    const metric = document.getElementById('revenueMetric').value;
-                    const range = document.getElementById('revenueRange').value;
-                    fetch(`api/invoice_trends.php?metric=${encodeURIComponent(metric)}&range=${encodeURIComponent(range)}`)
-                        .then(res => res.json())
-                        .then(r => {
-                            if (!r.success) return;
-
-                            if (r.range === 'yearly' && r.years) {
-                                const labels = Object.keys(r.years || {});
-                                const values = labels.map(k => parseFloat(r.years[k]) || 0);
-                                const labelText = (r.metric === 'invoiced') ? 'Revenue (invoiced)' : 'Revenue (collected)';
-
-                                if (!window.revenueTrendChart) {
-                                    const ctx = document.getElementById('chart-revenue-trend').getContext('2d');
-                                    window.revenueTrendChart = new Chart(ctx, {
-                                        type: 'line',
-                                        data: { labels: labels, datasets: [{ label: labelText, data: values, borderColor: '#28a745', backgroundColor: 'rgba(40,167,69,0.08)', tension: 0.25, fill: true }] },
-                                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { callback: v => '£' + Number(v).toFixed(0) } } }, plugins: { legend: { display: false } } }
-                                });
-                                try { window.revenueTrendChart.resize(); window.revenueTrendChart.update(); } catch(e){}
-                            } else {
-                                window.revenueTrendChart.data.labels = labels;
-                                window.revenueTrendChart.data.datasets[0].label = labelText;
-                                window.revenueTrendChart.data.datasets[0].data = values;
-                                window.revenueTrendChart.update();
-                                try { window.revenueTrendChart.resize(); } catch(e){}
-                            // monthly
-                            const months = Object.keys(r.months || {});
-                            const values = months.map(m => parseFloat(r.months[m]) || 0);
-                            const labelText = (r.metric === 'invoiced') ? 'Revenue (invoiced)' : 'Revenue (collected)';
-
-                            if (!window.revenueTrendChart) {
-                                const ctx = document.getElementById('chart-revenue-trend').getContext('2d');
-                                window.revenueTrendChart = new Chart(ctx, {
-                                    type: 'line',
-                                    data: { labels: months, datasets: [{ label: labelText, data: values, borderColor: '#28a745', backgroundColor: 'rgba(40,167,69,0.08)', tension: 0.25, fill: true }] },
-                                    options: { scales: { y: { ticks: { callback: v => '£' + Number(v).toFixed(0) } } }, plugins: { legend: { display: false } } }
-                                });
-                            } else {
-                                window.revenueTrendChart.data.labels = months;
-                                window.revenueTrendChart.data.datasets[0].label = labelText;
-                                window.revenueTrendChart.data.datasets[0].data = values;
-                                window.revenueTrendChart.update();
-                            }
-                        })
-                        .catch(err => console.error('Error loading revenue trends:', err));
-                }
+                                function loadRevenueTrend() {
+                                    const metric = document.getElementById('revenueMetric').value;
+                                    const range = document.getElementById('revenueRange').value;
+                
+                                    fetch(`api/invoice_trends.php?metric=${encodeURIComponent(metric)}&range=${encodeURIComponent(range)}`)
+                                        .then(res => res.json())
+                                        .then(r => {
+                                            if (!r.success) return;
+                
+                                            // normalize data into labels/values and a display label
+                                            let labels = [];
+                                            let values = [];
+                                            const labelText = (metric === 'invoiced') ? 'Revenue (invoiced)' : 'Revenue (collected)';
+                
+                                            if (r.range === 'yearly' && r.years) {
+                                                labels = Object.keys(r.years || {});
+                                                values = labels.map(k => parseFloat(r.years[k]) || 0);
+                                            } else if (r.months) {
+                                                labels = Object.keys(r.months || {});
+                                                values = labels.map(m => parseFloat(r.months[m]) || 0);
+                                            }
+                
+                                            // create or update chart safely
+                                            try {
+                                                const canvas = document.getElementById('chart-revenue-trend');
+                                                if (!canvas) return;
+                
+                                                if (!window.revenueTrendChart) {
+                                                    const ctx = canvas.getContext('2d');
+                                                    window.revenueTrendChart = new Chart(ctx, {
+                                                        type: 'line',
+                                                        data: {
+                                                            labels: labels,
+                                                            datasets: [{
+                                                                label: labelText,
+                                                                data: values,
+                                                                borderColor: '#28a745',
+                                                                backgroundColor: 'rgba(40,167,69,0.08)',
+                                                                tension: 0.25,
+                                                                fill: true
+                                                            }]
+                                                        },
+                                                        options: {
+                                                            responsive: true,
+                                                            maintainAspectRatio: false,
+                                                            scales: { y: { ticks: { callback: v => '£' + Number(v).toFixed(0) } } },
+                                                            plugins: { legend: { display: false } }
+                                                        }
+                                                    });
+                                                } else {
+                                                    window.revenueTrendChart.data.labels = labels;
+                                                    window.revenueTrendChart.data.datasets[0].label = labelText;
+                                                    window.revenueTrendChart.data.datasets[0].data = values;
+                                                    window.revenueTrendChart.update();
+                                                    try { window.revenueTrendChart.resize(); } catch (e) { /* ignore */ }
+                                                }
+                                            } catch (err) {
+                                                console.error('Error rendering revenue trend chart:', err);
+                                            }
+                                        })
+                                        .catch(err => console.error('Error loading revenue trends:', err));
+                                }
 
                 // Safely attach revenue chart controls (guard elements may not exist when script runs)
                 function attachRevenueControls() {
