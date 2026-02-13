@@ -52,6 +52,11 @@ if ($invoices_result) {
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed; /* Fixed positioning to prevent scrolling */
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
         }
         
         .navbar-left {
@@ -112,7 +117,8 @@ if ($invoices_result) {
 
         .container {
             display: flex;
-            min-height: calc(100vh - 60px);
+            min-height: calc(100vh - 89px); /* Account for fixed navbar height */
+            margin-top: 89px; /* Account for fixed navbar */
         }
 
         .sidebar {
@@ -120,6 +126,12 @@ if ($invoices_result) {
             background: white;
             padding: 20px 0;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+            position: fixed; /* Fixed positioning to prevent scrolling */
+            left: 0;
+            top: 89px; /* Below fixed navbar */
+            height: calc(100vh - 89px); /* Full height minus navbar */
+            overflow-y: auto; /* Allow internal scrolling if content overflows */
+            z-index: 999;
         }
 
         .sidebar a {
@@ -178,6 +190,7 @@ if ($invoices_result) {
             padding: 20px;
             max-width: none;
             width: 100%;
+            margin-left: 250px; /* Account for fixed sidebar */
         }
 
         .content-section {
