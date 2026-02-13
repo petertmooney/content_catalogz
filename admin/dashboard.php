@@ -984,7 +984,7 @@ if ($invoices_result) {
                         </div>
                     </div>
 
-                    <div class="crm-charts">
+                    <div class="crm-charts full-bleed">
                         <div class="chart-card">
                             <div class="stat-small">Quotes by Status</div>
                             <canvas id="chart-status-breakdown"></canvas>
@@ -1010,7 +1010,7 @@ if ($invoices_result) {
                         </div>
                     </div>
 
-                    <div class="revenue-trend">
+                    <div class="revenue-trend full-bleed">
                         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
                             <div class="stat-small">Revenue trend</div>
                             <div class="controls">
