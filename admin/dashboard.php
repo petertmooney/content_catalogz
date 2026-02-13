@@ -3780,6 +3780,28 @@ if ($invoices_result) {
             }
         }
 
+        function toggleServiceOther(selectElement) {
+            const customInput = document.getElementById('newClientServiceOther');
+            if (selectElement.value === 'Other') {
+                customInput.style.display = 'block';
+                customInput.focus();
+            } else {
+                customInput.style.display = 'none';
+                customInput.value = '';
+            }
+        }
+
+        function toggleLeadSourceOther(selectElement) {
+            const customInput = document.getElementById('newClientLeadSourceOther');
+            if (selectElement.value === 'Other') {
+                customInput.style.display = 'block';
+                customInput.focus();
+            } else {
+                customInput.style.display = 'none';
+                customInput.value = '';
+            }
+        }
+
         function calculateTotalCost() {
             const serviceCosts = document.querySelectorAll('.service-cost');
             let total = 0;
@@ -5186,6 +5208,18 @@ if ($invoices_result) {
         function saveNewClient(event) {
             event.preventDefault();
             
+            // Handle service selection
+            let service = document.getElementById('newClientService').value;
+            if (service === 'Other') {
+                service = document.getElementById('newClientServiceOther').value.trim() || 'Other';
+            }
+
+            // Handle lead source selection
+            let leadSource = document.getElementById('newClientLeadSource').value;
+            if (leadSource === 'Other') {
+                leadSource = document.getElementById('newClientLeadSourceOther').value.trim() || 'Other';
+            }
+
             const formData = {
                 first_name: document.getElementById('newClientFirstName').value,
                 last_name: document.getElementById('newClientLastName').value,
@@ -5199,7 +5233,8 @@ if ($invoices_result) {
                 address_postcode: document.getElementById('newClientPostcode').value,
                 address_country: document.getElementById('newClientCountry').value,
                 message: document.getElementById('newClientMessage').value,
-                service: document.getElementById('newClientService').value,
+                service: service,
+                lead_source: leadSource,
                 status: document.getElementById('newClientStatus').value,
                 notes: document.getElementById('newClientNotes').value
             };
