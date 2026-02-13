@@ -1633,6 +1633,7 @@ if ($invoices_result) {
                     <button type="button" class="crm-tab" onclick="switchClientTab('activities')" id="tab-activities">📅 Activity Timeline</button>
                     <button type="button" class="crm-tab" onclick="switchClientTab('notes')" id="tab-notes">📝 Notes</button>
                     <button type="button" class="crm-tab" onclick="switchClientTab('tasks')" id="tab-tasks">✅ Tasks</button>
+                    <button type="button" class="crm-tab" onclick="switchClientTab('invoices')" id="tab-invoices">📄 Invoices</button>
                 </div>
             </div>
             
@@ -1800,6 +1801,20 @@ if ($invoices_result) {
                     <div class="empty-state">
                         <h3>No Tasks Yet</h3>
                         <p>Create tasks related to this client.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab: Invoices -->
+            <div id="client-tab-invoices" class="client-tab-content" style="display: none; flex: 1; overflow-y: auto; padding: 20px;">
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="generateInvoiceForClient()" title="Generate and save invoice to database">+ Generate Invoice</button>
+                    <button class="btn btn-secondary" onclick="emailInvoice()">📧 Email Invoice</button>
+                </div>
+                <div id="client-invoices-list">
+                    <div class="empty-state">
+                        <h3>No Invoices Yet</h3>
+                        <p>Invoices generated for this client will appear here.</p>
                     </div>
                 </div>
             </div>
@@ -5877,6 +5892,8 @@ invoices.forEach(invoice => {
                     loadClientNotes(currentClientId);
                 } else if (tabName === 'tasks') {
                     loadClientTasks(currentClientId);
+                } else if (tabName === 'invoices') {
+                    loadClientInvoices(currentClientId);
                 }
             }
         }
@@ -6305,6 +6322,76 @@ invoices.forEach(invoice => {
                 .catch(err => {
                     console.error('Error loading tasks:', err);
                 });
+        }
+
+        function loadClientInvoices(clientId) {
+            fetch(`api/get_client_invoices.php?client_id=${clientId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('client-invoices-list');
+                    if (data.success && data.invoices && data.invoices.length > 0) {
+                        container.innerHTML = data.invoices.map(invoice => {
+                            const statusColors = {
+                                'paid': '#28a745',
+                                'outstanding': '#ffc107',
+                                'overdue': '#dc3545'
+                            };
+
+                            const statusText = invoice.total_remaining === 0 ? 'Paid' :
+                                             (invoice.total_remaining > 0 && new Date(invoice.invoice_date) < new Date(Date.now() - 30*24*60*60*1000)) ? 'Overdue' : 'Outstanding';
+
+                            const statusColor = invoice.total_remaining === 0 ? statusColors.paid :
+                                              (invoice.total_remaining > 0 && new Date(invoice.invoice_date) < new Date(Date.now() - 30*24*60*60*1000)) ? statusColors.overdue : statusColors.outstanding;
+
+                            return `
+                                <div class="invoice-item" style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 10px; background: #fff;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                                        <div>
+                                            <h4 style="margin: 0; color: #333;">Invoice #${invoice.invoice_number}</h4>
+                                            <p style="margin: 5px 0; color: #666; font-size: 14px;">${new Date(invoice.invoice_date).toLocaleDateString()}</p>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <div style="font-size: 18px; font-weight: bold; color: #333;">£${parseFloat(invoice.total_cost).toFixed(2)}</div>
+                                            <div style="font-size: 14px; color: ${statusColor}; font-weight: bold;">${statusText}</div>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                        <button class="btn btn-sm btn-primary" onclick="viewInvoice(${invoice.id})">👁️ View</button>
+                                        <button class="btn btn-sm btn-secondary" onclick="printInvoiceFromId(${invoice.id})">🖨️ Print</button>
+                                        <button class="btn btn-sm btn-secondary" onclick="emailInvoiceFromId(${invoice.id})">📧 Email</button>
+                                        ${invoice.total_remaining > 0 ? `<button class="btn btn-sm btn-success" onclick="recordPaymentForInvoice(${invoice.id})">💰 Record Payment</button>` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        container.innerHTML = '<div class="empty-state"><h3>No Invoices Yet</h3><p>Invoices generated for this client will appear here.</p></div>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading invoices:', err);
+                });
+        }
+
+        function viewInvoice(invoiceId) {
+            // Open the invoice modal to view/edit the invoice
+            openInvoiceModal(invoiceId);
+        }
+
+        function printInvoiceFromId(invoiceId) {
+            // Print the invoice directly
+            printInvoiceFromTable(invoiceId);
+        }
+
+        function emailInvoiceFromId(invoiceId) {
+            // Email the invoice
+            emailInvoiceFromTable(invoiceId);
+        }
+
+        function recordPaymentForInvoice(invoiceId) {
+            // For now, just open the payment modal for the current client
+            // In a full implementation, this would be linked to the specific invoice
+            openPaymentModal();
         }
         
         function openAddClientTaskModal() {
