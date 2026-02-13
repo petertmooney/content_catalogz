@@ -906,7 +906,7 @@ if ($invoices_result) {
 
                 <!-- CRM Charts -->
                 <h3 style="color: #333; margin-bottom: 15px; margin-top: 40px;">📊 CRM Analytics</h3>
-                <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 5px; margin-bottom: 30px;">
+                <div class="charts-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 30px;">
                     <div class="chart-card" style="background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #333; font-size: 12px; margin-bottom: 4px;">Quote Status Breakdown</h4>
                         <canvas id="statusChart" width="100" height="60"></canvas>
@@ -915,8 +915,6 @@ if ($invoices_result) {
                         <h4 style="color: #333; font-size: 12px; margin-bottom: 4px;">Lead Sources</h4>
                         <canvas id="leadSourceChart" width="100" height="60"></canvas>
                     </div>
-                </div>
-                <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 5px; margin-bottom: 30px;">
                     <div class="chart-card" style="background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #333; font-size: 12px; margin-bottom: 4px;">Monthly Revenue Trends</h4>
                         <canvas id="revenueChart" width="100" height="60"></canvas>
@@ -924,6 +922,19 @@ if ($invoices_result) {
                     <div class="chart-card" style="background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #333; font-size: 12px; margin-bottom: 4px;">Task Priority Distribution</h4>
                         <canvas id="taskPriorityChart" width="100" height="60"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Details Modal -->
+            <div id="chartModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+                <div class="modal-content" style="background-color: white; margin: 5% auto; padding: 20px; border-radius: 8px; width: 80%; max-width: 600px; max-height: 80%; overflow-y: auto;">
+                    <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 id="modalTitle" style="margin: 0; color: #333;">Chart Details</h3>
+                        <span class="close" onclick="closeChartModal()" style="cursor: pointer; font-size: 28px; font-weight: bold; color: #aaa;">&times;</span>
+                    </div>
+                    <div id="modalBody" style="color: #666;">
+                        <!-- Chart details will be populated here -->
                     </div>
                 </div>
             </div>
@@ -4249,7 +4260,7 @@ invoices.forEach(invoice => {
                         const statusCanvas = document.getElementById('statusChart');
                         if (statusCanvas) {
                             const statusCtx = statusCanvas.getContext('2d');
-                            new Chart(statusCtx, {
+                            const statusChart = new Chart(statusCtx, {
                                 type: 'doughnut',
                                 data: {
                                     labels: ['New', 'Contacted', 'In Progress', 'Completed', 'Declined'],
@@ -4276,9 +4287,50 @@ invoices.forEach(invoice => {
                                         legend: {
                                             position: 'bottom'
                                         }
+                                    },
+                                    onClick: function(event, elements) {
+                                        if (elements.length > 0) {
+                                            const index = elements[0].index;
+                                            const labels = ['New', 'Contacted', 'In Progress', 'Completed', 'Declined'];
+                                            const values = [
+                                                stats.status_breakdown?.new || 0,
+                                                stats.status_breakdown?.contacted || 0,
+                                                stats.status_breakdown?.in_progress || 0,
+                                                stats.status_breakdown?.completed || 0,
+                                                stats.status_breakdown?.declined || 0
+                                            ];
+                                            const status = labels[index];
+                                            const count = values[index];
+                                            const total = values.reduce((a, b) => a + b, 0);
+                                            const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+
+                                            openChartModal('Quote Status: ' + status,
+                                                `<div style="text-align: center; margin-bottom: 20px;">
+                                                    <div style="font-size: 48px; margin: 10px 0;">${count}</div>
+                                                    <div style="font-size: 18px; color: #666;">${percentage}% of total quotes</div>
+                                                </div>
+                                                <div style="margin-top: 20px;">
+                                                    <h4 style="margin-bottom: 10px;">Status Breakdown:</h4>
+                                                    <ul style="list-style: none; padding: 0;">
+                                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee;">New: ${stats.status_breakdown?.new || 0} quotes</li>
+                                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee;">Contacted: ${stats.status_breakdown?.contacted || 0} quotes</li>
+                                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee;">In Progress: ${stats.status_breakdown?.in_progress || 0} quotes</li>
+                                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee;">Completed: ${stats.status_breakdown?.completed || 0} quotes</li>
+                                                        <li style="padding: 5px 0;">Declined: ${stats.status_breakdown?.declined || 0} quotes</li>
+                                                    </ul>
+                                                </div>`);
+                                        }
                                     }
                                 }
                             });
+
+                            // Make canvas clickable
+                            statusCanvas.onclick = function(event) {
+                                const rect = statusCanvas.getBoundingClientRect();
+                                const x = event.clientX - rect.left;
+                                const y = event.clientY - rect.top;
+                                statusChart._handleClick(event, statusChart, x, y);
+                            };
                         }
 
                         // Lead sources bar chart
@@ -4287,7 +4339,7 @@ invoices.forEach(invoice => {
                             const leadCtx = leadCanvas.getContext('2d');
                             const leadLabels = stats.lead_sources?.map(item => item.lead_source || 'Unknown') || [];
                             const leadCounts = stats.lead_sources?.map(item => item.count) || [];
-                            new Chart(leadCtx, {
+                            const leadChart = new Chart(leadCtx, {
                                 type: 'bar',
                                 data: {
                                     labels: leadLabels,
@@ -4308,9 +4360,38 @@ invoices.forEach(invoice => {
                                                 stepSize: 1
                                             }
                                         }
+                                    },
+                                    onClick: function(event, elements) {
+                                        if (elements.length > 0) {
+                                            const index = elements[0].index;
+                                            const source = leadLabels[index];
+                                            const count = leadCounts[index];
+                                            const total = leadCounts.reduce((a, b) => a + b, 0);
+                                            const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+
+                                            openChartModal('Lead Source: ' + source,
+                                                `<div style="text-align: center; margin-bottom: 20px;">
+                                                    <div style="font-size: 48px; margin: 10px 0;">${count}</div>
+                                                    <div style="font-size: 18px; color: #666;">${percentage}% of total leads</div>
+                                                </div>
+                                                <div style="margin-top: 20px;">
+                                                    <h4 style="margin-bottom: 10px;">Lead Sources:</h4>
+                                                    <ul style="list-style: none; padding: 0;">
+                                                        ${leadLabels.map((label, i) => `<li style="padding: 5px 0; border-bottom: 1px solid #eee;">${label}: ${leadCounts[i]} leads</li>`).join('')}
+                                                    </ul>
+                                                </div>`);
+                                        }
                                     }
                                 }
                             });
+
+                            // Make canvas clickable
+                            leadCanvas.onclick = function(event) {
+                                const rect = leadCanvas.getBoundingClientRect();
+                                const x = event.clientX - rect.left;
+                                const y = event.clientY - rect.top;
+                                leadChart._handleClick(event, leadChart, x, y);
+                            };
                         }
                     }
                 })
@@ -4326,7 +4407,7 @@ invoices.forEach(invoice => {
                             const revenueCtx = revenueCanvas.getContext('2d');
                             const labels = Object.keys(data.months);
                             const values = Object.values(data.months);
-                            new Chart(revenueCtx, {
+                            const revenueChart = new Chart(revenueCtx, {
                                 type: 'line',
                                 data: {
                                     labels: labels,
@@ -4349,9 +4430,45 @@ invoices.forEach(invoice => {
                                                 }
                                             }
                                         }
+                                    },
+                                    onClick: function(event, elements) {
+                                        if (elements.length > 0) {
+                                            const index = elements[0].index;
+                                            const month = labels[index];
+                                            const amount = values[index];
+                                            const total = values.reduce((a, b) => a + b, 0);
+                                            const avg = total / values.length;
+
+                                            openChartModal('Revenue: ' + month,
+                                                `<div style="text-align: center; margin-bottom: 20px;">
+                                                    <div style="font-size: 36px; margin: 10px 0; color: #28a745;">£${amount.toFixed(2)}</div>
+                                                    <div style="font-size: 16px; color: #666;">Revenue for ${month}</div>
+                                                </div>
+                                                <div style="margin-top: 20px;">
+                                                    <h4 style="margin-bottom: 10px;">Monthly Breakdown:</h4>
+                                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;">
+                                                        ${labels.map((label, i) => `<div style="text-align: center; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                                                            <div style="font-weight: bold;">${label}</div>
+                                                            <div style="color: #28a745;">£${values[i].toFixed(0)}</div>
+                                                        </div>`).join('')}
+                                                    </div>
+                                                    <div style="margin-top: 15px; padding: 10px; background: #e9ecef; border-radius: 4px;">
+                                                        <strong>Total (12 months):</strong> £${total.toFixed(2)}<br>
+                                                        <strong>Average per month:</strong> £${avg.toFixed(2)}
+                                                    </div>
+                                                </div>`);
+                                        }
                                     }
                                 }
                             });
+
+                            // Make canvas clickable
+                            revenueCanvas.onclick = function(event) {
+                                const rect = revenueCanvas.getBoundingClientRect();
+                                const x = event.clientX - rect.left;
+                                const y = event.clientY - rect.top;
+                                revenueChart._handleClick(event, revenueChart, x, y);
+                            };
                         }
                     }
                 })
@@ -4371,7 +4488,7 @@ invoices.forEach(invoice => {
                                 return acc;
                             }, {});
 
-                            new Chart(taskCtx, {
+                            const taskChart = new Chart(taskCtx, {
                                 type: 'pie',
                                 data: {
                                     labels: ['Low', 'Normal', 'High', 'Urgent'],
@@ -4396,15 +4513,86 @@ invoices.forEach(invoice => {
                                         legend: {
                                             position: 'bottom'
                                         }
+                                    },
+                                    onClick: function(event, elements) {
+                                        if (elements.length > 0) {
+                                            const index = elements[0].index;
+                                            const priorityLabels = ['Low', 'Normal', 'High', 'Urgent'];
+                                            const priorityColors = ['#28a745', '#17a2b8', '#ffc107', '#dc3545'];
+                                            const priorityValues = [
+                                                priorities.low || 0,
+                                                priorities.normal || 0,
+                                                priorities.high || 0,
+                                                priorities.urgent || 0
+                                            ];
+                                            const priority = priorityLabels[index];
+                                            const count = priorityValues[index];
+                                            const total = priorityValues.reduce((a, b) => a + b, 0);
+                                            const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+
+                                            openChartModal('Task Priority: ' + priority,
+                                                `<div style="text-align: center; margin-bottom: 20px;">
+                                                    <div style="font-size: 48px; margin: 10px 0; color: ${priorityColors[index]};">${count}</div>
+                                                    <div style="font-size: 18px; color: #666;">${percentage}% of total tasks</div>
+                                                </div>
+                                                <div style="margin-top: 20px;">
+                                                    <h4 style="margin-bottom: 10px;">Priority Breakdown:</h4>
+                                                    <ul style="list-style: none; padding: 0;">
+                                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                                                            <span><span style="color: #28a745;">●</span> Low Priority:</span>
+                                                            <span>${priorities.low || 0} tasks</span>
+                                                        </li>
+                                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                                                            <span><span style="color: #17a2b8;">●</span> Normal Priority:</span>
+                                                            <span>${priorities.normal || 0} tasks</span>
+                                                        </li>
+                                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                                                            <span><span style="color: #ffc107;">●</span> High Priority:</span>
+                                                            <span>${priorities.high || 0} tasks</span>
+                                                        </li>
+                                                        <li style="padding: 5px 0; display: flex; justify-content: space-between;">
+                                                            <span><span style="color: #dc3545;">●</span> Urgent Priority:</span>
+                                                            <span>${priorities.urgent || 0} tasks</span>
+                                                        </li>
+                                                    </ul>
+                                                </div>`);
+                                        }
                                     }
                                 }
                             });
+
+                            // Make canvas clickable
+                            taskCanvas.onclick = function(event) {
+                                const rect = taskCanvas.getBoundingClientRect();
+                                const x = event.clientX - rect.left;
+                                const y = event.clientY - rect.top;
+                                taskChart._handleClick(event, taskChart, x, y);
+                            };
                         }
                     }
                 })
                 .catch(err => console.error('Error loading task stats:', err));
         }
-        
+
+        // Chart Modal Functions
+        function openChartModal(title, content) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalBody').innerHTML = content;
+            document.getElementById('chartModal').style.display = 'block';
+        }
+
+        function closeChartModal() {
+            document.getElementById('chartModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('chartModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+
         // ==================== CRM Functions ====================
         
         let currentClientId = null;
