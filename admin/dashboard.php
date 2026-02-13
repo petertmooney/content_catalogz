@@ -795,7 +795,11 @@ if ($invoices_result) {
         <div class="sidebar">
             <a href="#" onclick="showSection('dashboard'); return false;" id="nav-dashboard" class="active">📋 Dashboard</a>
             
-            <a href="#" onclick="showSection('clients'); toggleSubmenu(event, 'clients-submenu'); return false;" id="nav-clients">📝 Quote Requests</a>
+            <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'billing-submenu'); return false;">💰 Billing</a>
+            <div class="submenu" id="billing-submenu">
+                <a href="#" onclick="showSection('clients'); return false;" id="nav-clients">📝 Quote Requests</a>
+                <a href="#" onclick="showSection('invoices'); return false;" id="nav-invoices">📄 Invoices</a>
+            </div>
             
             <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'clients-submenu'); return false;">👥 Clients</a>
             <div class="submenu" id="clients-submenu">
@@ -813,7 +817,6 @@ if ($invoices_result) {
             </div>
             
             <a href="#" onclick="showSection('tasks'); return false;" id="nav-tasks">✅ Tasks & To-Do</a>
-            <a href="#" onclick="showSection('invoices'); return false;" id="nav-invoices">📄 Invoices</a>
             
             <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'pages-submenu'); return false;">🌐 Website Pages</a>
             <div class="submenu" id="pages-submenu">
@@ -6720,7 +6723,10 @@ invoices.forEach(invoice => {
         
         const defaultMenuOrder = [
             {id: 'nav-dashboard', label: '📋 Dashboard', section: 'dashboard', type: 'link'},
-            {id: 'nav-clients', label: '📝 Quote Requests', section: 'clients', type: 'link'},
+            {id: 'billing-submenu', label: '💰 Billing', type: 'parent', children: [
+                {id: 'nav-clients', label: '📝 Quote Requests', section: 'clients'},
+                {id: 'nav-invoices', label: '📄 Invoices', section: 'invoices'}
+            ]},
             {id: 'clients-submenu', label: '👥 Clients', type: 'parent', children: [
                 {id: 'nav-existing-clients', label: '👤 Existing Clients', section: 'existing-clients'},
                 {id: 'nav-add-client', label: '➕ Add New Client', action: 'openAddClientModal()'}
@@ -6733,7 +6739,6 @@ invoices.forEach(invoice => {
                 {id: 'nav-email-settings', label: '⚙️ Settings', section: 'email-settings'}
             ]},
             {id: 'nav-tasks', label: '✅ Tasks & To-Do', section: 'tasks', type: 'link'},
-            {id: 'nav-invoices', label: '📄 Invoices', section: 'invoices', type: 'link'},
             {id: 'pages-submenu', label: '🌐 Website Pages', type: 'parent', children: [
                 {id: 'nav-html-files', label: '📝 Edit Pages', section: 'html-files'},
                 {id: 'nav-new-page', label: '➕ Create New Page', action: 'openNewPageModal()'}

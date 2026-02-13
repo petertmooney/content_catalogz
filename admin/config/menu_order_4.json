@@ -6,10 +6,21 @@
         "type": "link"
     },
     {
-        "id": "nav-clients",
-        "label": "\ud83d\udcdd Quote Requests",
-        "section": "clients",
-        "type": "link"
+        "id": "billing-submenu",
+        "label": "\ud83d\udcb0 Billing",
+        "type": "parent",
+        "children": [
+            {
+                "id": "nav-clients",
+                "label": "\ud83d\udcdd Quote Requests",
+                "section": "clients"
+            },
+            {
+                "id": "nav-invoices",
+                "label": "\ud83d\udcc4 Invoices",
+                "section": "invoices"
+            }
+        ]
     },
     {
         "id": "clients-submenu",
@@ -64,12 +75,6 @@
         "id": "nav-tasks",
         "label": "\u2705 Tasks & To-Do",
         "section": "tasks",
-        "type": "link"
-    },
-    {
-        "id": "nav-invoices",
-        "label": "\ud83d\udcc4 Invoices",
-        "section": "invoices",
         "type": "link"
     },
     {
