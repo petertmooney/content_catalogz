@@ -515,7 +515,8 @@ footer p {
 @media (min-width: 781px) {
     .crm-summary .crm-flex { flex-direction: row; }
     .crm-summary .crm-flex > div:first-child { flex: 1 1 auto; order: 1 !important; }
-    .crm-summary .crm-flex > .small-column { width:220px; flex-shrink:0; order: 2 !important; }
+    .crm-summary .crm-flex > .small-column { width:220px; flex-shrink:0; order: 2 !important; /* temporary visual aid below — remove after verification */
+        border-left: 3px solid rgba(255,184,108,0.95); box-shadow: -6px 0 12px rgba(255,184,108,0.04);} 
 }
 
 /* When the viewport stacks the columns (mobile), preserve source order so
