@@ -509,8 +509,19 @@ footer p {
 /* CRM layout helpers */
 .crm-summary .crm-flex { display:flex; gap:12px; align-items:flex-start; flex-wrap:nowrap; }
 .crm-summary .crm-flex > div { min-width: 0; }
-.crm-summary .crm-flex > div:first-child { flex: 1 1 auto; }
-.crm-summary .small-column { width:220px; flex-shrink:0; }
+
+/* Ensure Recent Activities is the main (left) column and Upcoming Tasks is the
+   fixed-width column on the right. Explicit ordering prevents accidental
+   reflow or visual inversion in different browsers/layouts. */
+.crm-summary .crm-flex > div:first-child { flex: 1 1 auto; order: 1; }
+.crm-summary .crm-flex > .small-column { width:220px; flex-shrink:0; order: 2; }
+
+/* When the viewport stacks the columns (mobile), preserve source order so
+   Recent Activities still appears above Upcoming Tasks. */
+@media (max-width: 780px) {
+    .crm-summary .crm-flex > div:first-child { order: 1; }
+    .crm-summary .crm-flex > .small-column { order: 2; width: 100%; }
+}
 
 /* Stack when viewport is narrow */
 @media (max-width: 780px) {
