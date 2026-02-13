@@ -799,7 +799,7 @@ if ($invoices_result) {
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="/assets/js/dashboard-ui.js"></script>
+    <script src="../assets/js/dashboard-ui.js"></script>
 </head>
 <body>
     
