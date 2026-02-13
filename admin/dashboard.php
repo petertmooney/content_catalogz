@@ -1152,6 +1152,8 @@ if ($invoices_result) {
 
                 <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <button class="btn btn-primary" onclick="openAddTaskModal()">+ Add New Task</button>
+                    <button class="btn btn-secondary" onclick="printAllTasks()">🖨️ Print All Tasks</button>
+                    <button class="btn btn-secondary" onclick="printTodoList()">📝 Print To-Do List</button>
                 </div>
 
                 <div id="tasks-list"></div>
@@ -6299,6 +6301,131 @@ invoices.forEach(invoice => {
             });
         }
         
+        function printTask(taskId) {
+            // Fetch the specific task data
+            fetch(`api/tasks.php?id=${taskId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.tasks && data.tasks.length > 0) {
+                        const task = data.tasks[0];
+                        printTaskContent([task], `Task: ${task.title}`);
+                    } else {
+                        alert('Task not found');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading task:', err);
+                    alert('Error loading task for printing');
+                });
+        }
+        
+        function printAllTasks() {
+            // Fetch all tasks
+            fetch('api/tasks.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.tasks) {
+                        printTaskContent(data.tasks, 'All Tasks & To-Do List');
+                    } else {
+                        alert('No tasks found');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading tasks:', err);
+                    alert('Error loading tasks for printing');
+                });
+        }
+        
+        function printTodoList() {
+            // Fetch all tasks and filter for pending/in-progress
+            fetch('api/tasks.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.tasks) {
+                        const todoTasks = data.tasks.filter(task => 
+                            task.status === 'pending' || task.status === 'in_progress'
+                        );
+                        printTaskContent(todoTasks, 'To-Do List (Pending & In Progress Tasks)');
+                    } else {
+                        alert('No pending tasks found');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading tasks:', err);
+                    alert('Error loading tasks for printing');
+                });
+        }
+        
+        function printTaskContent(tasks, title) {
+            const printWindow = window.open('', '_blank');
+            const currentDate = new Date().toLocaleDateString();
+            
+            const priorityColors = {
+                urgent: '#dc3545',
+                high: '#fd7e14',
+                medium: '#ffc107',
+                low: '#28a745'
+            };
+            
+            const statusBadges = {
+                pending: '⏳ Pending',
+                in_progress: '🔄 In Progress',
+                completed: '✅ Completed',
+                cancelled: '❌ Cancelled'
+            };
+            
+            const htmlContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${title}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        h1 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+                        .task-item { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+                        .task-title { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
+                        .task-description { margin-bottom: 8px; color: #666; }
+                        .task-meta { font-size: 14px; color: #888; }
+                        .task-meta span { margin-right: 15px; }
+                        .priority-badge { font-weight: bold; }
+                        .print-date { text-align: right; color: #666; margin-bottom: 20px; }
+                        @media print { body { margin: 0; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-date">Generated on: ${currentDate}</div>
+                    <h1>${title}</h1>
+                    ${tasks.length === 0 ? '<p>No tasks found.</p>' : tasks.map(task => {
+                        const priorityColor = priorityColors[task.priority] || '#666';
+                        return `
+                        <div class="task-item">
+                            <div class="task-title">${task.title}</div>
+                            ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+                            <div class="task-meta">
+                                <span class="priority-badge" style="color: ${priorityColor};">● ${task.priority.toUpperCase()}</span>
+                                <span>${statusBadges[task.status]}</span>
+                                ${task.due_date ? `<span>📅 Due: ${new Date(task.due_date).toLocaleDateString()}</span>` : ''}
+                                ${task.client_name ? `<span>👤 ${task.client_name}</span>` : '<span>👤 General Task</span>'}
+                                ${task.assigned_to_name || task.assigned_to_username ? `<span>👷 ${task.assigned_to_name || task.assigned_to_username}</span>` : ''}
+                            </div>
+                        </div>
+                        `;
+                    }).join('')}
+                </body>
+                </html>
+            `;
+            
+            printWindow.document.write(htmlContent);
+            printWindow.document.close();
+            printWindow.focus();
+            
+            // Wait for content to load then print
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 500);
+        }
+        
         // Helper notification function
         function showNotification(message, type) {
             // Simple alert for now - can be enhanced with a toast notification system
@@ -6384,6 +6511,7 @@ invoices.forEach(invoice => {
                     </div>
                     <div class="task-actions">
                         <button class="btn btn-sm btn-secondary" onclick="editTask(${task.id})">Edit</button>
+                        <button class="btn btn-sm btn-info" onclick="printTask(${task.id})">🖨️ Print</button>
                         ${task.status !== 'completed' ? `<button class="btn btn-sm btn-primary" onclick="markTaskComplete(${task.id})">✓ Complete</button>` : ''}
                         <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})">Delete</button>
                     </div>
