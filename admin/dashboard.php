@@ -5060,9 +5060,62 @@ invoices.forEach(invoice => {
 
         // ==================== Invoice Modal Handlers ====================
         function openInvoiceModal(invoiceId) {
-          // TODO: Fetch invoice details via AJAX and populate modal
-          document.getElementById('invoiceModalBody').innerHTML = '<p>Loading invoice #' + invoiceId + '...</p>';
-          document.getElementById('invoiceModal').classList.add('show');
+            fetch('api/get_invoice.php?id=' + invoiceId)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        const invoice = data.invoice;
+
+                        // Populate client information
+                        document.getElementById('clientId').value = invoice.client_id;
+                        document.getElementById('clientName').textContent = invoice.name;
+                        document.getElementById('clientCompany').textContent = invoice.company || 'N/A';
+                        document.getElementById('clientEmail').textContent = invoice.email;
+                        document.getElementById('clientPhone').textContent = invoice.phone || 'N/A';
+
+                        // Populate address
+                        document.getElementById('clientAddressStreet').value = invoice.address_street || '';
+                        document.getElementById('clientAddressLine2').value = invoice.address_line2 || '';
+                        document.getElementById('clientAddressCity').value = invoice.address_city || '';
+                        document.getElementById('clientAddressCounty').value = invoice.address_county || '';
+                        document.getElementById('clientAddressPostcode').value = invoice.address_postcode || '';
+                        document.getElementById('clientAddressCountry').value = invoice.address_country || '';
+
+                        // Populate invoice details
+                        document.getElementById('invoiceId').value = invoice.id;
+                        document.getElementById('invoiceNumber').value = invoice.invoice_number;
+                        document.getElementById('invoiceDate').value = invoice.invoice_date;
+
+                        // Load services
+                        const services = invoice.services || [];
+                        const servicesContainer = document.getElementById('invoiceServicesContainer');
+                        servicesContainer.innerHTML = '';
+
+                        if (services.length === 0) {
+                            addInvoiceServiceRow();
+                        } else {
+                            services.forEach(service => {
+                                addInvoiceServiceRow(service.name, service.cost);
+                            });
+                        }
+
+                        // Populate financial information
+                        calculateInvoiceTotalCost();
+                        document.getElementById('totalPaid').value = parseFloat(invoice.total_paid || 0).toFixed(2);
+
+                        document.getElementById('invoiceModal').classList.add('show');
+                    } else {
+                        alert('Error loading invoice: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    alert('Network error: ' + error.message);
+                });
         }
         function closeInvoiceModal() {
           document.getElementById('invoiceModal').classList.remove('show');
