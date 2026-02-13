@@ -2523,6 +2523,7 @@ if ($invoices_result) {
             const pageModal = document.getElementById('pageModal');
             const htmlModal = document.getElementById('htmlEditorModal');
             const quoteModal = document.getElementById('quoteModal');
+            const invoiceModal = document.getElementById('invoiceModal');
             if (event.target === pageModal) {
                 closePageModal();
             }
@@ -2531,6 +2532,9 @@ if ($invoices_result) {
             }
             if (event.target === quoteModal) {
                 closeQuoteModal();
+            }
+            if (event.target === invoiceModal) {
+                closeInvoiceModal();
             }
         };
 
