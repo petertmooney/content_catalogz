@@ -5437,6 +5437,18 @@ if ($invoices_result) {
                 btnAdd.addEventListener('click', function(ev) { ev.preventDefault(); openAddClientModal(); });
                 btnAdd._bound = true;
             }
+
+            // Extra delegation to ensure clicks are handled even if overlaying elements exist
+            if (!document._boundAddClientDelegation) {
+                document.addEventListener('click', function(ev) {
+                    const btn = ev.target.closest && ev.target.closest('#btn-add-client');
+                    if (btn) {
+                        ev.preventDefault();
+                        openAddClientModal();
+                    }
+                }, true);
+                document._boundAddClientDelegation = true;
+            }
         });
     </script>
 </body>

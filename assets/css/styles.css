@@ -224,10 +224,22 @@ section {
 
 /* Admin-specific full-bleed adjustments: ensure full-bleed inside .main-content
    does not get hidden under the fixed sidebar and aligns visually with content. */
+.main-content {
+    position: relative; /* ensure main content stacks above underlying layout layers */
+    z-index: 1;
+}
+
 .main-content .full-bleed {
     /* add left offset equal to the sidebar width + main-content padding */
     padding-left: calc(250px + 30px); /* sidebar (250px) + main-content padding (30px) */
     padding-right: 30px;
+}
+
+/* Ensure Add New Client button is clickable even if layout layers change */
+#btn-add-client {
+    position: relative;
+    z-index: 20;
+    pointer-events: auto;
 }
 
 /* Make sure full-bleed stat cards and invoice panels don't overflow */

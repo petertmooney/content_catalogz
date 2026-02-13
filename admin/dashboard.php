@@ -4088,6 +4088,18 @@ if ($invoices_result) {
                 btnAdd.setAttribute('tabindex', '0');
                 btnAdd.setAttribute('role', 'button');
             }
+
+            // Extra delegation: catch clicks that may not reach the element directly
+            if (!document._boundAddClientDelegation) {
+                document.addEventListener('click', function(ev) {
+                    const btn = ev.target.closest && ev.target.closest('#btn-add-client');
+                    if (btn) {
+                        ev.preventDefault();
+                        openAddClientModal();
+                    }
+                }, true);
+                document._boundAddClientDelegation = true;
+            }
         });
         
         function closeAddClientModal() {
