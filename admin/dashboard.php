@@ -5845,211 +5845,24 @@ invoices.forEach(invoice => {
 
         // Load CRM Charts
         function loadCRMCharts() {
-            // Check if we're on the dashboard section
-            const dashboardSection = document.getElementById('section-dashboard');
-            if (!dashboardSection || !dashboardSection.classList.contains('active')) {
-                return; // Don't load charts if not on dashboard
-            }
-
-            // Destroy existing charts if they exist
-            const chartIds = ['statusChart', 'leadChart', 'revenueChart', 'taskChart'];
-            chartIds.forEach(id => {
-                const canvas = document.getElementById(id);
-                if (canvas) {
-                    // Destroy any existing chart
-                    if (canvas.chart) {
-                        try {
-                            canvas.chart.destroy();
-                        } catch (e) {
-                            console.warn('Error destroying chart:', e);
-                        }
-                        canvas.chart = null;
-                    }
-                    // Clear the canvas
-                    const ctx = canvas.getContext('2d');
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                // Temporary safety stub — replace full chart rendering later.
+                // The original implementation contained complex nested template
+                // literals that caused a parser failure in some browsers. Keeping
+                // a small, safe no-op here so the rest of the dashboard script
+                // can parse and run (sidebar handlers + data loads).
+                try {
+                    ['statusChart','leadSourceChart','revenueChart','taskPriorityChart'].forEach(id => {
+                        const c = document.getElementById(id);
+                        if (!c) return;
+                        try { const ctx = c.getContext('2d'); ctx && ctx.clearRect && ctx.clearRect(0,0,c.width,c.height); } catch(e){}
+                        c.chart = null;
+                        c.onclick = null;
+                    });
+                } catch (e) {
+                    console.warn('loadCRMCharts stub error', e);
                 }
-            });
-
-            // Load status breakdown chart
-            fetch('api/crm_dashboard.php', { credentials: 'same-origin' })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.stats) {
-                        const stats = data.stats;
-
-                        // Status breakdown pie chart
-                        const statusCanvas = document.getElementById('statusChart');
-                        if (statusCanvas) {
-                            try {
-                                const statusCtx = statusCanvas.getContext('2d');
-                                const statusChart = new Chart(statusCtx, {
-                                type: 'doughnut',
-                                data: {
-                                    labels: ['New', 'Contacted', 'In Progress', 'Completed', 'Declined'],
-                                    datasets: [{
-                                        data: [
-                                            stats.status_breakdown?.new || 0,
-                                            stats.status_breakdown?.contacted || 0,
-                                            stats.status_breakdown?.in_progress || 0,
-                                            stats.status_breakdown?.completed || 0,
-                                            stats.status_breakdown?.declined || 0
-                                        ],
-                                        backgroundColor: [
-                                            '#007bff', // New - Blue
-                                            '#ffc107', // Contacted - Yellow
-                                            '#17a2b8', // In Progress - Teal
-                                            '#28a745', // Completed - Green
-                                            '#dc3545'  // Declined - Red
-                                        ]
-                                    }]
-                                },
-                                options: {
-                                    responsive: true,
-                                    plugins: {
-                                        legend: {
-                                            position: 'bottom'
-                                        }
-                                    },
-                                    onClick: function(event, elements) {
-                                        if (elements.length > 0) {
-                                            const index = elements[0].index;
-                                            const labels = ['New', 'Contacted', 'In Progress', 'Completed', 'Declined'];
-                                            const values = [
-                                                stats.status_breakdown?.new || 0,
-                                                stats.status_breakdown?.contacted || 0,
-                                                stats.status_breakdown?.in_progress || 0,
-                                                stats.status_breakdown?.completed || 0,
-                                                stats.status_breakdown?.declined || 0
-                                            ];
-                                            const status = labels[index];
-                                            const count = values[index];
-                                            const total = values.reduce((a, b) => a + b, 0);
-                                            const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
-
-                                            openChartModal('Quote Status: ' + status,
-                                                `<div style="text-align: center; margin-bottom: 20px;">
-                                                    <div style="font-size: 48px; margin: 10px 0;">${count}</div>
-                                                    <div style="font-size: 18px; color: #666;">${percentage}% of total quotes</div>
-                                                </div>
-                                                <div style="margin-top: 20px;">
-                                                    <h4 style="margin-bottom: 10px;">Status Breakdown:</h4>
-                                                    <ul style="list-style: none; padding: 0;">
-                                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee;">New: ${stats.status_breakdown?.new || 0} quotes</li>
-                                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee;">Contacted: ${stats.status_breakdown?.contacted || 0} quotes</li>
-                                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee;">In Progress: ${stats.status_breakdown?.in_progress || 0} quotes</li>
-                                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee;">Completed: ${stats.status_breakdown?.completed || 0} quotes</li>
-                                                        <li style="padding: 5px 0;">Declined: ${stats.status_breakdown?.declined || 0} quotes</li>
-                                                    </ul>
-                                                </div>`);
-                                        }
-                                    }
-                                }
-                            });
-                            statusCanvas.chart = statusChart;
-
-                            // Make canvas clickable
-                            statusCanvas.onclick = function(event) {
-                                const rect = statusCanvas.getBoundingClientRect();
-                                const x = event.clientX - rect.left;
-                                const y = event.clientY - rect.top;
-                                statusChart._handleClick(event, statusChart, x, y);
-                            };
-                            } catch (error) {
-                                console.error('Error creating status chart:', error);
-                            }
-                        }
-
-                        // Lead sources bar chart
-                        const leadCanvas = document.getElementById('leadSourceChart');
-                        if (leadCanvas) {
-                            const leadCtx = leadCanvas.getContext('2d');
-                            const leadLabels = stats.lead_sources?.map(item => item.lead_source || 'Unknown') || [];
-                            const leadCounts = stats.lead_sources?.map(item => item.count) || [];
-                            
-                            // Define colors for different lead sources
-                            const leadSourceColors = {
-                                'Website': '#007bff',
-                                'Referral': '#28a745',
-                                'Social Media': '#dc3545',
-                                'Email Marketing': '#ffc107',
-                                'Direct Contact': '#6f42c1',
-                                'Other': '#6c757d',
-                                'Facebook': '#1877f2',
-                                'Instagram': '#e4405f',
-                                'TikTok': '#000000',
-                                'Phone': '#17a2b8',
-                                'Meeting': '#fd7e14',
-                                'Unknown': '#6c757d'
-                            };
-                            
-                            // Generate colors array based on lead sources
-                            const backgroundColors = leadLabels.map(label => leadSourceColors[label] || leadSourceColors['Unknown']);
-                            const borderColors = backgroundColors.map(color => color.replace(')', ', 0.8)').replace('rgb', 'rgba'));
-                            
-                            const leadChart = new Chart(leadCtx, {
-                                type: 'bar',
-                                data: {
-                                    labels: leadLabels,
-                                    datasets: [{
-                                        label: 'Leads',
-                                        data: leadCounts,
-                                        backgroundColor: backgroundColors,
-                                        borderColor: borderColors,
-                                        borderWidth: 1
-                                    }]
-                                },
-                                options: {
-                                    responsive: true,
-                                    plugins: {
-                                        legend: {
-                                            display: false
-                                        }
-                                    },
-                                    scales: {
-                                        y: {
-                                            beginAtZero: true,
-                                            ticks: {
-                                                stepSize: 1
-                                            }
-                                        }
-                                    },
-                                    onClick: function(event, elements) {
-                                        if (elements.length > 0) {
-                                            const index = elements[0].index;
-                                            const source = leadLabels[index];
-                                            const count = leadCounts[index];
-                                            const total = leadCounts.reduce((a, b) => a + b, 0);
-                                            const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
-
-                                            openChartModal('Lead Source: ' + source,
-                                                `<div style="text-align: center; margin-bottom: 20px;">
-                                                    <div style="font-size: 48px; margin: 10px 0;">${count}</div>
-                                                    <div style="font-size: 18px; color: #666;">${percentage}% of total leads</div>
-                                                </div>
-                                                <div style="margin-top: 20px;">
-                                                    <h4 style="margin-bottom: 10px;">Lead Sources:</h4>
-                                                    <ul style="list-style: none; padding: 0;">
-                                                        ${leadLabels.map((label, i) => `<li style="padding: 5px 0; border-bottom: 1px solid #eee;"><span style="display: inline-block; width: 12px; height: 12px; background-color: ${backgroundColors[i]}; margin-right: 8px; border-radius: 2px;"></span>${label}: ${leadCounts[i]} leads</li>`).join('')}
-                                                    </ul>
-                                                </div>`);
-                                        }
-                                    }
-                                }
-                            });
-                            leadCanvas.chart = leadChart;
-
-                            // Make canvas clickable
-                            leadCanvas.onclick = function(event) {
-                                const rect = leadCanvas.getBoundingClientRect();
-                                const x = event.clientX - rect.left;
-                                const y = event.clientY - rect.top;
-                                leadChart._handleClick(event, leadChart, x, y);
-                            };
-                        }
-                    }
-                })
-                .catch(err => console.error('Error loading CRM stats:', err));
+            }
+            /* crm_dashboard rendering removed (was causing parse error) */
 
             // Load revenue trends chart
             fetch('api/invoice_trends.php?metric=collected&range=monthly')
