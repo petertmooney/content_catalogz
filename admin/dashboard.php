@@ -956,7 +956,7 @@ if ($invoices_result) {
                     </div>
                     <div class="chart-card" style="background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #333; font-size: 12px; margin-bottom: 4px;">Lead Sources</h4>
-                        <canvas id="leadSourceChart" width="100" height="60"></canvas>
+                        <canvas id="leadSourceChart" width="100" height="120"></canvas>
                     </div>
                     <div class="chart-card" style="background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #333; font-size: 12px; margin-bottom: 4px;">Monthly Revenue Trends</h4>
@@ -5716,6 +5716,27 @@ invoices.forEach(invoice => {
                             const leadCtx = leadCanvas.getContext('2d');
                             const leadLabels = stats.lead_sources?.map(item => item.lead_source || 'Unknown') || [];
                             const leadCounts = stats.lead_sources?.map(item => item.count) || [];
+                            
+                            // Define colors for different lead sources
+                            const leadSourceColors = {
+                                'Website': '#007bff',
+                                'Referral': '#28a745',
+                                'Social Media': '#dc3545',
+                                'Email Marketing': '#ffc107',
+                                'Direct Contact': '#6f42c1',
+                                'Other': '#6c757d',
+                                'Facebook': '#1877f2',
+                                'Instagram': '#e4405f',
+                                'TikTok': '#000000',
+                                'Phone': '#17a2b8',
+                                'Meeting': '#fd7e14',
+                                'Unknown': '#6c757d'
+                            };
+                            
+                            // Generate colors array based on lead sources
+                            const backgroundColors = leadLabels.map(label => leadSourceColors[label] || leadSourceColors['Unknown']);
+                            const borderColors = backgroundColors.map(color => color.replace(')', ', 0.8)').replace('rgb', 'rgba'));
+                            
                             const leadChart = new Chart(leadCtx, {
                                 type: 'bar',
                                 data: {
@@ -5723,8 +5744,8 @@ invoices.forEach(invoice => {
                                     datasets: [{
                                         label: 'Leads',
                                         data: leadCounts,
-                                        backgroundColor: '#007bff',
-                                        borderColor: '#0056b3',
+                                        backgroundColor: backgroundColors,
+                                        borderColor: borderColors,
                                         borderWidth: 1
                                     }]
                                 },
@@ -5732,7 +5753,7 @@ invoices.forEach(invoice => {
                                     responsive: true,
                                     plugins: {
                                         legend: {
-                                            position: 'bottom'
+                                            display: false
                                         }
                                     },
                                     scales: {
@@ -5759,7 +5780,7 @@ invoices.forEach(invoice => {
                                                 <div style="margin-top: 20px;">
                                                     <h4 style="margin-bottom: 10px;">Lead Sources:</h4>
                                                     <ul style="list-style: none; padding: 0;">
-                                                        ${leadLabels.map((label, i) => `<li style="padding: 5px 0; border-bottom: 1px solid #eee;">${label}: ${leadCounts[i]} leads</li>`).join('')}
+                                                        ${leadLabels.map((label, i) => `<li style="padding: 5px 0; border-bottom: 1px solid #eee;"><span style="display: inline-block; width: 12px; height: 12px; background-color: ${backgroundColors[i]}; margin-right: 8px; border-radius: 2px;"></span>${label}: ${leadCounts[i]} leads</li>`).join('')}
                                                     </ul>
                                                 </div>`);
                                         }
