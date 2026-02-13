@@ -3969,7 +3969,6 @@ if ($invoices_result) {
             // Check if required elements exist
             const requiredElements = [
                 'section-dashboard',
-                'html-count',
                 'quotes-count',
                 'nav-dashboard'
             ];
