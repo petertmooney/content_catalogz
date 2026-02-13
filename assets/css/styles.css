@@ -507,8 +507,16 @@ footer p {
 
 
 /* CRM layout helpers */
-.crm-summary .crm-flex { display:flex; gap:12px; align-items:flex-start; }
+.crm-summary .crm-flex { display:flex; gap:12px; align-items:flex-start; flex-wrap:nowrap; }
+.crm-summary .crm-flex > div { min-width: 0; }
+.crm-summary .crm-flex > div:first-child { flex: 1 1 auto; }
 .crm-summary .small-column { width:220px; flex-shrink:0; }
+
+/* Stack when viewport is narrow */
+@media (max-width: 780px) {
+    .crm-summary .crm-flex { flex-direction: column; gap:10px; }
+    .crm-summary .small-column { width:100%; }
+}
 
 .crm-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
 .crm-charts .chart-card { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius: 10px; padding: 12px; border: 1px solid rgba(255,255,255,0.03); }
