@@ -187,6 +187,23 @@ if ($invoices_result) {
             box-sizing: border-box;
         }
 
+        /* Make invoice panel span the full width of the main content area */
+        #section-invoices .invoice-panel {
+            width: 100%;
+            max-width: 100%;
+            margin-left: 0;
+            margin-right: 0;
+            box-sizing: border-box;
+        }
+
+        /* Ensure inner grids don't constrain the full-width panel */
+        #section-invoices .invoice-panel .stats-grid,
+        #section-invoices .invoice-panel > div {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
         /* Prevent inner elements from forcing the main column wider than the sidebar */
         .main-content img, .main-content table, .main-content pre, .main-content .stat-card, .main-content canvas {
             max-width: 100%;
@@ -1152,7 +1169,7 @@ if ($invoices_result) {
                     </div>
                 </div>
 
-                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px;">
+                <div class="invoice-panel" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px;">
                     <h3 style="margin-bottom: 15px; color: #333;">Search Invoices</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: end;">
                         <div class="form-group" style="margin: 0;">
