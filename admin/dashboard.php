@@ -4545,8 +4545,10 @@ if ($invoices_result) {
             const services = [];
             const serviceRows = document.querySelectorAll('.service-row');
             serviceRows.forEach(row => {
-                const name = row.querySelector('.service-name').value.trim();
-                const cost = parseFloat(row.querySelector('.service-cost').value) || 0;
+                const nameEl = row.querySelector('.service-name');
+                const costEl = row.querySelector('.service-cost');
+                const name = nameEl ? nameEl.value.trim() : '';
+                const cost = costEl ? (parseFloat(costEl.value) || 0) : 0;
                 if (name) {
                     services.push({ name, cost });
                 }
