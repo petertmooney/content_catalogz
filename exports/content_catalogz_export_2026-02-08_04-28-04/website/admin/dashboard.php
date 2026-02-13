@@ -1060,7 +1060,9 @@ if ($invoices_result) {
                     <button class="btn btn-secondary" onclick="loadTasks()">🔄 Refresh</button>
                 </div>
 
-                <div id="tasks-list"></div>
+                <div class="invoice-panel full-bleed" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px;">
+                    <div id="tasks-list"></div>
+                </div>
             </div>
             
             <!-- Users Section -->
