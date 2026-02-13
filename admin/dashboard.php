@@ -5666,8 +5666,7 @@ invoices.forEach(invoice => {
                 { id: 'dash-emails-unread', cardId: 'dash-emails-unread' },
                 { id: 'dash-quotes-new', cardId: 'dash-quotes-new' },
                 { id: 'dash-tasks-overdue', cardId: 'dash-tasks-overdue' },
-                { id: 'dash-invoices-overdue', cardId: 'dash-invoices-overdue' },
-                { id: 'dash-invoices-outstanding', cardId: 'dash-invoices-outstanding' }
+                { id: 'dash-invoices-overdue', cardId: 'dash-invoices-overdue' }
             ];
 
             glowCards.forEach(card => {
