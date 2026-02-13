@@ -4207,8 +4207,10 @@ if ($invoices_result) {
             const services = [];
             const serviceRows = document.querySelectorAll('.service-row');
             serviceRows.forEach(row => {
-                const name = row.querySelector('.service-name').value.trim();
-                const cost = parseFloat(row.querySelector('.service-cost').value) || 0;
+                const nameEl = row.querySelector('.service-name');
+                const costEl = row.querySelector('.service-cost');
+                const name = nameEl ? nameEl.value.trim() : '';
+                const cost = costEl ? (parseFloat(costEl.value) || 0) : 0;
                 if (name) {
                     services.push({ name, cost });
                 }
@@ -4497,6 +4499,9 @@ if ($invoices_result) {
             invoiceWindow.document.close();
             invoiceWindow.focus();
             invoiceWindow.print();
+        } catch (error) {
+            console.error('Error printing invoice:', error);
+            alert('An error occurred while printing the invoice. Please check the console for details.');
         }
 
         // Print client details
@@ -4782,11 +4787,15 @@ if ($invoices_result) {
             detailsWindow.document.close();
             detailsWindow.focus();
             detailsWindow.print();
+        } catch (error) {
+            console.error('Error printing client details:', error);
+            alert('An error occurred while printing client details. Please check the console for details.');
         }
 
         // Print client details from data object (used by table print button)
         function printClientDetailsFromData(client) {
-            const clientName = client.name;
+            try {
+                const clientName = client.name;
             const clientCompany = client.company || 'N/A';
             const clientEmail = client.email;
             const clientPhone = client.phone || 'N/A';
@@ -5040,6 +5049,9 @@ if ($invoices_result) {
             detailsWindow.document.close();
             detailsWindow.focus();
             detailsWindow.print();
+        } catch (error) {
+            console.error('Error printing client details from data:', error);
+            alert('An error occurred while printing client details. Please check the console for details.');
         }
 
         // Print all clients
