@@ -4489,48 +4489,65 @@ invoices.forEach(invoice => {
 
                         // Charts (create or update) + subtle load animation
                         try {
+                            // ensure high-DPI rendering
+                            if (window.Chart && window.Chart.defaults) {
+                                window.Chart.defaults.devicePixelRatio = window.devicePixelRatio || 1;
+                            }
+
                             const statusLabels = Object.keys(s.status_breakdown || {});
                             const statusData = statusLabels.map(k => s.status_breakdown[k] || 0);
 
                             const statusCanvas = document.getElementById('chart-status-breakdown');
-                            statusCanvas.style.opacity = 0; statusCanvas.style.transform = 'scale(0.98)';
+                            statusCanvas.style.opacity = 0; statusCanvas.style.transform = 'scale(0.995)';
 
                             if (!window.crmStatusChart) {
                                 const ctx = statusCanvas.getContext('2d');
                                 window.crmStatusChart = new Chart(ctx, {
                                     type: 'doughnut',
                                     data: { labels: statusLabels, datasets: [{ data: statusData, backgroundColor: ['#007bff','#17a2b8','#ffc107','#28a745','#dc3545'] }] },
-                                    options: { plugins: { legend: { position: 'bottom' } } }
+                                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
                                 });
                             } else {
                                 window.crmStatusChart.data.labels = statusLabels;
                                 window.crmStatusChart.data.datasets[0].data = statusData;
                                 window.crmStatusChart.update();
+                                window.crmStatusChart.resize();
                             }
 
-                            // fade/scale in
-                            setTimeout(() => { statusCanvas.style.transition = 'opacity 420ms ease, transform 420ms ease'; statusCanvas.style.opacity = 1; statusCanvas.style.transform = 'none'; }, 60);
+                            // fade-in then ensure proper pixel-size render
+                            setTimeout(() => {
+                                statusCanvas.style.transition = 'opacity 420ms ease';
+                                statusCanvas.style.opacity = 1;
+                                statusCanvas.style.transform = 'none';
+                                try { window.crmStatusChart && window.crmStatusChart.resize(); window.crmStatusChart && window.crmStatusChart.update(); } catch(e){}
+                            }, 60);
 
                             const leadLabels = (s.lead_sources || []).map(r => r.lead_source || 'Unknown');
                             const leadData = (s.lead_sources || []).map(r => parseInt(r.count || 0));
 
                             const leadCanvas = document.getElementById('chart-lead-sources');
-                            leadCanvas.style.opacity = 0; leadCanvas.style.transform = 'scale(0.98)';
+                            leadCanvas.style.opacity = 0; leadCanvas.style.transform = 'scale(0.995)';
 
                             if (!window.crmLeadChart) {
                                 const ctx2 = leadCanvas.getContext('2d');
                                 window.crmLeadChart = new Chart(ctx2, {
                                     type: 'pie',
                                     data: { labels: leadLabels, datasets: [{ data: leadData, backgroundColor: ['#667eea','#34d399','#f6ad55','#f472b6','#60a5fa'] }] },
-                                    options: { plugins: { legend: { position: 'bottom' } } }
+                                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
                                 });
                             } else {
                                 window.crmLeadChart.data.labels = leadLabels;
                                 window.crmLeadChart.data.datasets[0].data = leadData;
                                 window.crmLeadChart.update();
+                                window.crmLeadChart.resize();
                             }
 
-                            setTimeout(() => { leadCanvas.style.transition = 'opacity 420ms ease, transform 420ms ease'; leadCanvas.style.opacity = 1; leadCanvas.style.transform = 'none'; }, 120);
+                            setTimeout(() => {
+                                leadCanvas.style.transition = 'opacity 420ms ease';
+                                leadCanvas.style.opacity = 1;
+                                leadCanvas.style.transform = 'none';
+                                try { window.crmLeadChart && window.crmLeadChart.resize(); window.crmLeadChart && window.crmLeadChart.update(); } catch(e){}
+                            }, 120);
                         } catch (e) { console.error('Error rendering CRM charts', e); }
 
                         // Adjust CRM layout to try to fit the summary onto a single screen
@@ -4576,18 +4593,15 @@ invoices.forEach(invoice => {
                                     window.revenueTrendChart = new Chart(ctx, {
                                         type: 'line',
                                         data: { labels: labels, datasets: [{ label: labelText, data: values, borderColor: '#28a745', backgroundColor: 'rgba(40,167,69,0.08)', tension: 0.25, fill: true }] },
-                                        options: { scales: { y: { ticks: { callback: v => '£' + Number(v).toFixed(0) } } }, plugins: { legend: { display: false } } }
-                                    });
-                                } else {
-                                    window.revenueTrendChart.data.labels = labels;
-                                    window.revenueTrendChart.data.datasets[0].label = labelText;
-                                    window.revenueTrendChart.data.datasets[0].data = values;
-                                    window.revenueTrendChart.update();
-                                }
-
-                                return;
-                            }
-
+                                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { callback: v => '£' + Number(v).toFixed(0) } } }, plugins: { legend: { display: false } } }
+                                });
+                                try { window.revenueTrendChart.resize(); window.revenueTrendChart.update(); } catch(e){}
+                            } else {
+                                window.revenueTrendChart.data.labels = labels;
+                                window.revenueTrendChart.data.datasets[0].label = labelText;
+                                window.revenueTrendChart.data.datasets[0].data = values;
+                                window.revenueTrendChart.update();
+                                try { window.revenueTrendChart.resize(); } catch(e){}
                             // monthly
                             const months = Object.keys(r.months || {});
                             const values = months.map(m => parseFloat(r.months[m]) || 0);
