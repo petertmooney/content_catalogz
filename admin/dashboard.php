@@ -5070,7 +5070,6 @@ if ($invoices_result) {
                         <p>Client details generated from admin dashboard</p>
                     </div>
                 </body>
-                </html>
             `;
             
             // Open client details in new window
