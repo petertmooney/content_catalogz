@@ -226,14 +226,16 @@ if ($invoices_result) {
 
         .btn {
             display: inline-block;
-            padding: 12px 24px;
+            padding: 8px 16px;
             margin-right: 10px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             text-decoration: none;
             transition: all 0.3s;
+            height: auto;
+            line-height: 1.2;
         }
 
         .btn-primary {
@@ -4479,8 +4481,14 @@ if ($invoices_result) {
             
             // Open invoice in new window
             const invoiceWindow = window.open('', '_blank');
+            if (!invoiceWindow) {
+                alert('Please allow popups for this site to print invoices.');
+                return;
+            }
             invoiceWindow.document.write(invoiceHTML);
             invoiceWindow.document.close();
+            invoiceWindow.focus();
+            invoiceWindow.print();
         }
 
         // Print client details
@@ -4748,8 +4756,14 @@ if ($invoices_result) {
             
             // Open client details in new window
             const detailsWindow = window.open('', '_blank');
+            if (!detailsWindow) {
+                alert('Please allow popups for this site to print client details.');
+                return;
+            }
             detailsWindow.document.write(clientDetailsHTML);
             detailsWindow.document.close();
+            detailsWindow.focus();
+            detailsWindow.print();
         }
 
         // Print client details from data object (used by table print button)
@@ -5000,8 +5014,14 @@ if ($invoices_result) {
             
             // Open client details in new window
             const detailsWindow = window.open('', '_blank');
+            if (!detailsWindow) {
+                alert('Please allow popups for this site to print client details.');
+                return;
+            }
             detailsWindow.document.write(clientDetailsHTML);
             detailsWindow.document.close();
+            detailsWindow.focus();
+            detailsWindow.print();
         }
 
         // Print all clients
