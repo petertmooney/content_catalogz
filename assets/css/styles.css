@@ -558,8 +558,8 @@ footer p {
 .crm-summary .crm-flex > div { min-width: 0; }
 
 /* Tasks column inside crm-summary (dashboard) */
-.crm-summary .tasks-column { width: 380px; flex-shrink: 0; }
-@media (max-width:780px) { .crm-summary .tasks-column { width: 100%; } }
+.crm-summary .tasks-column { flex: 1 1 auto; max-width: 420px; }
+@media (max-width:780px) { .crm-summary .tasks-column { width: 100%; max-width: none; } }
 
 /* Desktop-first enforcement: always render as a row at wider viewports and
    explicitly order the two columns so Upcoming Tasks appears on the right. */

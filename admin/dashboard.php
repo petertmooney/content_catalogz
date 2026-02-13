@@ -996,14 +996,9 @@ if ($invoices_result) {
                     </div>
 
                     <div class="crm-flex">
-                        <div style="flex:1">
-                            <div class="stat-small">Recent Activities</div>
-                            <ul class="recent-activities" id="dash-recent-activities">
-                                <li>No recent activity</li>
-                            </ul>
-                        </div>
+                        <!-- Removed Recent Activities from CRM view -->
 
-                        <!-- Tasks column moved into CRM summary (dashboard copy) -->
+                        <!-- Tasks column now occupies main area of CRM summary -->
                         <div class="tasks-column">
                             <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;">
                                 <div class="stat-small">Tasks &amp; To-Do</div>
@@ -4435,75 +4430,77 @@ invoices.forEach(invoice => {
                             window.prevKpis[key] = cur;
                         });
 
-                        // Recent activities (render lead-source chips and activity badges)
+                        // Recent activities (render lead-source chips and activity badges) — only run if container exists
                         const raEl = document.getElementById('dash-recent-activities');
-                        raEl.innerHTML = '';
-                        if (s.recent_activities && s.recent_activities.length) {
-                            s.recent_activities.forEach(a => {
-                                const li = document.createElement('li');
+                        if (raEl) {
+                            raEl.innerHTML = '';
+                            if (s.recent_activities && s.recent_activities.length) {
+                                s.recent_activities.forEach(a => {
+                                    const li = document.createElement('li');
 
-                                const left = document.createElement('div');
-                                left.style.flex = '1';
+                                    const left = document.createElement('div');
+                                    left.style.flex = '1';
 
-                                const topRow = document.createElement('div');
-                                topRow.style.display = 'flex';
-                                topRow.style.alignItems = 'center';
-                                topRow.style.gap = '8px';
+                                    const topRow = document.createElement('div');
+                                    topRow.style.display = 'flex';
+                                    topRow.style.alignItems = 'center';
+                                    topRow.style.gap = '8px';
 
-                                // activity type badge
-                                const at = document.createElement('span');
-                                at.className = 'activity-badge';
-                                at.textContent = a.activity_type || 'activity';
-                                at.style.backgroundColor = (function(t){
-                                    if (!t) return 'rgba(255,255,255,0.04)';
-                                    const k = t.toLowerCase();
-                                    if (k.includes('call')) return '#e6f7ff';
-                                    if (k.includes('email')) return '#f0fdf4';
-                                    if (k.includes('meeting')) return '#fff7ed';
-                                    return 'rgba(255,255,255,0.04)';
-                                })(a.activity_type);
-                                at.style.color = '#0b0b0b';
-                                topRow.appendChild(at);
+                                    // activity type badge
+                                    const at = document.createElement('span');
+                                    at.className = 'activity-badge';
+                                    at.textContent = a.activity_type || 'activity';
+                                    at.style.backgroundColor = (function(t){
+                                        if (!t) return 'rgba(255,255,255,0.04)';
+                                        const k = t.toLowerCase();
+                                        if (k.includes('call')) return '#e6f7ff';
+                                        if (k.includes('email')) return '#f0fdf4';
+                                        if (k.includes('meeting')) return '#fff7ed';
+                                        return 'rgba(255,255,255,0.04)';
+                                    })(a.activity_type);
+                                    at.style.color = '#0b0b0b';
+                                    topRow.appendChild(at);
 
-                                const title = document.createElement('strong');
-                                title.textContent = `${a.client_name || 'General'}`;
-                                topRow.appendChild(title);
+                                    const title = document.createElement('strong');
+                                    title.textContent = `${a.client_name || 'General'}`;
+                                    topRow.appendChild(title);
 
-                                left.appendChild(topRow);
+                                    left.appendChild(topRow);
 
-                                if (a.note) {
-                                    const note = document.createElement('div');
-                                    note.style.opacity = '0.9';
-                                    note.style.fontSize = '12px';
-                                    note.style.marginTop = '6px';
-                                    note.textContent = a.note;
-                                    left.appendChild(note);
-                                }
+                                    if (a.note) {
+                                        const note = document.createElement('div');
+                                        note.style.opacity = '0.9';
+                                        note.style.fontSize = '12px';
+                                        note.style.marginTop = '6px';
+                                        note.textContent = a.note;
+                                        left.appendChild(note);
+                                    }
 
-                                // right-side meta (date + lead chip)
-                                const meta = document.createElement('div');
-                                meta.className = 'activity-meta';
-                                const date = document.createElement('div');
-                                date.textContent = a.activity_date;
-                                date.style.opacity = '0.7';
-                                date.style.fontSize = '12px';
-                                meta.appendChild(date);
+                                    // right-side meta (date + lead chip)
+                                    const meta = document.createElement('div');
+                                    meta.className = 'activity-meta';
+                                    const date = document.createElement('div');
+                                    date.textContent = a.activity_date;
+                                    date.style.opacity = '0.7';
+                                    date.style.fontSize = '12px';
+                                    meta.appendChild(date);
 
-                                if (a.lead_source) {
-                                    const chip = document.createElement('span');
-                                    chip.className = 'lead-chip';
-                                    chip.textContent = a.lead_source;
-                                    chip.style.backgroundColor = getLeadColor(a.lead_source);
-                                    chip.style.color = '#0b0b0b';
-                                    meta.appendChild(chip);
-                                }
+                                    if (a.lead_source) {
+                                        const chip = document.createElement('span');
+                                        chip.className = 'lead-chip';
+                                        chip.textContent = a.lead_source;
+                                        chip.style.backgroundColor = getLeadColor(a.lead_source);
+                                        chip.style.color = '#0b0b0b';
+                                        meta.appendChild(chip);
+                                    }
 
-                                li.appendChild(left);
-                                li.appendChild(meta);
-                                raEl.appendChild(li);
-                            });
-                        } else {
-                            raEl.innerHTML = '<li>No recent activity</li>';
+                                    li.appendChild(left);
+                                    li.appendChild(meta);
+                                    raEl.appendChild(li);
+                                });
+                            } else {
+                                raEl.innerHTML = '<li>No recent activity</li>';
+                            }
                         }
 
                         // Upcoming tasks (priority & status badges) — only render if the short list container exists
