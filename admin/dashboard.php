@@ -3335,3 +3335,3027 @@ if ($invoices_result) {
             document.getElementById('clientAddressCountry').value = client.address_country || 'United Kingdom';
             
             document.getElementById('totalPaid').value = client.total_paid || 0.00;
+
+            // CRM-specific fields
+            document.getElementById('clientLeadSource').value = client.lead_source || '';
+            document.getElementById('clientNextFollowUp').value = client.next_follow_up || '';
+            document.getElementById('clientExpectedValue').value = client.expected_value || '';
+
+            
+            // Load services
+            const services = client.services || [];
+            const servicesContainer = document.getElementById('servicesContainer');
+            servicesContainer.innerHTML = '';
+            
+            if (services.length === 0) {
+                // Add one empty row by default
+                addServiceRow();
+            } else {
+                services.forEach(service => {
+                    addServiceRow(service.name, service.cost);
+                });
+            }
+            
+            calculateTotalCost();
+            calculateRemaining();
+            
+            // Reset to Details tab
+            document.querySelectorAll('.client-tab-content').forEach(tab => {
+                tab.classList.remove('active');
+                tab.style.display = 'none';
+            });
+            document.querySelectorAll('.crm-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show Details tab by default
+            document.getElementById('client-tab-details').style.display = 'block';
+            document.getElementById('client-tab-details').classList.add('active');
+            document.querySelector('.crm-tab[onclick*="details"]').classList.add('active');
+            
+            // Load payment history
+            loadClientPayments(currentClientId);
+            
+            document.getElementById('clientModal').classList.add('show');
+        }
+
+        function closeClientModal() {
+            document.getElementById('clientModal').classList.remove('show');
+        }
+
+        function confirmDeleteClient() {
+            const clientName = document.getElementById('clientModalName').textContent;
+            document.getElementById('deleteClientName').textContent = clientName;
+            document.getElementById('deleteClientModal').classList.add('show');
+        }
+
+        function closeDeleteClientModal() {
+            document.getElementById('deleteClientModal').classList.remove('show');
+        }
+
+        function deleteClient() {
+            const clientId = document.getElementById('clientId').value;
+            const clientName = document.getElementById('clientModalName').textContent;
+            
+            fetch('api/delete_client.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ client_id: clientId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Client "' + clientName + '" and all related data have been deleted.');
+                    closeDeleteClientModal();
+                    closeClientModal();
+                    loadQuotes(); // Refresh the clients list
+                    loadDashboardStats(); // Refresh stats
+                } else {
+                    alert('Error deleting client: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to delete client');
+            });
+        }
+
+        function addServiceRow(serviceName = '', serviceCost = 0) {
+            const container = document.getElementById('servicesContainer');
+            const rowId = 'service-row-' + Date.now();
+            
+            const row = document.createElement('div');
+            row.id = rowId;
+            row.className = 'service-row';
+            row.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; margin-bottom: 10px; align-items: end;';
+            
+            row.innerHTML = `
+                <div class="form-group" style="margin: 0;">
+                    <label>Service Description</label>
+                    <input type="text" class="form-control service-name" placeholder="e.g., Website Design" oninput="calculateTotalCost()">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label>Cost (£)</label>
+                    <div style="position: relative;">
+                        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 500; color: #333;">£</span>
+                        <input type="number" class="form-control service-cost" step="0.01" min="0" placeholder="0.00" oninput="calculateTotalCost()" style="padding-left: 28px;">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeServiceRow('${rowId}')" style="height: 38px;">Remove</button>
+            `;
+            
+            container.appendChild(row);
+            
+            // Set values after DOM insertion to avoid escaping issues
+            const nameInput = row.querySelector('.service-name');
+            const costInput = row.querySelector('.service-cost');
+            if (nameInput) nameInput.value = serviceName;
+            if (costInput) costInput.value = serviceCost;
+        }
+
+        function removeServiceRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.remove();
+                calculateTotalCost();
+            }
+        }
+
+        function calculateTotalCost() {
+            const serviceCosts = document.querySelectorAll('.service-cost');
+            let total = 0;
+            
+            serviceCosts.forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                total += value;
+            });
+            
+            document.getElementById('totalCost').value = total.toFixed(2);
+            calculateRemaining();
+        }
+
+        function calculateRemaining() {
+            const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
+            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            const remaining = totalCost - totalPaid;
+            
+            // Always store the actual calculated value
+            document.getElementById('totalRemaining').value = remaining.toFixed(2);
+            
+            // Update label, color code, and help text based on balance
+            const remainingInput = document.getElementById('totalRemaining');
+            const remainingLabel = document.getElementById('totalRemainingLabel');
+            const remainingCurrency = document.getElementById('totalRemainingCurrency');
+            const remainingHelp = document.getElementById('totalRemainingHelp');
+            
+            if (remaining > 0) {
+                // Outstanding balance
+                remainingInput.style.color = '#dc3545'; // Red
+                remainingCurrency.style.color = '#dc3545';
+                remainingLabel.textContent = 'Balance Due (£)';
+                remainingHelp.style.display = 'none';
+            } else if (remaining < 0) {
+                // Account credit - negative value indicates credit
+                remainingInput.style.color = '#28a745'; // Green
+                remainingCurrency.style.color = '#28a745';
+                remainingLabel.textContent = 'Account Credit (£)';
+                remainingHelp.style.display = 'block';
+                remainingHelp.style.color = '#28a745';
+                remainingHelp.textContent = 'Client has paid £' + Math.abs(remaining).toFixed(2) + ' in advance';
+            } else {
+                // Paid in full
+                remainingInput.style.color = '#28a745'; // Green
+                remainingCurrency.style.color = '#28a745';
+                remainingLabel.textContent = 'Balance (£)';
+                remainingHelp.style.display = 'block';
+                remainingHelp.style.color = '#28a745';
+                remainingHelp.textContent = 'Paid in full ✓';
+            }
+        }
+
+        function updateClient(event) {
+            event.preventDefault();
+            
+            const clientId = document.getElementById('clientId').value;
+            const addressStreet = document.getElementById('clientAddressStreet').value;
+            const addressLine2 = document.getElementById('clientAddressLine2').value;
+            const addressCity = document.getElementById('clientAddressCity').value;
+            const addressCounty = document.getElementById('clientAddressCounty').value;
+            const addressPostcode = document.getElementById('clientAddressPostcode').value;
+            const addressCountry = document.getElementById('clientAddressCountry').value;
+            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
+            
+            // Collect services
+            const services = [];
+            const serviceRows = document.querySelectorAll('.service-row');
+            serviceRows.forEach(row => {
+                const name = row.querySelector('.service-name').value.trim();
+                const cost = parseFloat(row.querySelector('.service-cost').value) || 0;
+                
+                if (name) {  // Only add if service has a name
+                    services.push({ name, cost });
+                }
+            });
+            
+            const data = {
+                id: clientId,
+                address_street: addressStreet,
+                address_line2: addressLine2,
+                address_city: addressCity,
+                address_county: addressCounty,
+                address_postcode: addressPostcode,
+                address_country: addressCountry,
+                services: services,
+                total_cost: totalCost,
+                total_paid: totalPaid,
+                // CRM fields
+                lead_source: document.getElementById('clientLeadSource').value || null,
+                next_follow_up: document.getElementById('clientNextFollowUp').value || null,
+                expected_value: parseFloat(document.getElementById('clientExpectedValue').value || 0) || null
+            };
+            
+            fetch('api/update_client.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error('Server error: ' + response.status + ' - ' + text);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert('Client information updated successfully!');
+                    closeClientModal();
+                    loadExistingClients(); // Refresh the clients list
+                } else {
+                    alert('Error: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to update client information: ' + error.message);
+            });
+        }
+
+        function generateInvoiceForClient() {
+            const clientId = document.getElementById('clientId').value;
+            const clientName = document.getElementById('clientName').textContent;
+            const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
+            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            
+            if (totalCost === 0) {
+                alert('Cannot generate invoice: Total cost is £0.00. Please add services first.');
+                return;
+            }
+            
+            const invoiceDate = new Date().toISOString().split('T')[0];
+            // Deterministic invoice number: INV-<YEAR>-<CLIENTID>-<DATE>
+            const invoiceNumber = `INV-${new Date().getFullYear()}-${clientId}-${invoiceDate.replace(/-/g, '')}`;
+            
+            fetch('api/save_invoice.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    client_id: clientId,
+                    invoice_number: invoiceNumber,
+                    invoice_date: invoiceDate,
+                    total_cost: totalCost,
+                    total_paid: totalPaid
+                })
+            })
+            .then(response => {
+                // Log the response for debugging
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                // Try to get the response as text first to see what we're getting
+                return response.text().then(text => {
+                    console.log('Response text:', text);
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error('JSON parse error:', e);
+                        console.error('Response was not valid JSON:', text);
+                        throw new Error('Server returned invalid JSON: ' + text.substring(0, 100));
+                    }
+                });
+            })
+            .then(data => {
+                if (data.success) {
+                    if (data.exists) {
+                        showNotification('Invoice already exists for this client', 'info');
+                    } else {
+                        showNotification('Invoice ' + invoiceNumber + ' generated successfully for ' + clientName + '!', 'success');
+                        // Reload invoice stats
+                        loadInvoiceStats();
+                        loadDashboardStats();
+                    }
+                } else {
+                    alert('Failed to generate invoice: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to generate invoice: ' + error.message);
+            });
+        }
+
+        async function printInvoice() {
+            // Get current client data from the form
+            const clientId = document.getElementById('clientId').value;
+            const clientName = document.getElementById('clientName').textContent;
+            const clientCompany = document.getElementById('clientCompany').textContent;
+            const clientEmail = document.getElementById('clientEmail').textContent;
+            const clientPhone = document.getElementById('clientPhone').textContent;
+            
+            // Get structured address
+            const addressStreet = document.getElementById('clientAddressStreet').value || '';
+            const addressLine2 = document.getElementById('clientAddressLine2').value || '';
+            const addressCity = document.getElementById('clientAddressCity').value || '';
+            const addressCounty = document.getElementById('clientAddressCounty').value || '';
+            const addressPostcode = document.getElementById('clientAddressPostcode').value || '';
+            const addressCountry = document.getElementById('clientAddressCountry').value || 'United Kingdom';
+            
+            // Fetch payment history
+            let paymentsHTML = '';
+            try {
+                const response = await fetch('api/activities.php?client_id=' + clientId);
+                const data = await response.json();
+                const payments = data.activities ? data.activities.filter(a => a.type === 'payment_received') : [];
+                
+                if (payments.length > 0) {
+                    payments.sort((a, b) => new Date(b.activity_date) - new Date(a.activity_date));
+                    
+                    paymentsHTML = `
+                        <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">Payment History</h3>
+                        <table style="margin-bottom: 30px;">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th style="text-align: right;">Amount</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    payments.forEach(payment => {
+                        const date = new Date(payment.activity_date);
+                        const dateStr = date.toLocaleDateString('en-GB', { 
+                            day: '2-digit', 
+                            month: 'short', 
+                            year: 'numeric' 
+                        });
+                        
+                        const amountMatch = payment.subject.match(/£([\\d,]+\\.\\d{2})/);
+                        const amount = amountMatch ? amountMatch[1] : '0.00';
+                        
+                        paymentsHTML += `
+                            <tr>
+                                <td style="padding: 12px; border-bottom: 1px solid #ddd;">${dateStr}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ddd; text-align: right; font-weight: 600; color: #28a745;">£${amount}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #ddd;">${escapeHtml(payment.description || '')}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    paymentsHTML += '</tbody></table>';
+                }
+            } catch (error) {
+                console.error('Error fetching payment history:', error);
+            }
+            
+            // Format address
+            let formattedAddress = '';
+            if (addressStreet) formattedAddress += addressStreet + '<br>';
+            if (addressLine2) formattedAddress += addressLine2 + '<br>';
+            if (addressCity || addressCounty || addressPostcode) {
+                let cityLine = '';
+                if (addressCity) cityLine += addressCity;
+                if (addressCounty) cityLine += (cityLine ? ', ' : '') + addressCounty;
+                if (addressPostcode) cityLine += (cityLine ? ', ' : '') + addressPostcode;
+                formattedAddress += cityLine + '<br>';
+            }
+            if (addressCountry) formattedAddress += addressCountry;
+            if (!formattedAddress) formattedAddress = 'N/A';
+            
+            const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
+            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            const totalRemaining = parseFloat(document.getElementById('totalRemaining').value) || 0;
+            
+            // Collect services
+            const services = [];
+            const serviceRows = document.querySelectorAll('.service-row');
+            serviceRows.forEach(row => {
+                const name = row.querySelector('.service-name').value.trim();
+                const cost = parseFloat(row.querySelector('.service-cost').value) || 0;
+                if (name) {
+                    services.push({ name, cost });
+                }
+            });
+            
+            // Generate invoice HTML
+            const invoiceDate = new Date().toLocaleDateString('en-GB');
+            const invoiceNumber = 'INV-' + Date.now();
+            
+            // Save invoice to database
+            const invoiceDateISO = new Date().toISOString().split('T')[0];
+            fetch('api/save_invoice.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    client_id: clientId,
+                    invoice_number: invoiceNumber,
+                    invoice_date: invoiceDateISO,
+                    total_cost: totalCost,
+                    total_paid: totalPaid
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success && !data.exists) {
+                    console.error('Failed to save invoice:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error saving invoice:', error);
+            });
+            
+            let servicesHTML = '';
+            services.forEach(service => {
+                servicesHTML += `
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">${escapeHtml(service.name)}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #ddd; text-align: right; font-weight: 600;">£${service.cost.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            
+            const invoiceHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Invoice - ${clientName}</title>
+                    <style>
+                        @media print {
+                            body { margin: 0; }
+                            .no-print { display: none; }
+                        }
+                        body {
+                            font-family: Arial, sans-serif;
+                            max-width: 800px;
+                            margin: 20px auto;
+                            padding: 20px;
+                            color: #333;
+                        }
+                        .invoice-header {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: 30px;
+                            padding-bottom: 20px;
+                            border-bottom: 3px solid #ff69b4;
+                        }
+                        .company-info h1 {
+                            margin: 0;
+                            color: #ff69b4;
+                            font-size: 28px;
+                        }
+                        .invoice-details {
+                            text-align: right;
+                        }
+                        .invoice-details p {
+                            margin: 5px 0;
+                        }
+                        .client-info {
+                            background: #f8f9fa;
+                            padding: 20px;
+                            border-radius: 8px;
+                            margin-bottom: 30px;
+                        }
+                        .client-info h3 {
+                            margin-top: 0;
+                            color: #333;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 30px;
+                        }
+                        th {
+                            background: #ff69b4;
+                            color: white;
+                            padding: 12px;
+                            text-align: left;
+                        }
+                        .totals {
+                            margin-left: auto;
+                            width: 300px;
+                        }
+                        .totals tr td {
+                            padding: 8px;
+                            border-bottom: 1px solid #ddd;
+                        }
+                        .totals tr:last-child td {
+                            border-top: 2px solid #333;
+                            font-weight: bold;
+                            font-size: 18px;
+                            color: #dc3545;
+                        }
+                        .print-btn {
+                            background: #ff69b4;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 16px;
+                            margin-bottom: 20px;
+                        }
+                        .print-btn:hover {
+                            background: #ff85c1;
+                        }
+                        .edit-btn {
+                            background: #667eea;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 16px;
+                            margin-bottom: 20px;
+                            margin-right: 10px;
+                        }
+                        .edit-btn:hover {
+                            background: #5568d3;
+                        }
+                        .save-btn {
+                            background: #28a745;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 16px;
+                            margin-bottom: 20px;
+                            margin-right: 10px;
+                            display: none;
+                        }
+                        .save-btn:hover {
+                            background: #218838;
+                        }
+                        .editable {
+                            border: 2px dashed transparent;
+                            padding: 2px 4px;
+                            min-width: 200px;
+                            display: inline-block;
+                        }
+                        .editable.editing {
+                            border-color: #ff69b4;
+                            background: #fff;
+                        }
+                        input.invoice-edit {
+                            width: 100%;
+                            padding: 4px 8px;
+                            border: 1px solid #ddd;
+                            border-radius: 4px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <button class="edit-btn no-print" onclick="toggleEditMode()">✏️ Edit Invoice</button>
+                    <button class="save-btn no-print" id="saveInvoiceBtn" onclick="saveInvoiceEdits()">💾 Save Changes</button>
+                    <button class="print-btn no-print" onclick="window.print()">🖨️ Print Invoice</button>
+                    
+                    <div class="invoice-header">
+                        <div class="company-info">
+                            <img src="/assets/images/LogoPink.png" alt="Content Catalogz" style="height: 75px; margin-bottom: 10px;">
+                            <p>Professional Content Services</p>
+                        </div>
+                        <div class="invoice-details">
+                            <h2 style="margin: 0; color: #ff69b4;">INVOICE</h2>
+                            <p><strong>Invoice No:</strong> ${invoiceNumber}</p>
+                            <p><strong>Date:</strong> ${invoiceDate}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="client-info">
+                        <h3>Bill To:</h3>
+                        <p><strong>${clientName}</strong></p>
+                        ${clientCompany !== 'N/A' ? '<p>' + clientCompany + '</p>' : ''}
+                        <p>${formattedAddress}</p>
+                        <p>Email: ${clientEmail}</p>
+                        ${clientPhone !== 'N/A' ? '<p>Phone: ' + clientPhone + '</p>' : ''}
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Service Description</th>
+                                <th style="text-align: right;">Amount (GBP)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${servicesHTML}
+                        </tbody>
+                    </table>
+                    
+                    <table class="totals">
+                        <tr>
+                            <td><strong>Total Cost:</strong></td>
+                            <td style="text-align: right;">£${totalCost.toFixed(2)}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Paid:</strong></td>
+                            <td style="text-align: right;">£${totalPaid.toFixed(2)}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Amount Due:</strong></td>
+                            <td style="text-align: right;">£${totalRemaining.toFixed(2)}</td>
+                        </tr>
+                    </table>
+                    
+                    ${paymentsHTML}
+                    
+                    <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666;">
+                        <p>Thank you for your business!</p>
+                        <p style="font-size: 12px;">Payment is due within 30 days of invoice date.</p>
+                    </div>
+                    
+                    \x3cscript>
+                        let isEditMode = false;
+                        
+                        function toggleEditMode() {
+                            isEditMode = !isEditMode;
+                            const editBtn = document.querySelector('.edit-btn');
+                            const saveBtn = document.querySelector('.save-btn');
+                            
+                            if (isEditMode) {
+                                editBtn.style.display = 'none';
+                                saveBtn.style.display = 'inline-block';
+                                enableEditing();
+                            } else {
+                                editBtn.style.display = 'inline-block';
+                                saveBtn.style.display = 'none';
+                                disableEditing();
+                            }
+                        }
+                        
+                        function enableEditing() {
+                            // Make all text content editable
+                            document.querySelectorAll('.client-info p').forEach(el => {
+                                el.contentEditable = true;
+                                el.classList.add('editable', 'editing');
+                            });
+                        }
+                        
+                        function disableEditing() {
+                            document.querySelectorAll('.client-info p').forEach(el => {
+                                el.contentEditable = false;
+                                el.classList.remove('editing');
+                            });
+                        }
+                        
+                        function saveInvoiceEdits() {
+                            alert('Invoice changes saved! Note: This is a preview. To permanently update client details, edit them in the Client Details modal and regenerate the invoice.');
+                            toggleEditMode();
+                        }
+                    \x3c/script>
+                </body>
+                </html>
+            `;
+            
+            // Open invoice in new window
+            const invoiceWindow = window.open('', '_blank');
+            invoiceWindow.document.write(invoiceHTML);
+            invoiceWindow.document.close();
+        }
+
+        // Email invoice as PDF
+        function emailInvoice() {
+            const clientName = document.getElementById('clientName').textContent;
+            const clientEmail = document.getElementById('clientEmail').textContent;
+            const invoiceNumber = 'INV-' + Date.now();
+            const totalCost = document.getElementById('totalCost').value;
+            const totalPaid = document.getElementById('totalPaid').value;
+            const totalRemaining = document.getElementById('totalRemaining').value;
+            
+            if (!clientEmail || clientEmail.trim() === '') {
+                alert('No email address found for this client.');
+                return;
+            }
+            
+            // Collect services
+            const services = [];
+            document.querySelectorAll('.service-row').forEach(row => {
+                const nameInput = row.querySelector('.service-name');
+                const costInput = row.querySelector('.service-cost');
+                if (nameInput && costInput) {
+                    const name = nameInput.value;
+                    const cost = costInput.value;
+                    if (name && cost) {
+                        services.push({ name, cost: parseFloat(cost) });
+                    }
+                }
+            });
+            
+            // Send to server to generate PDF and email
+            fetch('api/email_invoice.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    client_id: currentClientId,
+                    client_name: clientName,
+                    client_email: clientEmail,
+                    invoice_number: invoiceNumber,
+                    services: services,
+                    total_cost: totalCost,
+                    total_paid: totalPaid,
+                    total_remaining: totalRemaining
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Invoice sent successfully to ' + clientEmail);
+                    
+                    // Log email activity
+                    const activityData = {
+                        client_id: currentClientId,
+                        type: 'email',
+                        subject: `Invoice ${invoiceNumber} Emailed`,
+                        description: `Invoice sent to ${clientEmail}. Total: £${totalCost}, Paid: £${totalPaid}, Remaining: £${totalRemaining}`,
+                        activity_date: new Date().toISOString().slice(0, 19).replace('T', ' ')
+                    };
+                    
+                    fetch('api/activities.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(activityData)
+                    })
+                    .then(() => {
+                        loadClientActivities(currentClientId);
+                    })
+                    .catch(err => console.error('Error logging activity:', err));
+                    
+                } else {
+                    alert('Error sending invoice: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error sending invoice. Please try again.');
+            });
+        }
+
+        // Add New Client modal functions
+        function openAddClientModal() {
+            document.getElementById('addClientForm').reset();
+            document.getElementById('addClientModal').classList.add('show');
+        }
+        
+        function closeAddClientModal() {
+            document.getElementById('addClientModal').classList.remove('show');
+        }
+        
+        function saveNewClient(event) {
+            event.preventDefault();
+            
+            const formData = {
+                first_name: document.getElementById('newClientFirstName').value,
+                last_name: document.getElementById('newClientLastName').value,
+                email: document.getElementById('newClientEmail').value,
+                company: document.getElementById('newClientCompany').value,
+                phone: document.getElementById('newClientPhone').value,
+                address_street: document.getElementById('newClientAddressStreet').value,
+                address_line2: document.getElementById('newClientAddressLine2').value,
+                address_city: document.getElementById('newClientCity').value,
+                address_county: document.getElementById('newClientCounty').value,
+                address_postcode: document.getElementById('newClientPostcode').value,
+                address_country: document.getElementById('newClientCountry').value,
+                message: document.getElementById('newClientMessage').value,
+                service: document.getElementById('newClientService').value,
+                status: document.getElementById('newClientStatus').value,
+                notes: document.getElementById('newClientNotes').value,
+                // CRM fields
+                lead_source: document.getElementById('newClientLeadSource').value || null,
+                expected_value: parseFloat(document.getElementById('newClientExpectedValue').value || 0) || null
+            };
+            
+            fetch('api/add_client.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Client added successfully!');
+                    closeAddClientModal();
+                    loadExistingClients();
+                } else {
+                    alert('Error adding client: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error adding client. Please try again.');
+            });
+        }
+
+        // Invoice stats and search functions
+        function loadInvoiceStats() {
+            fetch('api/invoice_stats.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('stat-invoices-outstanding-count').textContent = data.outstanding_count || 0;
+                        document.getElementById('stat-invoices-outstanding-amount').textContent = '£' + (parseFloat(data.outstanding_amount) || 0).toFixed(2);
+                        document.getElementById('stat-invoices-overdue-count').textContent = data.overdue_count || 0;
+                        document.getElementById('stat-invoices-overdue-amount').textContent = '£' + (parseFloat(data.overdue_amount) || 0).toFixed(2);
+                        document.getElementById('stat-invoices-total').textContent = '£' + (parseFloat(data.total_invoiced) || 0).toFixed(2);
+                        document.getElementById('stat-invoices-collected').textContent = '£' + (parseFloat(data.total_collected) || 0).toFixed(2);
+                    }
+                })
+                .catch(err => console.error('Error loading invoice stats:', err));
+        }
+
+        function searchInvoices() {
+            const searchQuery = document.getElementById('invoiceSearch').value.trim();
+            const searchDate = document.getElementById('invoiceDateSearch').value;
+
+            if (!searchQuery && !searchDate) {
+                alert('Please enter an invoice number, client name, or select a date to search.');
+                return;
+            }
+
+            const params = new URLSearchParams();
+            if (searchQuery) params.append('q', searchQuery);
+            if (searchDate) params.append('date', searchDate);
+
+            fetch('api/search_invoices.php?' + params.toString())
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayInvoiceResults(data.invoices);
+                    } else {
+                        alert('Error searching invoices: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to search invoices');
+                });
+        }
+        
+        function showFilteredInvoices(filter) {
+            // Show the invoices section first
+            showSection('invoices');
+            
+            // Then fetch filtered invoices
+            const filterLabels = {
+                'outstanding': 'Outstanding Invoices',
+                'overdue': 'Overdue Invoices',
+                'paid': 'Paid Invoices',
+                'all': 'All Invoices'
+            };
+            
+            fetch('api/search_invoices.php?filter=' + filter)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayInvoiceResults(data.invoices, filterLabels[filter] || 'Filtered Invoices');
+                    } else {
+                        alert('Error loading invoices: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to load invoices');
+                });
+        }
+
+        function displayInvoiceResults(invoices, title) {
+            const container = document.getElementById('invoices-results');
+            const displayTitle = title || 'Search Results';
+
+            if (invoices.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>No Invoices Found</h3><p>No invoices match your criteria.</p></div>';
+                return;
+            }
+
+            let html = '<div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;"><h3 style="color: #333; margin-bottom: 10px;">' + displayTitle + ': ' + invoices.length + ' invoice(s) found</h3></div>';
+            html += '<div class="table-container"><table><thead><tr>';
+            html += '<th>Invoice Number</th><th>Client Name</th><th>Company</th><th>Invoice Date</th><th>Total Cost</th><th>Total Paid</th><th>Balance Due</th><th>Actions</th>';
+            html += '</tr></thead><tbody>';
+
+invoices.forEach(invoice => {
+    const invoiceDate = new Date(invoice.invoice_date).toLocaleDateString('en-GB');
+    const balanceColor = invoice.total_remaining > 0 ? '#dc3545' : '#28a745';
+    
+    html += '<tr>';
+    html += `<td><a href="#" class="invoice-link" onclick="openInvoiceModal(${invoice.id});return false;"><strong>${escapeHtml(invoice.invoice_number)}</strong></a></td>`;
+    html += '<td>' + escapeHtml(invoice.name) + '</td>';
+    html += '<td>' + (invoice.company ? escapeHtml(invoice.company) : '<em>N/A</em>') + '</td>';
+    html += '<td>' + invoiceDate + '</td>';
+    html += '<td>£' + parseFloat(invoice.total_cost).toFixed(2) + '</td>';
+    html += '<td>£' + parseFloat(invoice.total_paid).toFixed(2) + '</td>';
+    html += '<td style="color: ' + balanceColor + '; font-weight: bold;">£' + parseFloat(invoice.total_remaining).toFixed(2) + '</td>';
+    html += `<td><button class="btn btn-primary btn-sm" onclick="openInvoiceModal(${invoice.id})">Edit</button> <button class="btn btn-danger btn-sm" onclick="deleteInvoice(${invoice.id})">Delete</button></td>`;
+    html += '</tr>';
+});
+
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function clearInvoiceSearch() {
+            document.getElementById('invoiceSearch').value = '';
+            document.getElementById('invoiceDateSearch').value = '';
+            document.getElementById('invoices-results').innerHTML = '<div class="empty-state"><h3>Search for Invoices</h3><p>Use the search form above to find invoices by number or date.</p></div>';
+        }
+
+        // Load HTML files count and quotes on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('%c Dashboard Loaded', 'background: #28a745; color: white; font-weight: bold; padding: 4px 12px; border-radius: 4px;');
+            
+            // Check if required elements exist
+            const requiredElements = [
+                'section-dashboard',
+                'html-count',
+                'quotes-count',
+                'nav-dashboard'
+            ];
+            
+            let allElementsFound = true;
+            requiredElements.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) {
+                    console.error('❌ Missing required element:', id);
+                    allElementsFound = false;
+                } else {
+                    console.log('✓ Found element:', id);
+                }
+            });
+            
+            if (!allElementsFound) {
+                console.error('%c Some required elements are missing!', 'color: red; font-weight: bold;');
+            }
+            
+            // Ensure dashboard section is visible
+            const dashboardSection = document.getElementById('section-dashboard');
+            if (dashboardSection) {
+                if (!dashboardSection.classList.contains('active')) {
+                    dashboardSection.classList.add('active');
+                    dashboardSection.style.display = 'block';
+                    console.log('✓ Dashboard section set to active');
+                }
+            } else {
+                console.error('❌ Dashboard section not found!');
+            }
+            
+            // Load initial data
+            try {
+                console.log('Loading HTML files...');
+                loadHtmlFiles();
+                
+                console.log('Loading quotes...');
+                loadQuotes();
+                
+                console.log('Loading dashboard stats...');
+                loadDashboardStats();
+
+                // preload CRM settings (lead-source colors)
+                loadCrmSettings();
+                
+                console.log('%c All data loading functions called successfully', 'background: #667eea; color: white; padding: 2px 8px; border-radius: 3px;');
+            } catch (error) {
+                console.error('%c Error during initialization:', 'color: red; font-weight: bold;', error);
+            }
+        });
+
+        // ==================== Invoice Modal Handlers ====================
+        function openInvoiceModal(invoiceId) {
+          // TODO: Fetch invoice details via AJAX and populate modal
+          document.getElementById('invoiceModalBody').innerHTML = '<p>Loading invoice #' + invoiceId + '...</p>';
+          document.getElementById('invoiceModal').classList.add('show');
+        }
+        function closeInvoiceModal() {
+          document.getElementById('invoiceModal').classList.remove('show');
+        }
+        function deleteInvoice(invoiceId) {
+          if (confirm('Are you sure you want to delete this invoice?')) {
+            // TODO: Implement AJAX delete
+            alert('Delete invoice ' + invoiceId + ' (not yet implemented)');
+          }
+        }
+        
+        // Load all dashboard stats
+        function loadDashboardStats() {
+            // Load task stats
+            fetch('api/tasks.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.tasks) {
+                        const pending = data.tasks.filter(t => t.status === 'pending').length;
+                        const today = new Date().toISOString().split('T')[0];
+                        const overdue = data.tasks.filter(t => t.due_date && t.due_date < today && t.status !== 'completed' && t.status !== 'cancelled').length;
+                        const urgent = data.tasks.filter(t => t.priority === 'urgent' && t.status !== 'completed' && t.status !== 'cancelled').length;
+                        
+                        document.getElementById('dash-tasks-pending').textContent = pending;
+                        document.getElementById('dash-tasks-overdue').textContent = overdue;
+                        document.getElementById('dash-tasks-urgent').textContent = urgent;
+                    }
+                })
+                .catch(err => console.error('Error loading task stats:', err));
+            
+            // Load invoice stats
+            fetch('api/invoice_stats.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('dash-invoices-outstanding').textContent = data.outstanding_count || 0;
+                        document.getElementById('dash-invoices-outstanding-amount').textContent = '£' + (parseFloat(data.outstanding_amount) || 0).toFixed(2);
+                        document.getElementById('dash-invoices-overdue').textContent = data.overdue_count || 0;
+                        document.getElementById('dash-invoices-overdue-amount').textContent = '£' + (parseFloat(data.overdue_amount) || 0).toFixed(2);
+                        document.getElementById('dash-invoices-total').textContent = '£' + (parseFloat(data.total_invoiced) || 0).toFixed(2);
+                        document.getElementById('dash-invoices-collected').textContent = '£' + (parseFloat(data.total_collected) || 0).toFixed(2);
+                    }
+                })
+                .catch(err => console.error('Error loading invoice stats:', err));
+            
+            // Load quote stats for dashboard
+            fetch('api/get_quotes.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.quotes) {
+                        const newQuotes = data.quotes.filter(q => q.status === 'new').length;
+                        const inProgress = data.quotes.filter(q => q.status === 'in_progress' || q.status === 'contacted').length;
+                        
+                        document.getElementById('dash-quotes-new').textContent = newQuotes;
+                        document.getElementById('dash-quotes-progress').textContent = inProgress;
+                    }
+                })
+                .catch(err => console.error('Error loading quote stats:', err));
+
+                // Load CRM dashboard stats (KPIs + charts)
+                fetch('api/crm_dashboard.php')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.success || !data.stats) return;
+                        const s = data.stats;
+
+                                // helper: map lead source to chip color (prefers configured map)
+                        function getLeadColor(source) {
+                            if (!source) return '#e2e8f0';
+                            const map = window.crmLeadColorMap || {};
+                            const key = (source || '').toLowerCase();
+
+                            // exact match first
+                            if (map[source]) return map[source];
+
+                            // case-insensitive lookup
+                            for (const k in map) {
+                                if (k.toLowerCase() === key) return map[k];
+                            }
+
+                            // heuristic fallbacks
+                            if (key.includes('referr')) return '#f6d365';
+                            if (key.includes('web') || key.includes('site') || key.includes('website')) return '#7dd3fc';
+                            if (key.includes('ad')) return '#fca5a5';
+                            if (key.includes('email')) return '#c7f9d2';
+                            if (key.includes('social')) return '#fbcfe8';
+                            return '#d1fae5';
+                        }
+
+
+                        // KPIs (with small client-side deltas)
+                        const kpis = {
+                            total_revenue: parseFloat(s.total_revenue) || 0,
+                            pipeline_value: parseFloat(s.pipeline_value) || 0,
+                            new_leads: (s.status_breakdown && s.status_breakdown.new) ? s.status_breakdown.new : 0,
+                            conversion_rate: s.total_clients ? ((s.won_deals / s.total_clients) * 100) : 0
+                        };
+
+                        // show values
+                        document.getElementById('dash-total-revenue').firstChild.nodeValue = '£' + kpis.total_revenue.toFixed(2) + ' ';
+                        document.getElementById('dash-pipeline-value').firstChild.nodeValue = '£' + kpis.pipeline_value.toFixed(2) + ' ';
+                        document.getElementById('dash-new-leads').firstChild.nodeValue = String(kpis.new_leads) + ' ';
+                        document.getElementById('dash-conversion-rate').firstChild.nodeValue = kpis.conversion_rate.toFixed(1) + '% ';
+
+                        // compute & render deltas using persisted previous values
+                        window.prevKpis = window.prevKpis || {};
+                        Object.keys(kpis).forEach(key => {
+                            const prev = window.prevKpis[key] || 0;
+                            const cur = kpis[key];
+                            const delta = cur - prev;
+                            const deltaEl = document.getElementById('delta-' + key.replace('_','-')) || document.getElementById('delta-' + key);
+                            if (deltaEl) {
+                                if (Math.abs(delta) < 0.0001) { deltaEl.textContent = ''; deltaEl.className = 'kpi-delta'; }
+                                else {
+                                    const sign = delta > 0 ? '▲' : '▼';
+                                    const pct = prev ? ((delta / Math.abs(prev)) * 100).toFixed(0) + '%' : (Math.abs(delta) > 0 ? Math.abs(delta).toFixed(0) + (key === 'conversion_rate' ? '%' : '') : '');
+                                    deltaEl.textContent = `${sign} ${pct}`;
+                                    deltaEl.className = 'kpi-delta ' + (delta > 0 ? 'positive' : 'negative');
+                                }
+                            }
+                            window.prevKpis[key] = cur;
+                        });
+
+                        // Recent activities (render lead-source chips and activity badges)
+                        const raEl = document.getElementById('dash-recent-activities');
+                        raEl.innerHTML = '';
+                        if (s.recent_activities && s.recent_activities.length) {
+                            s.recent_activities.forEach(a => {
+                                const li = document.createElement('li');
+
+                                const left = document.createElement('div');
+                                left.style.flex = '1';
+
+                                const topRow = document.createElement('div');
+                                topRow.style.display = 'flex';
+                                topRow.style.alignItems = 'center';
+                                topRow.style.gap = '8px';
+
+                                // activity type badge
+                                const at = document.createElement('span');
+                                at.className = 'activity-badge';
+                                at.textContent = a.activity_type || 'activity';
+                                at.style.backgroundColor = (function(t){
+                                    if (!t) return 'rgba(255,255,255,0.04)';
+                                    const k = t.toLowerCase();
+                                    if (k.includes('call')) return '#e6f7ff';
+                                    if (k.includes('email')) return '#f0fdf4';
+                                    if (k.includes('meeting')) return '#fff7ed';
+                                    return 'rgba(255,255,255,0.04)';
+                                })(a.activity_type);
+                                at.style.color = '#0b0b0b';
+                                topRow.appendChild(at);
+
+                                const title = document.createElement('strong');
+                                title.textContent = `${a.client_name || 'General'}`;
+                                topRow.appendChild(title);
+
+                                left.appendChild(topRow);
+
+                                if (a.note) {
+                                    const note = document.createElement('div');
+                                    note.style.opacity = '0.9';
+                                    note.style.fontSize = '12px';
+                                    note.style.marginTop = '6px';
+                                    note.textContent = a.note;
+                                    left.appendChild(note);
+                                }
+
+                                // right-side meta (date + lead chip)
+                                const meta = document.createElement('div');
+                                meta.className = 'activity-meta';
+                                const date = document.createElement('div');
+                                date.textContent = a.activity_date;
+                                date.style.opacity = '0.7';
+                                date.style.fontSize = '12px';
+                                meta.appendChild(date);
+
+                                if (a.lead_source) {
+                                    const chip = document.createElement('span');
+                                    chip.className = 'lead-chip';
+                                    chip.textContent = a.lead_source;
+                                    chip.style.backgroundColor = getLeadColor(a.lead_source);
+                                    chip.style.color = '#0b0b0b';
+                                    meta.appendChild(chip);
+                                }
+
+                                li.appendChild(left);
+                                li.appendChild(meta);
+                                raEl.appendChild(li);
+                            });
+                        } else {
+                            raEl.innerHTML = '<li>No recent activity</li>';
+                        }
+
+                        // Upcoming tasks (priority & status badges)
+                        const utEl = document.getElementById('dash-upcoming-tasks');
+                        utEl.innerHTML = '';
+                        if (s.upcoming_tasks && s.upcoming_tasks.length) {
+                            s.upcoming_tasks.forEach(t => {
+                                const li = document.createElement('li');
+
+                                const left = document.createElement('div');
+                                left.style.flex = '1';
+                                left.textContent = `${t.due_date} — ${t.title}`;
+
+                                const meta = document.createElement('div');
+                                meta.className = 'activity-meta';
+
+                                // priority badge
+                                const p = document.createElement('span');
+                                p.className = 'priority-badge ' + ((t.priority || '').toLowerCase() || 'medium');
+                                p.textContent = (t.priority || 'medium').toUpperCase();
+                                meta.appendChild(p);
+
+                                // status badge
+                                const st = document.createElement('span');
+                                st.className = 'status-badge ' + ((t.status || '').toLowerCase() || 'pending');
+                                st.textContent = (t.status || 'pending').replace('_',' ');
+                                meta.appendChild(st);
+
+                                // client name small
+                                const client = document.createElement('div');
+                                client.style.opacity = '0.8';
+                                client.style.fontSize = '12px';
+                                client.textContent = t.client_name || 'General';
+                                meta.appendChild(client);
+
+                                li.appendChild(left);
+                                li.appendChild(meta);
+                                utEl.appendChild(li);
+                            });
+                        } else {
+                            utEl.innerHTML = '<li>No upcoming tasks</li>';
+                        }
+
+                        // Charts (create or update) + subtle load animation
+                        try {
+                            // ensure high-DPI rendering
+                            if (window.Chart && window.Chart.defaults) {
+                                window.Chart.defaults.devicePixelRatio = window.devicePixelRatio || 1;
+                            }
+
+                            const statusLabels = Object.keys(s.status_breakdown || {});
+                            const statusData = statusLabels.map(k => s.status_breakdown[k] || 0);
+
+                            const statusCanvas = document.getElementById('chart-status-breakdown');
+                            statusCanvas.style.opacity = 0; statusCanvas.style.transform = 'scale(0.995)';
+
+                            if (!window.crmStatusChart) {
+                                const ctx = statusCanvas.getContext('2d');
+                                window.crmStatusChart = new Chart(ctx, {
+                                    type: 'doughnut',
+                                    data: { labels: statusLabels, datasets: [{ data: statusData, backgroundColor: ['#007bff','#17a2b8','#ffc107','#28a745','#dc3545'] }] },
+                                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                                });
+                            } else {
+                                window.crmStatusChart.data.labels = statusLabels;
+                                window.crmStatusChart.data.datasets[0].data = statusData;
+                                window.crmStatusChart.update();
+                                window.crmStatusChart.resize();
+                            }
+
+                            // fade-in then ensure proper pixel-size render
+                            setTimeout(() => {
+                                statusCanvas.style.transition = 'opacity 420ms ease';
+                                statusCanvas.style.opacity = 1;
+                                statusCanvas.style.transform = 'none';
+                                try { window.crmStatusChart && window.crmStatusChart.resize(); window.crmStatusChart && window.crmStatusChart.update(); } catch(e){}
+                            }, 60);
+
+                            const leadLabels = (s.lead_sources || []).map(r => r.lead_source || 'Unknown');
+                            const leadData = (s.lead_sources || []).map(r => parseInt(r.count || 0));
+
+                            const leadCanvas = document.getElementById('chart-lead-sources');
+                            leadCanvas.style.opacity = 0; leadCanvas.style.transform = 'scale(0.995)';
+
+                            if (!window.crmLeadChart) {
+                                const ctx2 = leadCanvas.getContext('2d');
+                                window.crmLeadChart = new Chart(ctx2, {
+                                    type: 'pie',
+                                    data: { labels: leadLabels, datasets: [{ data: leadData, backgroundColor: ['#667eea','#34d399','#f6ad55','#f472b6','#60a5fa'] }] },
+                                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                                });
+                            } else {
+                                window.crmLeadChart.data.labels = leadLabels;
+                                window.crmLeadChart.data.datasets[0].data = leadData;
+                                window.crmLeadChart.update();
+                                window.crmLeadChart.resize();
+                            }
+
+                            setTimeout(() => {
+                                leadCanvas.style.transition = 'opacity 420ms ease';
+                                leadCanvas.style.opacity = 1;
+                                leadCanvas.style.transform = 'none';
+                                try { window.crmLeadChart && window.crmLeadChart.resize(); window.crmLeadChart && window.crmLeadChart.update(); } catch(e){}
+                            }, 120);
+                        } catch (e) { console.error('Error rendering CRM charts', e); }
+
+                        // Adjust CRM layout to try to fit the summary onto a single screen
+                        function adjustCrmLayout() {
+                            try {
+                                const el = document.getElementById('crm-summary');
+                                if (!el) return;
+                                // available vertical space from the top of the CRM section to bottom of viewport
+                                const available = window.innerHeight - el.getBoundingClientRect().top - 60;
+                                // natural required height
+                                const required = el.scrollHeight;
+                                if (required > available) {
+                                    el.classList.add('compact');
+                                } else {
+                                    el.classList.remove('compact');
+                                }
+                            } catch (err) { /* ignore */ }
+                        }
+
+                        // run once after charts rendered and again on resize
+                        setTimeout(adjustCrmLayout, 100);
+                        window.removeEventListener('resize', adjustCrmLayout);
+                        window.addEventListener('resize', () => { clearTimeout(window._crmLayoutTimer); window._crmLayoutTimer = setTimeout(adjustCrmLayout, 120); });
+                    })
+                    .catch(err => console.error('Error loading CRM dashboard:', err));
+
+                // Load revenue trends (last 12 months)
+                                function loadRevenueTrend() {
+                                    const metric = document.getElementById('revenueMetric').value;
+                                    const range = document.getElementById('revenueRange').value;
+                
+                                    fetch(`api/invoice_trends.php?metric=${encodeURIComponent(metric)}&range=${encodeURIComponent(range)}`)
+                                        .then(res => res.json())
+                                        .then(r => {
+                                            if (!r.success) return;
+                
+                                            // normalize data into labels/values and a display label
+                                            let labels = [];
+                                            let values = [];
+                                            const labelText = (metric === 'invoiced') ? 'Revenue (invoiced)' : 'Revenue (collected)';
+                
+                                            if (r.range === 'yearly' && r.years) {
+                                                labels = Object.keys(r.years || {});
+                                                values = labels.map(k => parseFloat(r.years[k]) || 0);
+                                            } else if (r.months) {
+                                                labels = Object.keys(r.months || {});
+                                                values = labels.map(m => parseFloat(r.months[m]) || 0);
+                                            }
+                
+                                            // create or update chart safely
+                                            try {
+                                                const canvas = document.getElementById('chart-revenue-trend');
+                                                if (!canvas) return;
+                
+                                                if (!window.revenueTrendChart) {
+                                                    const ctx = canvas.getContext('2d');
+                                                    window.revenueTrendChart = new Chart(ctx, {
+                                                        type: 'line',
+                                                        data: {
+                                                            labels: labels,
+                                                            datasets: [{
+                                                                label: labelText,
+                                                                data: values,
+                                                                borderColor: '#28a745',
+                                                                backgroundColor: 'rgba(40,167,69,0.08)',
+                                                                tension: 0.25,
+                                                                fill: true
+                                                            }]
+                                                        },
+                                                        options: {
+                                                            responsive: true,
+                                                            maintainAspectRatio: false,
+                                                            scales: { y: { ticks: { callback: v => '£' + Number(v).toFixed(0) } } },
+                                                            plugins: { legend: { display: false } }
+                                                        }
+                                                    });
+                                                } else {
+                                                    window.revenueTrendChart.data.labels = labels;
+                                                    window.revenueTrendChart.data.datasets[0].label = labelText;
+                                                    window.revenueTrendChart.data.datasets[0].data = values;
+                                                    window.revenueTrendChart.update();
+                                                    try { window.revenueTrendChart.resize(); } catch (e) { /* ignore */ }
+                                                }
+                                            } catch (err) {
+                                                console.error('Error rendering revenue trend chart:', err);
+                                            }
+                                        })
+                                        .catch(err => console.error('Error loading revenue trends:', err));
+                                }
+
+                // Safely attach revenue chart controls (guard elements may not exist when script runs)
+                function attachRevenueControls() {
+                    const rm = document.getElementById('revenueMetric');
+                    const rr = document.getElementById('revenueRange');
+                    const rt = document.getElementById('revenueChartType');
+                    const dl = document.getElementById('downloadRevenueCsv');
+                    const canvas = document.getElementById('chart-revenue-trend');
+                    if (!rm || !rr || !rt || !dl || !canvas) return false;
+
+                    rm.addEventListener('change', () => { loadRevenueTrend(); });
+                    rr.addEventListener('change', () => { loadRevenueTrend(); });
+                    rt.addEventListener('change', function () {
+                        const type = this.value;
+                        canvas.dataset.mode = type;
+                        loadRevenueTrend();
+                    });
+
+                    dl.addEventListener('click', function () {
+                        const metric = rm.value;
+                        const range = rr.value;
+                        fetch(`api/invoice_trends.php?metric=${encodeURIComponent(metric)}&range=${encodeURIComponent(range)}`)
+                            .then(r => r.json())
+                            .then(data => {
+                                if (!data.success) return alert('No data available');
+                                let csv = '';
+                                if (data.range === 'yearly' && data.years) {
+                                    csv += 'year,' + data.metric + '\n';
+                                    for (const y in data.years) csv += `${y},${(data.years[y]||0).toFixed(2)}\n`;
+                                } else if (data.months) {
+                                    csv += 'month,' + data.metric + '\n';
+                                    for (const m in data.months) csv += `${m},${(data.months[m]||0).toFixed(2)}\n`;
+                                }
+                                const blob = new Blob([csv], { type: 'text/csv' });
+                                const a = document.createElement('a');
+                                a.href = URL.createObjectURL(blob);
+                                a.download = `invoice_trends_${metric}_${range}.csv`;
+                                document.body.appendChild(a);
+                                a.click();
+                                a.remove();
+                            })
+                            .catch(() => alert('Failed to download CSV'));
+                    });
+
+                    // initial load
+                    loadRevenueTrend();
+                    return true;
+                }
+
+                // Try to attach immediately, otherwise defer until DOMContentLoaded
+                if (!attachRevenueControls() && document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', attachRevenueControls);
+                }
+
+            // Load email stats (placeholder until email storage is implemented)
+            // For now, showing 0 - can be connected to actual email data later
+            document.getElementById('dash-emails-unread').textContent = 0;
+            document.getElementById('dash-emails-total').textContent = 0;
+            document.getElementById('dash-emails-drafts').textContent = 0;
+        }
+        
+        // ==================== CRM Functions ====================
+        
+        let currentClientId = null;
+        
+        // Tab Switching
+        function switchClientTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.client-tab-content').forEach(tab => {
+                tab.classList.remove('active');
+                tab.style.display = 'none';
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.crm-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            const selectedTab = document.getElementById('client-tab-' + tabName);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+                selectedTab.style.display = 'block';
+            }
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Load data for the selected tab
+            if (currentClientId) {
+                if (tabName === 'activities') {
+                    loadClientActivities(currentClientId);
+                } else if (tabName === 'notes') {
+                    loadClientNotes(currentClientId);
+                } else if (tabName === 'tasks') {
+                    loadClientTasks(currentClientId);
+                }
+            }
+        }
+        
+        // ==================== Activity Functions ====================
+        
+        function loadClientActivities(clientId) {
+            fetch(`api/activities.php?client_id=${clientId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('client-activities-list');
+                    if (data.success && data.activities && data.activities.length > 0) {
+                        container.innerHTML = data.activities.map(activity => {
+                            // Get icon and label based on activity type
+                            const typeIcons = {
+                                'call': '📞',
+                                'email': '📧',
+                                'meeting': '👥',
+                                'note': '📝',
+                                'task': '✅',
+                                'quote_sent': '📋',
+                                'invoice_sent': '📄',
+                                'payment_received': '💰',
+                                'other': '📌'
+                            };
+                            
+                            const typeLabels = {
+                                'call': 'Phone Call',
+                                'email': 'Email',
+                                'meeting': 'Meeting',
+                                'note': 'Note',
+                                'task': 'Task',
+                                'quote_sent': 'Quote Sent',
+                                'invoice_sent': 'Invoice Sent',
+                                'payment_received': 'Payment',
+                                'other': 'Other'
+                            };
+                            
+                            const icon = typeIcons[activity.type] || '📌';
+                            const label = typeLabels[activity.type] || activity.type;
+                            
+                            return `
+                                <div class="activity-item type-${activity.type}">
+                                    <div class="activity-header">
+                                        <span class="activity-type type-${activity.type}">${icon} ${label}</span>
+                                        <a href="javascript:void(0)" class="activity-delete" onclick="deleteActivity(${activity.id})">Delete</a>
+                                    </div>
+                                    <div class="activity-subject">${escapeHtml(activity.subject || 'No Subject')}</div>
+                                    ${activity.description ? `<div class="activity-description">${escapeHtml(activity.description)}</div>` : ''}
+                                    <div class="activity-meta">
+                                        <span>📅 ${new Date(activity.activity_date).toLocaleString()}</span>
+                                        ${activity.duration_minutes ? `<span>⏱️ ${activity.duration_minutes} min</span>` : ''}
+                                        <span>👤 ${escapeHtml(activity.created_by_name || activity.created_by_username || 'System')}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        container.innerHTML = '<div class="empty-state"><h3>No Activities Yet</h3><p>Log your first interaction with this client.</p></div>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading activities:', err);
+                });
+        }
+        
+        function openLogActivityModal() {
+            document.getElementById('activityClientId').value = currentClientId;
+            document.getElementById('activityForm').reset();
+            document.getElementById('activityClientId').value = currentClientId;
+            // Set default date to now
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('activityDate').value = now.toISOString().slice(0, 16);
+            document.getElementById('activityModal').style.display = 'flex';
+        }
+        
+        function closeActivityModal() {
+            document.getElementById('activityModal').style.display = 'none';
+        }
+        
+        function saveActivity(event) {
+            event.preventDefault();
+            
+            const formData = {
+                client_id: document.getElementById('activityClientId').value,
+                activity_type: document.getElementById('activityType').value,
+                subject: document.getElementById('activitySubject').value,
+                description: document.getElementById('activityDescription').value,
+                activity_date: document.getElementById('activityDate').value,
+                duration_minutes: document.getElementById('activityDuration').value || null
+            };
+            
+            fetch('api/activities.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    closeActivityModal();
+                    loadClientActivities(currentClientId);
+                    showNotification('Activity logged successfully', 'success');
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to log activity'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error logging activity');
+            });
+        }
+        
+        function deleteActivity(activityId) {
+            if (!confirm('Delete this activity?')) return;
+            
+            fetch('api/activities.php', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({id: activityId})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    loadClientActivities(currentClientId);
+                    showNotification('Activity deleted', 'success');
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to delete activity'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error deleting activity');
+            });
+        }
+        
+        // ==================== Notes Functions ====================
+        
+        function loadClientNotes(clientId) {
+            fetch(`api/notes.php?client_id=${clientId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('client-notes-list');
+                    if (data.success && data.notes && data.notes.length > 0) {
+                        container.innerHTML = data.notes.map(note => `
+                            <div class="note-item ${note.is_important ? 'important' : ''}">
+                                ${note.is_important ? '<span class="note-important-badge">⭐ IMPORTANT</span>' : ''}
+                                <div class="note-text">${escapeHtml(note.note_text || '')}</div>
+                                <div class="note-meta">
+                                    <span>📅 ${new Date(note.created_at).toLocaleString()}</span>
+                                    <span>👤 ${escapeHtml(note.created_by_name || note.created_by_username || 'System')}</span>
+                                    <a href="javascript:void(0)" class="note-delete" onclick="deleteNote(${note.id})">Delete</a>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        container.innerHTML = '<div class="empty-state"><h3>No Notes Yet</h3><p>Add notes to keep track of important information about this client.</p></div>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading notes:', err);
+                });
+        }
+        
+        function openAddNoteModal() {
+            document.getElementById('noteClientId').value = currentClientId;
+            document.getElementById('noteForm').reset();
+            document.getElementById('noteClientId').value = currentClientId;
+            document.getElementById('noteModal').style.display = 'flex';
+        }
+        
+        function closeNoteModal() {
+            document.getElementById('noteModal').style.display = 'none';
+        }
+        
+        function saveNote(event) {
+            event.preventDefault();
+            
+            const formData = {
+                client_id: document.getElementById('noteClientId').value,
+                note: document.getElementById('noteText').value,
+                is_important: document.getElementById('noteImportant').checked ? 1 : 0
+            };
+            
+            fetch('api/notes.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    closeNoteModal();
+                    loadClientNotes(currentClientId);
+                    showNotification('Note added successfully', 'success');
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to add note'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error adding note');
+            });
+        }
+        
+        function deleteNote(noteId) {
+            if (!confirm('Delete this note?')) return;
+            
+            fetch('api/notes.php', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({id: noteId})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    loadClientNotes(currentClientId);
+                    showNotification('Note deleted', 'success');
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to delete note'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error deleting note');
+            });
+        }
+        
+        // ==================== Payment Functions ====================
+        
+        function openPaymentModal() {
+            const clientId = document.getElementById('clientId').value;
+            const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
+            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            const outstanding = totalCost - totalPaid;
+            
+            document.getElementById('paymentClientId').value = clientId;
+            document.getElementById('paymentTotalCost').textContent = totalCost.toFixed(2);
+            document.getElementById('paymentTotalPaid').textContent = totalPaid.toFixed(2);
+            document.getElementById('paymentOutstanding').textContent = outstanding.toFixed(2);
+            
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('paymentDate').value = today;
+            
+            // Set suggested payment amount to outstanding balance
+            document.getElementById('paymentAmount').value = outstanding.toFixed(2);
+            
+            document.getElementById('paymentForm').reset();
+            document.getElementById('paymentClientId').value = clientId;
+            document.getElementById('paymentDate').value = today;
+            document.getElementById('paymentAmount').value = outstanding.toFixed(2);
+            
+            document.getElementById('paymentModal').style.display = 'flex';
+        }
+        
+        function closePaymentModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+        }
+        
+        function recordPayment(event) {
+            event.preventDefault();
+            
+            const clientId = document.getElementById('paymentClientId').value;
+            const amount = parseFloat(document.getElementById('paymentAmount').value);
+            const paymentDate = document.getElementById('paymentDate').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const notes = document.getElementById('paymentNotes').value;
+            
+            const currentPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            const newTotalPaid = currentPaid + amount;
+            
+            // Update the client with new total_paid
+            const formData = {
+                id: clientId,
+                total_paid: newTotalPaid
+            };
+            
+            fetch('api/update_client.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Log payment as an activity
+                    const activityData = {
+                        client_id: clientId,
+                        type: 'payment_received',
+                        subject: `Payment Received: £${amount.toFixed(2)}`,
+                        description: `Payment of £${amount.toFixed(2)} received via ${paymentMethod}.${notes ? ' Notes: ' + notes : ''}`,
+                        activity_date: paymentDate + ' 12:00:00'
+                    };
+                    
+                    return fetch('api/activities.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(activityData)
+                    });
+                } else {
+                    throw new Error(data.message || 'Failed to update payment');
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                closePaymentModal();
+                
+                // Update the display
+                document.getElementById('totalPaid').value = newTotalPaid.toFixed(2);
+                calculateRemaining();
+                
+                // Reload activities to show the payment
+                loadClientActivities(clientId);
+                
+                // Reload payment history
+                loadClientPayments(clientId);
+                
+                showNotification(`Payment of £${amount.toFixed(2)} recorded successfully`, 'success');
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error recording payment: ' + err.message);
+            });
+        }
+        
+        function loadClientPayments(clientId) {
+            fetch('api/activities.php?client_id=' + clientId)
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('client-payments-list');
+                
+                // Filter only payment activities
+                const payments = data.activities ? data.activities.filter(a => a.type === 'payment_received') : [];
+                
+                if (payments.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><p>No payments recorded yet.</p></div>';
+                    return;
+                }
+                
+                // Sort by date, newest first
+                payments.sort((a, b) => new Date(b.activity_date) - new Date(a.activity_date));
+                
+                let html = '<div style="overflow-x: auto;">';
+                html += '<table style="width: 100%; border-collapse: collapse;">';
+                html += '<thead><tr style="background: #f8f9fa; border-bottom: 2px solid #ddd;">';
+                html += '<th style="padding: 10px; text-align: left;">Date</th>';
+                html += '<th style="padding: 10px; text-align: left;">Amount</th>';
+                html += '<th style="padding: 10px; text-align: left;">Details</th>';
+                html += '</tr></thead><tbody>';
+                
+                payments.forEach(payment => {
+                    const date = new Date(payment.activity_date);
+                    const dateStr = date.toLocaleDateString('en-GB', { 
+                        day: '2-digit', 
+                        month: 'short', 
+                        year: 'numeric' 
+                    });
+                    
+                    // Extract amount from subject (e.g., "Payment Received: £500.00")
+                    const amountMatch = payment.subject.match(/£([\d,]+\.\d{2})/);
+                    const amount = amountMatch ? amountMatch[1] : '0.00';
+                    
+                    html += '<tr style="border-bottom: 1px solid #eee;">';
+                    html += `<td style="padding: 10px;">${dateStr}</td>`;
+                    html += `<td style="padding: 10px; font-weight: bold; color: #28a745;">£${amount}</td>`;
+                    html += `<td style="padding: 10px; color: #666;">${escapeHtml(payment.description || '')}</td>`;
+                    html += '</tr>';
+                });
+                
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+            })
+            .catch(err => {
+                console.error('Error loading payments:', err);
+            });
+        }
+        
+        // ==================== Client Tasks Functions ====================
+        
+        function loadClientTasks(clientId) {
+            fetch(`api/tasks.php?client_id=${clientId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('client-tasks-list');
+                    if (data.success && data.tasks && data.tasks.length > 0) {
+                        container.innerHTML = data.tasks.map(task => {
+                            const priorityColors = {
+                                urgent: '#dc3545',
+                                high: '#fd7e14',
+                                medium: '#ffc107',
+                                low: '#28a745'
+                            };
+                            const statusBadges = {
+                                pending: '⏳ Pending',
+                                in_progress: '🔄 In Progress',
+                                completed: '✅ Completed',
+                                cancelled: '❌ Cancelled'
+                            };
+                            
+                            return `
+                                <div class="client-task-item ${task.status === 'completed' || task.status === 'cancelled' ? 'completed' : ''}">
+                            <div class="client-task-left">
+                                <div class="client-task-title ${task.status === 'completed' ? 'completed' : ''}">${task.title}</div>
+                                <div class="client-task-meta">
+                                    <span class="priority-badge" data-priority="${task.priority}">● ${task.priority.toUpperCase()}</span>
+                                    <span>${statusBadges[task.status]}</span>
+                                    ${task.due_date ? `<span>📅 Due: ${new Date(task.due_date).toLocaleDateString()}</span>` : ''}
+                                </div>
+                            </div>
+                                <div class="client-task-actions">
+                                    ${task.status !== 'completed' ? `<button class="btn btn-sm btn-primary" onclick="markTaskComplete(${task.id})">✓ Complete</button>` : ''}
+                                    <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})">Delete</button>
+                                </div>
+                            </div>
+                        `}).join('');
+                    } else {
+                        container.innerHTML = '<div class="empty-state"><h3>No Tasks Yet</h3><p>Create tasks related to this client.</p></div>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading tasks:', err);
+                });
+        }
+        
+        function openAddClientTaskModal() {
+            // Mark that the task modal was opened from a client and remember the client id
+            window._taskOpenedForClient = true;
+            window._preselectedTaskClientId = currentClientId;
+            openTaskModal();
+        }
+        
+        function markTaskComplete(taskId) {
+            fetch(`api/tasks.php?id=${taskId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ status: 'completed' })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    loadClientTasks(currentClientId);
+                    loadTasks(); // Refresh main tasks list if visible
+                    showNotification('Task marked as complete', 'success');
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to update task'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error updating task');
+            });
+        }
+        
+        function deleteTask(taskId) {
+            if (!confirm('Delete this task?')) return;
+            
+            fetch(`api/tasks.php?id=${taskId}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    loadClientTasks(currentClientId);
+                    loadTasks(); // Refresh main tasks list if visible
+                    showNotification('Task deleted', 'success');
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to delete task'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error deleting task');
+            });
+        }
+        
+        // Helper notification function
+        function showNotification(message, type) {
+            // Simple alert for now - can be enhanced with a toast notification system
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // ==================== Main Tasks Section Functions ====================
+        
+        let currentTaskFilter = 'all';
+        let currentEditTaskId = null;
+        
+        function loadTasks() {
+            // Get filter value from dropdown if it exists
+            const filterSelect = document.getElementById('taskStatusFilter');
+            if (filterSelect) {
+                currentTaskFilter = filterSelect.value || 'all';
+            }
+            
+            const statusFilter = currentTaskFilter === '' || currentTaskFilter === 'all' ? '' : `&status=${currentTaskFilter}`;
+            
+            // return promise so callers (stat-card clicks) can chain further UI filtering
+            return fetch(`api/tasks.php?${statusFilter.substring(1)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.tasks) {
+                        // Update statistics
+                        const pending = data.tasks.filter(t => t.status === 'pending').length;
+                        const today = new Date().toISOString().split('T')[0];
+                        const overdue = data.tasks.filter(t => t.due_date && t.due_date < today && t.status !== 'completed' && t.status !== 'cancelled').length;
+                        const urgent = data.tasks.filter(t => t.priority === 'urgent' && t.status !== 'completed' && t.status !== 'cancelled').length;
+                        
+                        document.getElementById('stat-tasks-pending').textContent = pending;
+                        document.getElementById('stat-tasks-overdue').textContent = overdue;
+                        document.getElementById('stat-tasks-urgent').textContent = urgent;
+                        
+                        // Render tasks list
+                        renderTasksList(data.tasks);
+                    }
+                    return data;
+                })
+                .catch(err => {
+                    console.error('Error loading tasks:', err);
+                    throw err;
+                });
+        }
+        
+        function renderTasksList(tasks) {
+            const container = document.getElementById('tasks-list');
+            
+            if (tasks.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>No Tasks Found</h3><p>Create your first task to get started.</p></div>';
+                return;
+            }
+            
+            const priorityColors = {
+                urgent: '#dc3545',
+                high: '#fd7e14',
+                medium: '#ffc107',
+                low: '#28a745'
+            };
+            
+            const statusBadges = {
+                pending: '⏳ Pending',
+                in_progress: '🔄 In Progress',
+                completed: '✅ Completed',
+                cancelled: '❌ Cancelled'
+            };
+            
+            container.innerHTML = tasks.map(task => {
+                const priorityColor = priorityColors[task.priority] || '#666';
+                return `
+                <div class="task-item ${task.status === 'completed' || task.status === 'cancelled' ? 'completed' : ''}" data-status="${task.status}" data-priority="${task.priority}" data-due-date="${task.due_date || ''}">
+                    <div class="task-left">
+                        <div class="task-title ${task.status === 'completed' ? 'completed' : ''}">${task.title}</div>
+                        ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+                        <div class="task-meta">
+                            <span class="priority-badge" style="font-weight: 600; margin-right: 10px; display: inline-block; color: ${priorityColor};">● ${task.priority.toUpperCase()}</span>
+                            <span>${statusBadges[task.status]}</span>
+                            ${task.due_date ? `<span>📅 Due: ${new Date(task.due_date).toLocaleDateString()}</span>` : ''}
+                            ${task.client_name ? `<span>👤 ${task.client_name}</span>` : '<span>👤 General Task</span>'}
+                            ${task.assigned_to_name || task.assigned_to_username ? `<span>👷 ${escapeHtml(task.assigned_to_name || task.assigned_to_username)}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn btn-sm btn-secondary" onclick="editTask(${task.id})">Edit</button>
+                        ${task.status !== 'completed' ? `<button class="btn btn-sm btn-primary" onclick="markTaskComplete(${task.id})">✓ Complete</button>` : ''}
+                        <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})">Delete</button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+        
+        function filterTasks(status) {
+            currentTaskFilter = status || 'all';
+            const select = document.getElementById('taskStatusFilter');
+            if (select) select.value = currentTaskFilter;
+            loadTasks();
+        }
+
+        function showOverdueTasks() {
+            // ensure tasks list is loaded then hide non-overdue items
+            const select = document.getElementById('taskStatusFilter');
+            if (select) select.value = 'all';
+            loadTasks().then(() => {
+                const today = new Date();
+                document.querySelectorAll('#tasks-list .task-item').forEach(el => {
+                    const due = el.dataset.dueDate;
+                    const status = el.dataset.status;
+                    const isOverdue = due && new Date(due) < today && status !== 'completed' && status !== 'cancelled';
+                    el.style.display = isOverdue ? '' : 'none';
+                });
+            }).catch(() => {});
+        }
+
+        function showUrgentTasks() {
+            const select = document.getElementById('taskStatusFilter');
+            if (select) select.value = 'all';
+            loadTasks().then(() => {
+                document.querySelectorAll('#tasks-list .task-item').forEach(el => {
+                    const priority = el.dataset.priority;
+                    const status = el.dataset.status;
+                    const isUrgent = priority === 'urgent' && status !== 'completed' && status !== 'cancelled';
+                    el.style.display = isUrgent ? '' : 'none';
+                });
+            }).catch(() => {});
+        }
+        
+        function openAddTaskModal() {
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskId').value = '';
+            document.getElementById('taskModalTitle').textContent = 'Add New Task';
+            
+            // Load clients for dropdown
+            fetch('api/get_clients.php')
+                .then(res => res.json())
+                .then(data => {
+                    const clientSelect = document.getElementById('taskClientId');
+                    clientSelect.innerHTML = '<option value="">-- General Task --</option>';
+                    if (data.success && data.clients) {
+                        data.clients.forEach(client => {
+                            clientSelect.innerHTML += `<option value="${client.id}">${client.name}${client.company ? ' (' + client.company + ')' : ''}</option>`;
+                        });
+                    }
+
+                    // If a client was preselected (opened from client details), set it here
+                    if (window._preselectedTaskClientId) {
+                        clientSelect.value = window._preselectedTaskClientId;
+                        // clear the temporary value so subsequent opens are normal
+                        delete window._preselectedTaskClientId;
+                    }
+                });
+            
+            bringModalToFront('taskModal');
+            document.getElementById('taskModal').style.display = 'flex';
+            // autofocus: if opened from client details, focus Due Date; otherwise focus Title
+            setTimeout(() => {
+                if (window._taskOpenedForClient) {
+                    const due = document.getElementById('taskDueDate'); if (due) due.focus();
+                    // clear flag after use
+                    delete window._taskOpenedForClient;
+                } else {
+                    const f = document.getElementById('taskTitle'); if (f) f.focus();
+                }
+            }, 50);
+        }
+        
+        function editTask(taskId) {
+            document.getElementById('taskModalTitle').textContent = 'Edit Task';
+            
+            // Fetch task data
+            fetch(`api/tasks.php?id=${taskId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.task) {
+                        const task = data.task;
+                        document.getElementById('taskId').value = task.id;
+                        document.getElementById('taskTitle').value = task.title;
+                        document.getElementById('taskDescription').value = task.description || '';
+                        document.getElementById('taskPriority').value = task.priority;
+                        document.getElementById('taskDueDate').value = task.due_date || '';
+                        document.getElementById('taskStatus').value = task.status;
+                        
+                        // Load clients and select the right one
+                        fetch('api/get_clients.php')
+                            .then(res => res.json())
+                            .then(clientData => {
+                                const clientSelect = document.getElementById('taskClientId');
+                                clientSelect.innerHTML = '<option value="">-- General Task --</option>';
+                                if (clientData.success && clientData.clients) {
+                                    clientData.clients.forEach(client => {
+                                        const selected = client.id == task.client_id ? 'selected' : '';
+                                        clientSelect.innerHTML += `<option value="${client.id}" ${selected}>${client.name}${client.company ? ' (' + client.company + ')' : ''}</option>`;
+                                    });
+                                }
+                            });
+                        
+                        bringModalToFront('taskModal');
+                        document.getElementById('taskModal').style.display = 'flex';
+                        // autofocus first field when modal appears
+                        setTimeout(() => { const f = document.getElementById('taskTitle'); if (f) f.focus(); }, 50);
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading task:', err);
+                    alert('Error loading task');
+                });
+        }
+        
+        function closeTaskModal() {
+            const m = document.getElementById('taskModal');
+            if (m) {
+                m.style.display = 'none';
+                // remove any inline zIndex we may have set when bringing to front
+                m.style.zIndex = '';
+            }
+        }
+
+        // Bring a modal element to the top of modal stack so it appears forefront
+        function bringModalToFront(modalId) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            let maxZ = 1000; // base z-index used by .modal
+            document.querySelectorAll('.modal').forEach(m => {
+                const z = window.getComputedStyle(m).zIndex;
+                const zi = parseInt(z, 10);
+                if (!isNaN(zi) && zi > maxZ) maxZ = zi;
+            });
+            // give this modal a slightly higher z-index
+            modal.style.zIndex = (maxZ + 10).toString();
+        }
+        
+        function saveTask(event) {
+            event.preventDefault();
+            
+            const taskId = document.getElementById('taskId').value;
+            const formData = {
+                title: document.getElementById('taskTitle').value,
+                description: document.getElementById('taskDescription').value,
+                client_id: document.getElementById('taskClientId').value || null,
+                priority: document.getElementById('taskPriority').value,
+                due_date: document.getElementById('taskDueDate').value || null,
+                status: document.getElementById('taskStatus').value
+            };
+            
+            const method = taskId ? 'PUT' : 'POST';
+            const url = taskId ? `api/tasks.php?id=${taskId}` : 'api/tasks.php';
+            
+            fetch(url, {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    closeTaskModal();
+                    loadTasks();
+                    if (currentClientId) {
+                        loadClientTasks(currentClientId);
+                    }
+                    showNotification(taskId ? 'Task updated successfully' : 'Task created successfully', 'success');
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to save task'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error saving task');
+            });
+        }
+        
+        function openTaskModal() {
+            openAddTaskModal();
+        }
+        
+        // ==================== User Management Functions ====================
+        
+        function loadUsers() {
+            fetch('api/get_users.php')
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('users-list-tbody');
+                    
+                    if (!data.success || !data.users || data.users.length === 0) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="6" style="padding: 40px; text-align: center; color: #999;">
+                                    No users found. Click "Create New User" to add your first user.
+                                </td>
+                            </tr>
+                        `;
+                        return;
+                    }
+                    
+                    tbody.innerHTML = data.users.map(user => {
+                        const createdDate = new Date(user.created_at).toLocaleDateString('en-GB');
+                        const roleLabel = user.role === 'superadmin' ? 'Super Admin' : 'Admin';
+                        const roleBadgeColor = user.role === 'superadmin' ? '#dc3545' : '#007bff';
+                        
+                        return `
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 15px; font-weight: 500;">${escapeHtml(user.full_name || 'N/A')}</td>
+                                <td style="padding: 15px;">${escapeHtml(user.username)}</td>
+                                <td style="padding: 15px;">${escapeHtml(user.email || 'N/A')}</td>
+                                <td style="padding: 15px;">
+                                    <span style="background: ${roleBadgeColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                                        ${roleLabel}
+                                    </span>
+                                </td>
+                                <td style="padding: 15px; color: #666;">${createdDate}</td>
+                                <td style="padding: 15px; text-align: center;">
+                                    <button class="btn btn-sm btn-primary" onclick="openEditUserModal(${user.id})" style="margin-right: 5px;">
+                                        ✏️ Edit
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="openDeleteUserModal(${user.id}, '${escapeHtml(user.username)}')">
+                                        🗑️ Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                })
+                .catch(err => {
+                    console.error('Error loading users:', err);
+                    document.getElementById('users-list-tbody').innerHTML = `
+                        <tr>
+                            <td colspan="6" style="padding: 40px; text-align: center; color: #dc3545;">
+                                Error loading users. Please refresh the page.
+                            </td>
+                        </tr>
+                    `;
+                });
+        }
+        
+        function openCreateUserModal() {
+            document.getElementById('createUserForm').reset();
+            document.getElementById('createUserModal').classList.add('show');
+        }
+        
+        function closeCreateUserModal() {
+            document.getElementById('createUserModal').classList.remove('show');
+        }
+        
+        function createUser(event) {
+            event.preventDefault();
+            
+            const firstName = document.getElementById('newUserFirstName').value;
+            const lastName = document.getElementById('newUserLastName').value;
+            const username = document.getElementById('newUsername').value;
+            const email = document.getElementById('newUserEmail').value;
+            const password = document.getElementById('newUserPassword').value;
+            const passwordConfirm = document.getElementById('newUserPasswordConfirm').value;
+            const role = document.getElementById('newUserRole').value;
+            
+            if (password !== passwordConfirm) {
+                alert('Passwords do not match!');
+                return;
+            }
+            
+            fetch('api/create_user.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    first_name: firstName,
+                    last_name: lastName,
+                    username: username,
+                    email: email,
+                    password: password,
+                    role: role
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('User created successfully!');
+                    closeCreateUserModal();
+                    loadUsers();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to create user'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error creating user');
+            });
+        }
+        
+        function openEditUserModal(userId) {
+            fetch('api/get_users.php?id=' + userId)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.users && data.users.length > 0) {
+                        const user = data.users[0];
+                        document.getElementById('editUserId').value = user.id;
+                        document.getElementById('editUserFirstName').value = user.first_name || '';
+                        document.getElementById('editUserLastName').value = user.last_name || '';
+                        document.getElementById('editUsername').value = user.username;
+                        document.getElementById('editUserEmail').value = user.email || '';
+                        document.getElementById('editUserRole').value = user.role || 'admin';
+                        document.getElementById('editUserPassword').value = '';
+                        document.getElementById('editUserPasswordConfirm').value = '';
+                        document.getElementById('editUserModal').classList.add('show');
+                    } else {
+                        alert('Error loading user details');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('Error loading user details');
+                });
+        }
+        
+        function closeEditUserModal() {
+            document.getElementById('editUserModal').classList.remove('show');
+        }
+        
+        function updateUser(event) {
+            event.preventDefault();
+            
+            const userId = document.getElementById('editUserId').value;
+            const firstName = document.getElementById('editUserFirstName').value;
+            const lastName = document.getElementById('editUserLastName').value;
+            const email = document.getElementById('editUserEmail').value;
+            const password = document.getElementById('editUserPassword').value;
+            const passwordConfirm = document.getElementById('editUserPasswordConfirm').value;
+            const role = document.getElementById('editUserRole').value;
+            
+            if (password && password !== passwordConfirm) {
+                alert('Passwords do not match!');
+                return;
+            }
+            
+            const updateData = {
+                id: userId,
+                first_name: firstName,
+                last_name: lastName,
+                email: email,
+                role: role
+            };
+            
+            if (password) {
+                updateData.password = password;
+            }
+            
+            fetch('api/update_user.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(updateData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('User updated successfully!');
+                    closeEditUserModal();
+                    loadUsers();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to update user'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error updating user');
+            });
+        }
+        
+        function openDeleteUserModal(userId, username) {
+            document.getElementById('deleteUserId').value = userId;
+            document.getElementById('deleteUserName').textContent = username;
+            document.getElementById('deleteUserModal').classList.add('show');
+        }
+        
+        function closeDeleteUserModal() {
+            document.getElementById('deleteUserModal').classList.remove('show');
+        }
+        
+        function confirmDeleteUser() {
+            const userId = document.getElementById('deleteUserId').value;
+            
+            fetch('api/delete_user.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id: userId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('User deleted successfully!');
+                    closeDeleteUserModal();
+                    loadUsers();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to delete user'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error deleting user');
+            });
+        }
+        
+        // ==================== Email Functions ====================
+        
+        function composeEmail(clientId = null, clientEmail = null, clientName = null) {
+            if (clientId && clientEmail) {
+                // Composing to a specific client
+                document.getElementById('emailClientId').value = clientId;
+                document.getElementById('emailTo').value = clientEmail;
+                document.getElementById('emailSubject').value = '';
+                document.getElementById('emailMessage').value = '';
+                document.getElementById('emailLogActivity').checked = true;
+            } else if (currentClientId) {
+                // Use current client if in client modal
+                const email = document.getElementById('clientEmail')?.textContent;
+                const name = document.getElementById('clientName')?.textContent;
+                if (email) {
+                    document.getElementById('emailClientId').value = currentClientId;
+                    document.getElementById('emailTo').value = email;
+                    document.getElementById('emailSubject').value = '';
+                    document.getElementById('emailMessage').value = '';
+                    document.getElementById('emailLogActivity').checked = true;
+                }
+            } else {
+                alert('Please select a client first to compose an email.');
+                return;
+            }
+            
+            document.getElementById('composeEmailModal').classList.add('show');
+        }
+        
+        function closeComposeEmailModal() {
+            document.getElementById('composeEmailModal').classList.remove('show');
+        }
+        
+        function sendClientEmail(event) {
+            event.preventDefault();
+            
+            const clientId = document.getElementById('emailClientId').value;
+            const to = document.getElementById('emailTo').value;
+            const subject = document.getElementById('emailSubject').value;
+            const message = document.getElementById('emailMessage').value;
+            const logActivity = document.getElementById('emailLogActivity').checked;
+            
+            // Send email
+            fetch('api/send_email.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    to: to,
+                    subject: subject,
+                    message: message,
+                    client_id: clientId
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Email sent successfully!');
+                    closeComposeEmailModal();
+                    
+                    // Log activity if checkbox is checked
+                    if (logActivity && clientId) {
+                        const activityData = {
+                            client_id: clientId,
+                            type: 'email',
+                            subject: `Email: ${subject}`,
+                            description: message.substring(0, 200) + (message.length > 200 ? '...' : ''),
+                            activity_date: new Date().toISOString().slice(0, 19).replace('T', ' ')
+                        };
+                        
+                        fetch('api/activities.php', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify(activityData)
+                        })
+                        .then(() => {
+                            if (currentClientId == clientId) {
+                                loadClientActivities(clientId);
+                            }
+                        })
+                        .catch(err => console.error('Error logging activity:', err));
+                    }
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to send email. Please check your email settings.'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error sending email. Please try again.');
+            });
+        }
+        
+        function loadInboxEmails() {
+            const container = document.getElementById('inbox-email-list');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>Email Integration Coming Soon</h3>
+                    <p>The inbox feature will display emails sent through the quote request form and other contact forms.</p>
+                    <p style="margin-top: 10px; color: #666;">Configure your email settings first to enable this feature.</p>
+                </div>
+            `;
+        }
+        
+        function loadDraftEmails() {
+            const container = document.getElementById('draft-email-list');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>No Drafts</h3>
+                    <p>Draft emails will appear here once the compose feature is enabled.</p>
+                </div>
+            `;
+        }
+        
+        function loadSentEmails() {
+            const container = document.getElementById('sent-email-list');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>Email Integration Coming Soon</h3>
+                    <p>Sent emails including quote confirmations and invoices will appear here.</p>
+                    <p style="margin-top: 10px; color: #666;">Configure your email settings first to enable this feature.</p>
+                </div>
+            `;
+        }
+        
+        function loadTrashEmails() {
+            const container = document.getElementById('trash-email-list');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>Trash is Empty</h3>
+                    <p>Deleted emails will appear here.</p>
+                </div>
+            `;
+        }
+        
+        function emptyTrash() {
+            if (confirm('Are you sure you want to permanently delete all emails in trash?')) {
+                alert('Trash emptied successfully!');
+                loadTrashEmails();
+            }
+        }
+        
+        function saveEmailSettings(event) {
+            event.preventDefault();
+            
+            const settings = {
+                smtp_host: document.getElementById('smtpHost').value,
+                smtp_port: document.getElementById('smtpPort').value,
+                smtp_username: document.getElementById('smtpUsername').value,
+                smtp_password: document.getElementById('smtpPassword').value,
+                smtp_encryption: document.getElementById('smtpEncryption').value,
+                smtp_from_email: document.getElementById('smtpFromEmail').value,
+                smtp_from_name: document.getElementById('smtpFromName').value,
+                enable_notifications: document.getElementById('enableEmailNotifications').checked,
+                enable_auto_reply: document.getElementById('enableAutoReply').checked,
+                notification_email: document.getElementById('notificationEmail').value,
+                auto_reply_template: document.getElementById('autoReplyTemplate').value
+            };
+            
+            fetch('api/save_email_settings.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(settings)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Email settings saved successfully!');
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to save settings'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error saving email settings. Please try again.');
+            });
+        }
+        
+        function testEmailSettings() {
+            const settings = {
+                smtp_host: document.getElementById('smtpHost').value,
+                smtp_port: document.getElementById('smtpPort').value,
+                smtp_username: document.getElementById('smtpUsername').value,
+                smtp_password: document.getElementById('smtpPassword').value,
+                smtp_encryption: document.getElementById('smtpEncryption').value,
+                smtp_from_email: document.getElementById('smtpFromEmail').value
+            };
+            
+            if (!settings.smtp_host || !settings.smtp_port || !settings.smtp_username || !settings.smtp_password) {
+                alert('Please fill in all SMTP settings before testing.');
+                return;
+            }
+            
+            alert('Testing email connection...');
+            
+            fetch('api/test_email.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(settings)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ Email connection successful! Test email sent to ' + settings.smtp_from_email);
+                } else {
+                    alert('❌ Email connection failed: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('❌ Error testing email connection. Please check your settings.');
+            });
+        }
+        
+        function loadEmailSettings() {
+            fetch('api/get_email_settings.php')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.settings) {
+                    const s = data.settings;
+                    if (s.smtp_host) document.getElementById('smtpHost').value = s.smtp_host;
+                    if (s.smtp_port) document.getElementById('smtpPort').value = s.smtp_port;
+                    if (s.smtp_username) document.getElementById('smtpUsername').value = s.smtp_username;
+                    if (s.smtp_password) document.getElementById('smtpPassword').value = s.smtp_password;
+                    if (s.smtp_encryption) document.getElementById('smtpEncryption').value = s.smtp_encryption;
+                    if (s.smtp_from_email) document.getElementById('smtpFromEmail').value = s.smtp_from_email;
+                    if (s.smtp_from_name) document.getElementById('smtpFromName').value = s.smtp_from_name;
+
+                    // load CRM settings too
+                    loadCrmSettings();
+                    
+                    document.getElementById('enableEmailNotifications').checked = s.enable_notifications == 1;
+                    document.getElementById('enableAutoReply').checked = s.enable_auto_reply == 1;
+                    
+                    if (s.notification_email) document.getElementById('notificationEmail').value = s.notification_email;
+                    if (s.auto_reply_template) document.getElementById('autoReplyTemplate').value = s.auto_reply_template;
+                }
+            })
+            .catch(err => {
+                console.error('Error loading email settings:', err);
+            });
+        }
+        
+        // CRM settings UI helpers
+        function addCrmColorRow(source = '', color = '#f6d365') {
+            const tpl = document.getElementById('crmColorRowTpl');
+            const frag = tpl.content.cloneNode(true);
+            const wrapper = frag.querySelector('div');
+            const srcInput = frag.querySelector('.crm-source');
+            const colorInput = frag.querySelector('.crm-color');
+            const removeBtn = frag.querySelector('.crm-remove');
+            srcInput.value = source;
+            colorInput.value = color;
+            removeBtn.addEventListener('click', () => wrapper.remove());
+            document.getElementById('crmColorsList').appendChild(wrapper);
+        }
+
+        function loadCrmSettings() {
+            fetch('api/get_crm_settings.php')
+                .then(r => r.json())
+                .then(json => {
+                    if (!json.success) return;
+                    const colors = json.settings && json.settings.lead_source_colors ? json.settings.lead_source_colors : {};
+                    const list = document.getElementById('crmColorsList');
+                    list.innerHTML = '';
+                    for (const src in colors) {
+                        addCrmColorRow(src, colors[src]);
+                    }
+                    window.crmLeadColorMap = colors || {};
+                })
+                .catch(err => console.error('Error loading CRM settings:', err));
+        }
+
+        function saveCrmSettings() {
+            const list = document.getElementById('crmColorsList');
+            const rows = list.querySelectorAll('div');
+            const colors = {};
+            rows.forEach(row => {
+                const src = row.querySelector('.crm-source').value.trim();
+                const color = row.querySelector('.crm-color').value || '#d1fae5';
+                if (src) colors[src] = color;
+            });
+
+            fetch('api/save_crm_settings.php', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ lead_source_colors: colors }) })
+                .then(r => r.json())
+                .then(json => {
+                    if (json.success) {
+                        window.crmLeadColorMap = colors;
+                        // refresh dashboard stats so UI reflects updated colors immediately
+                        loadDashboardStats();
+                        // warm crm cache
+                        fetch('api/crm_dashboard.php').catch(()=>{});
+                        alert('CRM settings saved');
+                    } else {
+                        alert('Failed to save CRM settings: ' + (json.message || 'unknown'));
+                    }
+                })
+                .catch(err => { console.error(err); alert('Error saving CRM settings'); });
+        }
+
+        // ==================== Menu Customization ====================
+        
+        const defaultMenuOrder = [
+            {id: 'nav-dashboard', label: '📋 Dashboard', section: 'dashboard', type: 'link'},
+            {id: 'nav-crm', label: '📈 CRM Summary', section: 'crm', type: 'link'},
+            {id: 'nav-clients', label: '📝 Quote Requests', section: 'clients', type: 'link'},
+            {id: 'clients-submenu', label: '👥 Clients', type: 'parent', children: [
+                {id: 'nav-existing-clients', label: '👤 Existing Clients', section: 'existing-clients'},
+                {id: 'nav-add-client', label: '➕ Add New Client', action: 'openAddClientModal()'}
+            ]},
+            {id: 'email-submenu', label: '📧 Email', type: 'parent', children: [
+                {id: 'nav-email-inbox', label: '📥 Inbox', section: 'email-inbox'},
+                {id: 'nav-email-draft', label: '📝 Drafts', section: 'email-draft'},
+                {id: 'nav-email-sent', label: '📤 Sent', section: 'email-sent'},
+                {id: 'nav-email-trash', label: '🗑️ Trash', section: 'email-trash'},
+                {id: 'nav-email-settings', label: '⚙️ Settings', section: 'email-settings'}
+            ]},
+            {id: 'nav-tasks', label: '✅ Tasks & To-Do', section: 'tasks', type: 'link'},
+            {id: 'nav-invoices', label: '📄 Invoices', section: 'invoices', type: 'link'},
+            {id: 'pages-submenu', label: '🌐 Website Pages', type: 'parent', children: [
+                {id: 'nav-html-files', label: '📝 Edit Pages', section: 'html-files'},
+                {id: 'nav-new-page', label: '➕ Create New Page', action: 'openNewPageModal()'}
+            ]},
+            {id: 'users-submenu', label: '👤 Users', type: 'parent', children: [
+                {id: 'nav-users-list', label: '📋 View All Users', section: 'users-list'},
+                {id: 'nav-create-user', label: '➕ Create User', action: 'openCreateUserModal()'}
+            ]},
+            {id: 'settings-submenu', label: '⚙️ Settings', type: 'parent', children: [
+                {id: 'nav-export', label: '📦 Export Website', action: "location.href='export.php'"},
+                {id: 'nav-customize-menu', label: '⚙️ Customize Menu', action: 'openMenuCustomizationModal()'}
+            ]}
+        ];
+        
+        function openMenuCustomizationModal() {
+            loadMenuItems();
+            document.getElementById('menuCustomizationModal').style.display = 'flex';
+        }
+        
+        function closeMenuCustomizationModal() {
+            document.getElementById('menuCustomizationModal').style.display = 'none';
+        }
+        
+        function loadMenuItems() {
+            fetch('api/get_menu_order.php')
+                .then(res => res.json())
+                .then(data => {
+                    const menuOrder = data.success && data.order ? data.order : defaultMenuOrder;
+                    renderMenuItems(menuOrder);
+                })
+                .catch(() => {
+                    renderMenuItems(defaultMenuOrder);
+                });
+        }
+        
+        function renderMenuItems(items) {
+            const container = document.getElementById('menu-items-list');
+            container.innerHTML = items.map((item, index) => `
+                <div class="menu-config-item" data-index="${index}" style="background: white; padding: 12px; margin-bottom: 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #ddd;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-weight: 500;">${item.label}</span>
+                        ${item.children ? `<span style="font-size: 12px; color: #666;">(${item.children.length} items)</span>` : ''}
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        ${index > 0 ? `<button class="btn btn-sm btn-secondary" onclick="moveMenuItem(${index}, -1)" style="padding: 4px 8px;">↑</button>` : ''}
+                        ${index < items.length - 1 ? `<button class="btn btn-sm btn-secondary" onclick="moveMenuItem(${index}, 1)" style="padding: 4px 8px;">↓</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+            
+            // Store current order in memory
+            window.currentMenuOrder = items;
+        }
+        
+        function moveMenuItem(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= window.currentMenuOrder.length) return;
+            
+            const items = [...window.currentMenuOrder];
+            [items[index], items[newIndex]] = [items[newIndex], items[index]];
+            
+            window.currentMenuOrder = items;
+            renderMenuItems(items);
+            saveMenuOrder(items);
+        }
+        
+        function saveMenuOrder(order) {
+            fetch('api/save_menu_order.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({order: order})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    applySidebarOrder(order);
+                }
+            })
+            .catch(err => console.error('Error saving menu order:', err));
+        }
+        
+        function resetMenuOrder() {
+            if (confirm('Reset menu to default order?')) {
+                saveMenuOrder(defaultMenuOrder);
+                renderMenuItems(defaultMenuOrder);
+            }
+        }
+        
+        function applySidebarOrder(order) {
+            const sidebar = document.querySelector('.sidebar');
+            if (!sidebar) return;
+
+            // Capture available elements (preserve original DOM order)
+            const elements = {};
+            const originalOrder = [];
+            sidebar.querySelectorAll('a, .submenu').forEach(el => {
+                if (el.id) {
+                    elements[el.id] = el.cloneNode(true);
+                    originalOrder.push(el.id);
+                }
+            });
+
+            // Preserve footer elements (they will be re-appended)
+            const customizeMenu = elements['nav-customize-menu'];
+            const viewSite = elements['nav-view-site'];
+            const logout = elements['nav-logout'];
+
+            // If saved order is missing or invalid, fall back to defaultMenuOrder
+            const savedOrder = Array.isArray(order) ? order : [];
+
+            // Build a merged order: start with saved items that still exist, then append any default items missing from saved order
+            const merged = [];
+            const addedIds = new Set();
+
+            // Helper to add an item (marking its id and — for parents — their children)
+            function pushItem(item) {
+                if (!item || !item.id || addedIds.has(item.id)) return;
+                merged.push(item);
+                addedIds.add(item.id);
+
+                // If this is a parent menu, also mark its children as "added" so they aren't re-appended later
+                if (item.type === 'parent' && item.children && Array.isArray(item.children)) {
+                    item.children.forEach(c => { if (c && c.id) addedIds.add(c.id); });
+                }
+            }
+
+            // 1) keep saved items only if corresponding DOM element exists (prevents lost items when user-saved order is stale)
+            savedOrder.forEach(it => {
+                if (!it || !it.id) return;
+                if (it.type === 'parent') {
+                    if (elements[it.id] || (it.children && it.children.some(c => elements[c.id]))) pushItem(it);
+                } else {
+                    if (elements[it.id]) pushItem(it);
+                }
+            });
+
+            // 2) append any defaults that aren't already in merged (restore missing items)
+            (window.defaultMenuOrder || []).forEach(def => {
+                if (!def || !def.id) return;
+                if (!addedIds.has(def.id)) {
+                    if (def.type === 'parent') {
+                        if (elements[def.id] || (def.children && def.children.some(c => elements[c.id]))) pushItem(def);
+                    } else {
+                        if (elements[def.id]) pushItem(def);
+                    }
+                }
+            });
+
+            // Clear and rebuild sidebar from merged order
+            sidebar.innerHTML = '';
+
+            merged.forEach(item => {
+                if (item.type === 'parent' && item.id) {
+                    const parent = document.createElement('a');
+                    parent.href = '#';
+                    parent.className = 'menu-parent';
+                    parent.textContent = item.label;
+                    parent.onclick = (e) => { toggleSubmenu(e, item.id); return false; };
+                    sidebar.appendChild(parent);
+
+                    if (elements[item.id]) {
+                        // append submenu clone and mark any anchor children as added (prevents later duplication)
+                        const submenuClone = elements[item.id].cloneNode(true);
+                        // mark child anchor ids so final sweep won't re-append them
+                        submenuClone.querySelectorAll('a[id]').forEach(a => addedIds.add(a.id));
+                        sidebar.appendChild(submenuClone);
+                    } else {
+                        const submenu = document.createElement('div');
+                        submenu.className = 'submenu';
+                        submenu.id = item.id;
+                        if (item.children && item.children.length) {
+                            item.children.forEach(c => {
+                                if (elements[c.id]) submenu.appendChild(elements[c.id].cloneNode(true));
+                            });
+                        }
+                        if (submenu.children.length) sidebar.appendChild(submenu);
+                    }
+                } else if (item.id && elements[item.id] && !item.id.includes('submenu')) {
+                    sidebar.appendChild(elements[item.id].cloneNode(true));
+                }
+            });
+
+            // 3) append any remaining *anchor* DOM elements that weren't included (skip standalone submenu divs)
+            //    — do not re-append footer controls (customize/view-site/logout) which are added separately below
+            const footerIds = new Set(['nav-customize-menu', 'nav-view-site', 'nav-logout']);
+            originalOrder.forEach(id => {
+                if (!addedIds.has(id) && elements[id] && elements[id].tagName === 'A' && !footerIds.has(id)) {
+                    sidebar.appendChild(elements[id].cloneNode(true));
+                }
+            });
+
+            // Re-append footer controls in a sensible order (customize, view site, logout)
+            if (customizeMenu && !addedIds.has('nav-customize-menu')) {
+                const cm = customizeMenu.cloneNode(true);
+                cm.onclick = (e) => { openMenuCustomizationModal(); return false; };
+                sidebar.appendChild(cm);
+            }
+            if (viewSite && !addedIds.has('nav-view-site')) sidebar.appendChild(viewSite.cloneNode(true));
+            if (logout && !addedIds.has('nav-logout')) sidebar.appendChild(logout.cloneNode(true));
+        }
+        
+        // Load and apply saved menu order on page load
+        function initializeMenuOrder() {
+            fetch('api/get_menu_order.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.order) {
+                        applySidebarOrder(data.order);
+                    }
+                })
+                .catch(() => {
+                    // Use default order if no saved order exists
+                });
+        }
+        
+        // Initialize menu order when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeMenuOrder();
+
+            // Time-of-day greeting (Good morning/afternoon/evening)
+            try {
+                const hour = new Date().getHours();
+                const part = hour < 12 ? 'Good morning' : (hour < 18 ? 'Good afternoon' : 'Good evening');
+
+                // Update dashboard greeting (keeps role badge if present)
+                const dg = document.getElementById('dashboardGreeting');
+                if (dg) {
+                    const roleEl = dg.querySelector('.role-badge');
+                    const roleHtml = roleEl ? (' ' + roleEl.outerHTML) : '';
+                    const nameText = dg.childNodes[0] ? dg.childNodes[0].textContent.trim() : '';
+                    dg.innerHTML = `${part}, ${nameText}${roleHtml}`;
+                }
+
+                // Auto-scroll to CRM if URL indicates it (supports ?view=crm and #crm)
+                try {
+                    const params = new URLSearchParams(window.location.search);
+                    const wantCRM = (params.get('view') || '').toLowerCase() === 'crm' || window.location.hash === '#crm';
+                    if (wantCRM) {
+                        // Give the page a moment to render then scroll
+                        setTimeout(() => { if (typeof scrollToCRM === 'function') scrollToCRM(); }, 250);
+                    }
+                } catch (err) { /* ignore */ }
+            } catch (e) { /* ignore */ }
+        });
+    </script>
+</body>
+</html>
