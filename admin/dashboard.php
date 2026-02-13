@@ -1799,6 +1799,13 @@ if ($invoices_result) {
                     <p style="color:#666; margin-bottom:12px;">Assign colors for lead sources — these appear as badges in Recent Activities and charts.</p>
 
                     <div id="crmColorsList" style="display:flex;flex-direction:column;gap:8px;max-width:720px;margin-bottom:12px;"></div>
+                    <template id="crmColorRowTpl">
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <input class="crm-source form-control" placeholder="Source name" style="max-width:260px;">
+                            <input class="crm-color" type="color" value="#f6d365" style="width:48px;height:36px;border-radius:6px;border:1px solid #ddd;">
+                            <button type="button" class="btn btn-secondary crm-remove">Remove</button>
+                        </div>
+                    </template>
 
                     <div style="display:flex;gap:8px;align-items:center; margin-bottom:12px;">
                         <input id="newLeadSourceName" placeholder="Lead source (e.g. Referral)" class="form-control" style="max-width:260px;">
@@ -4363,10 +4370,21 @@ invoices.forEach(invoice => {
                         if (!data.success || !data.stats) return;
                         const s = data.stats;
 
-                        // helper: map lead source to chip color
+                                // helper: map lead source to chip color (prefers configured map)
                         function getLeadColor(source) {
                             if (!source) return '#e2e8f0';
+                            const map = window.crmLeadColorMap || {};
                             const key = (source || '').toLowerCase();
+
+                            // exact match first
+                            if (map[source]) return map[source];
+
+                            // case-insensitive lookup
+                            for (const k in map) {
+                                if (k.toLowerCase() === key) return map[k];
+                            }
+
+                            // heuristic fallbacks
                             if (key.includes('referr')) return '#f6d365';
                             if (key.includes('web') || key.includes('site') || key.includes('website')) return '#7dd3fc';
                             if (key.includes('ad')) return '#fca5a5';
@@ -5868,6 +5886,9 @@ invoices.forEach(invoice => {
                     if (s.smtp_encryption) document.getElementById('smtpEncryption').value = s.smtp_encryption;
                     if (s.smtp_from_email) document.getElementById('smtpFromEmail').value = s.smtp_from_email;
                     if (s.smtp_from_name) document.getElementById('smtpFromName').value = s.smtp_from_name;
+
+                    // load CRM settings too
+                    loadCrmSettings();
                     
                     document.getElementById('enableEmailNotifications').checked = s.enable_notifications == 1;
                     document.getElementById('enableAutoReply').checked = s.enable_auto_reply == 1;
