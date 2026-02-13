@@ -4113,20 +4113,27 @@ if ($invoices_result) {
         }
 
         async function printInvoice() {
+            // Check if we're in the client details modal
+            const clientIdEl = document.getElementById('clientId');
+            if (!clientIdEl) {
+                alert('Please open a client details modal first.');
+                return;
+            }
+
             // Get current client data from the form
-            const clientId = document.getElementById('clientId').value;
-            const clientName = document.getElementById('clientName').textContent;
-            const clientCompany = document.getElementById('clientCompany').textContent;
-            const clientEmail = document.getElementById('clientEmail').textContent;
-            const clientPhone = document.getElementById('clientPhone').textContent;
+            const clientId = clientIdEl.value;
+            const clientName = (document.getElementById('clientName') || {}).textContent || '';
+            const clientCompany = (document.getElementById('clientCompany') || {}).textContent || '';
+            const clientEmail = (document.getElementById('clientEmail') || {}).textContent || '';
+            const clientPhone = (document.getElementById('clientPhone') || {}).textContent || '';
             
             // Get structured address
-            const addressStreet = document.getElementById('clientAddressStreet').value || '';
-            const addressLine2 = document.getElementById('clientAddressLine2').value || '';
-            const addressCity = document.getElementById('clientAddressCity').value || '';
-            const addressCounty = document.getElementById('clientAddressCounty').value || '';
-            const addressPostcode = document.getElementById('clientAddressPostcode').value || '';
-            const addressCountry = document.getElementById('clientAddressCountry').value || 'United Kingdom';
+            const addressStreet = (document.getElementById('clientAddressStreet') || {}).value || '';
+            const addressLine2 = (document.getElementById('clientAddressLine2') || {}).value || '';
+            const addressCity = (document.getElementById('clientAddressCity') || {}).value || '';
+            const addressCounty = (document.getElementById('clientAddressCounty') || {}).value || '';
+            const addressPostcode = (document.getElementById('clientAddressPostcode') || {}).value || '';
+            const addressCountry = (document.getElementById('clientAddressCountry') || {}).value || 'United Kingdom';
             
             // Fetch payment history
             let paymentsHTML = '';
@@ -4493,18 +4500,25 @@ if ($invoices_result) {
 
         // Print client details
         function printClientDetails() {
-            const clientName = document.getElementById('clientName').textContent;
-            const clientCompany = document.getElementById('clientCompany').textContent;
-            const clientEmail = document.getElementById('clientEmail').textContent;
-            const clientPhone = document.getElementById('clientPhone').textContent;
+            // Check if we're in the client details modal
+            const clientNameEl = document.getElementById('clientName');
+            if (!clientNameEl) {
+                alert('Please open a client details modal first.');
+                return;
+            }
+
+            const clientName = clientNameEl.textContent;
+            const clientCompany = (document.getElementById('clientCompany') || {}).textContent || '';
+            const clientEmail = (document.getElementById('clientEmail') || {}).textContent || '';
+            const clientPhone = (document.getElementById('clientPhone') || {}).textContent || '';
             
             // Get address information
-            const addressStreet = document.getElementById('clientAddressStreet').value || '';
-            const addressLine2 = document.getElementById('clientAddressLine2').value || '';
-            const addressCity = document.getElementById('clientAddressCity').value || '';
-            const addressCounty = document.getElementById('clientAddressCounty').value || '';
-            const addressPostcode = document.getElementById('clientAddressPostcode').value || '';
-            const addressCountry = document.getElementById('clientAddressCountry').value || 'United Kingdom';
+            const addressStreet = (document.getElementById('clientAddressStreet') || {}).value || '';
+            const addressLine2 = (document.getElementById('clientAddressLine2') || {}).value || '';
+            const addressCity = (document.getElementById('clientAddressCity') || {}).value || '';
+            const addressCounty = (document.getElementById('clientAddressCounty') || {}).value || '';
+            const addressPostcode = (document.getElementById('clientAddressPostcode') || {}).value || '';
+            const addressCountry = (document.getElementById('clientAddressCountry') || {}).value || 'United Kingdom';
             
             // Format address
             let formattedAddress = '';
@@ -5534,7 +5548,6 @@ invoices.forEach(invoice => {
             // Check if required elements exist
             const requiredElements = [
                 'section-dashboard',
-                'html-count',
                 'quotes-count',
                 'nav-dashboard'
             ];
@@ -5769,6 +5782,16 @@ invoices.forEach(invoice => {
                 return; // Don't load charts if not on dashboard
             }
 
+            // Destroy existing charts if they exist
+            const chartIds = ['statusChart', 'leadChart', 'revenueChart', 'taskChart'];
+            chartIds.forEach(id => {
+                const canvas = document.getElementById(id);
+                if (canvas && canvas.chart) {
+                    canvas.chart.destroy();
+                    canvas.chart = null;
+                }
+            });
+
             // Load status breakdown chart
             fetch('api/crm_dashboard.php')
                 .then(res => res.json())
@@ -5843,6 +5866,7 @@ invoices.forEach(invoice => {
                                     }
                                 }
                             });
+                            statusCanvas.chart = statusChart;
 
                             // Make canvas clickable
                             statusCanvas.onclick = function(event) {
@@ -5930,6 +5954,7 @@ invoices.forEach(invoice => {
                                     }
                                 }
                             });
+                            leadCanvas.chart = leadChart;
 
                             // Make canvas clickable
                             leadCanvas.onclick = function(event) {
@@ -6007,6 +6032,7 @@ invoices.forEach(invoice => {
                                     }
                                 }
                             });
+                            revenueCanvas.chart = revenueChart;
 
                             // Make canvas clickable
                             revenueCanvas.onclick = function(event) {
@@ -6106,6 +6132,7 @@ invoices.forEach(invoice => {
                                     }
                                 }
                             });
+                            taskCanvas.chart = taskChart;
 
                             // Make canvas clickable
                             taskCanvas.onclick = function(event) {
