@@ -1792,7 +1792,25 @@ if ($invoices_result) {
                     </div>
                 </div>
             </form>
-            </div>
+
+                <!-- CRM Settings -->
+                <div style="margin-top:28px; border-top:1px dashed #eee; padding-top:18px;">
+                    <h3 style="margin-bottom:12px; color:#333;">CRM Settings — Lead source colors</h3>
+                    <p style="color:#666; margin-bottom:12px;">Assign colors for lead sources — these appear as badges in Recent Activities and charts.</p>
+
+                    <div id="crmColorsList" style="display:flex;flex-direction:column;gap:8px;max-width:720px;margin-bottom:12px;"></div>
+
+                    <div style="display:flex;gap:8px;align-items:center; margin-bottom:12px;">
+                        <input id="newLeadSourceName" placeholder="Lead source (e.g. Referral)" class="form-control" style="max-width:260px;">
+                        <input id="newLeadSourceColor" type="color" value="#f6d365" style="width:48px;height:36px;border-radius:6px;border:1px solid #ddd;">
+                        <button type="button" class="btn btn-secondary" onclick="addCrmColorRow()">Add</button>
+                    </div>
+
+                    <div style="display:flex;gap:8px;">
+                        <button type="button" class="btn btn-primary" onclick="saveCrmSettings()">Save CRM Settings</button>
+                        <button type="button" class="btn btn-secondary" onclick="loadCrmSettings()">Reload</button>
+                    </div>
+                </div>
             
             <!-- Tab: Activity Timeline -->
             <div id="client-tab-activities" class="client-tab-content" style="display: none;">
