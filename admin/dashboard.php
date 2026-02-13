@@ -770,7 +770,7 @@ if ($invoices_result) {
         <div class="sidebar">
             <a href="#" onclick="showSection('dashboard'); return false;" id="nav-dashboard" class="active">📋 Dashboard</a>
             
-            <a href="#" onclick="showSection('clients'); return false;" id="nav-clients">📝 Quote Requests</a>
+            <a href="#" onclick="showSection('clients'); toggleSubmenu(event, 'clients-submenu'); return false;" id="nav-clients">📝 Quote Requests</a>
             
             <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'clients-submenu'); return false;">👥 Clients</a>
             <div class="submenu" id="clients-submenu">
