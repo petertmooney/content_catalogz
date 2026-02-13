@@ -3811,10 +3811,24 @@ if ($invoices_result) {
 
             const first = document.getElementById('newClientFirstName');
             if (first) {
-                setTimeout(() => {
-                    first.focus();
-                    console.debug('addClientModal focus applied to first input:', document.activeElement && document.activeElement.id);
-                }, 60);
+                requestAnimationFrame(() => {
+                    try {
+                        const prev = document.activeElement;
+                        if (prev && prev !== first) {
+                            try { prev.blur(); } catch (e) { /* ignore */ }
+                        }
+                        first.focus({ preventScroll: true });
+                        console.debug('addClientModal focus attempt 1 ->', document.activeElement && document.activeElement.id);
+                        setTimeout(() => {
+                            if (document.activeElement !== first) {
+                                try { first.focus(); } catch (e) { /* ignore */ }
+                                console.debug('addClientModal focus attempt 2 ->', document.activeElement && document.activeElement.id);
+                            }
+                        }, 80);
+                    } catch (e) {
+                        console.debug('addClientModal focus error', e);
+                    }
+                });
             } else {
                 console.debug('addClientModal: first input not found');
             }

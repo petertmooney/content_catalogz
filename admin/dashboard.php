@@ -4068,13 +4068,28 @@ if ($invoices_result) {
                 // Diagnostic: log after adding .show
                 console.debug('addClientModal after add show:', { className: modal.className, display: window.getComputedStyle(modal).display, zIndex: window.getComputedStyle(modal).zIndex, visibility: window.getComputedStyle(modal).visibility });
 
-                // focus first input when modal opens
+                // Robust focus sequence for the first input:
+                // 1) wait for next paint, 2) blur previous active element, 3) focus target, 4) retry once if not focused
                 const first = document.getElementById('newClientFirstName');
                 if (first) {
-                    setTimeout(() => {
-                        first.focus();
-                        console.debug('addClientModal focus applied to first input:', document.activeElement && document.activeElement.id);
-                    }, 60);
+                    requestAnimationFrame(() => {
+                        try {
+                            const prev = document.activeElement;
+                            if (prev && prev !== first) {
+                                try { prev.blur(); } catch (e) { /* ignore */ }
+                            }
+                            first.focus({ preventScroll: true });
+                            console.debug('addClientModal focus attempt 1 ->', document.activeElement && document.activeElement.id);
+                            setTimeout(() => {
+                                if (document.activeElement !== first) {
+                                    try { first.focus(); } catch (e) { /* ignore */ }
+                                    console.debug('addClientModal focus attempt 2 ->', document.activeElement && document.activeElement.id);
+                                }
+                            }, 80);
+                        } catch (e) {
+                            console.debug('addClientModal focus error', e);
+                        }
+                    });
                 } else {
                     console.debug('addClientModal: first input not found');
                 }
