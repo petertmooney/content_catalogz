@@ -16,13 +16,14 @@ $servedFromCache = false;
 
 try {
     if (class_exists('Redis')) {
-        $r = new Redis();
-        @$r->connect('127.0.0.1', 6379, 1);
-        $cached = @$r->get($cacheKey);
-        if ($cached) {
-            echo $cached;
-            $conn->close();
-            exit;
+        $r = new \Redis();
+        if (@$r->connect('127.0.0.1', 6379, 1)) {
+            $cached = @$r->get($cacheKey);
+            if ($cached) {
+                echo $cached;
+                $conn->close();
+                exit;
+            }
         }
     } else {
         $cacheFile = __DIR__ . '/../cache/crm_dashboard.json';
@@ -138,7 +139,7 @@ $out = json_encode(['success' => true, 'stats' => $stats]);
 
 // write cache (Redis preferred)
 try {
-    if (isset($r) && $r instanceof Redis) {
+    if (isset($r) && $r instanceof \Redis) {
         @$r->setex($cacheKey, $cacheTtl, $out);
     } else {
         @file_put_contents(__DIR__ . '/../cache/crm_dashboard.json', $out);
