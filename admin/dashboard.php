@@ -2642,6 +2642,7 @@ if ($invoices_result) {
             const formData = new FormData(document.getElementById('pageForm'));
             
             fetch('api/save_page.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 body: formData
             })
@@ -2663,6 +2664,7 @@ if ($invoices_result) {
         function deletePage(pageId) {
             if (confirm('Are you sure you want to delete this page? This action cannot be undone.')) {
                 fetch('api/delete_page.php', {
+                credentials: 'same-origin',
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -2817,7 +2819,7 @@ if ($invoices_result) {
 
         // Load HTML files
         function loadHtmlFiles() {
-            fetch('api/get_html_files.php')
+            fetch('api/get_html_files.php', { credentials: 'same-origin' })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('HTTP ' + response.status);
@@ -2902,6 +2904,7 @@ if ($invoices_result) {
             const formData = new FormData(document.getElementById('htmlEditorForm'));
             
             fetch('api/save_html_file.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 body: formData
             })
@@ -2993,6 +2996,7 @@ if ($invoices_result) {
             formData.append('content', htmlTemplate);
             
             fetch('api/save_html_file.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 body: formData
             })
@@ -3032,7 +3036,7 @@ if ($invoices_result) {
                 url += 'search=' + encodeURIComponent(search);
             }
             
-            fetch(url)
+            fetch(url, { credentials: 'same-origin' })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('HTTP ' + response.status);
@@ -3118,7 +3122,8 @@ if ($invoices_result) {
 
         // Open quote detail modal
         function openQuoteModal(quoteId) {
-            fetch('api/get_quotes.php')
+            fetch('api/get_quotes.php', {
+                credentials: 'same-origin', credentials: 'same-origin' })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('HTTP ' + response.status);
@@ -3252,11 +3257,11 @@ if ($invoices_result) {
             // First, save the quote
             const formData = new FormData(document.getElementById('quoteForm'));
             formData.append('services', JSON.stringify(services));
-            formData.append('total_cost', totalCost);
-            
             fetch('api/update_quote.php', {
+                credentials: 'same-origin',
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {
@@ -3265,6 +3270,7 @@ if ($invoices_result) {
                 }
                 // Quote saved, now send email
                 return fetch('api/email_quote.php', {
+                credentials: 'same-origin',
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -3273,7 +3279,8 @@ if ($invoices_result) {
                         quote_id: quoteId,
                         services: services,
                         total_cost: totalCost
-                    })
+                    }),
+                    credentials: 'same-origin'
                 });
             })
             .then(response => response.json())
@@ -3292,6 +3299,7 @@ if ($invoices_result) {
                     };
                     
                     fetch('api/activities.php', {
+                credentials: 'same-origin',
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify(activityData)
@@ -3330,6 +3338,7 @@ if ($invoices_result) {
             const quoteName = document.getElementById('quoteName').textContent;
             
             fetch('api/delete_quote.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -3373,6 +3382,7 @@ if ($invoices_result) {
             formData.append('total_cost', document.getElementById('quoteTotalCost').value || 0);
             
             fetch('api/update_quote.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 body: formData
             })
@@ -3496,6 +3506,7 @@ if ($invoices_result) {
             };
 
             fetch('api/save_invoice.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -3530,7 +3541,7 @@ if ($invoices_result) {
             const search = document.getElementById('searchClients').value;
             
             // Fetch all quotes except 'contacted' and 'declined' to show as existing clients
-            fetch('api/get_quotes.php')
+            fetch('api/get_quotes.php', { credentials: 'same-origin' })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('HTTP ' + response.status);
@@ -3784,6 +3795,7 @@ if ($invoices_result) {
             const clientName = document.getElementById('clientModalName').textContent;
             
             fetch('api/delete_client.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -4005,6 +4017,7 @@ if ($invoices_result) {
             };
             
             fetch('api/update_client.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -4062,6 +4075,7 @@ if ($invoices_result) {
             const invoiceNumber = `INV-${new Date().getFullYear()}-${clientId}-${invoiceDate.replace(/-/g, '')}`;
             
             fetch('api/save_invoice.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -4223,6 +4237,7 @@ if ($invoices_result) {
             // Save invoice to database
             const invoiceDateISO = new Date().toISOString().split('T')[0];
             fetch('api/save_invoice.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -5313,6 +5328,7 @@ if ($invoices_result) {
             
             // Send to server to generate PDF and email
             fetch('api/email_invoice.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -5341,6 +5357,7 @@ if ($invoices_result) {
                     };
                     
                     fetch('api/activities.php', {
+                credentials: 'same-origin',
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify(activityData)
@@ -5405,6 +5422,7 @@ if ($invoices_result) {
             };
             
             fetch('api/add_client.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(formData)
@@ -5427,7 +5445,7 @@ if ($invoices_result) {
 
         // Invoice stats and search functions
         function loadInvoiceStats() {
-            fetch('api/invoice_stats.php')
+            fetch('api/invoice_stats.php', { credentials: 'same-origin' })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -5676,6 +5694,7 @@ invoices.forEach(invoice => {
         }
         function deleteInvoice(invoiceId) {
             fetch('api/delete_invoice.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -5701,7 +5720,8 @@ invoices.forEach(invoice => {
         // Load all dashboard stats
         function loadDashboardStats() {
             // Load task stats
-            fetch('api/tasks.php')
+            fetch('api/tasks.php', {
+                credentials: 'same-origin', credentials: 'same-origin' })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.tasks) {
@@ -5718,7 +5738,8 @@ invoices.forEach(invoice => {
                 .catch(err => console.error('Error loading task stats:', err));
             
             // Load invoice stats
-            fetch('api/invoice_stats.php')
+            fetch('api/invoice_stats.php', {
+                credentials: 'same-origin', credentials: 'same-origin' })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -5733,7 +5754,8 @@ invoices.forEach(invoice => {
                 .catch(err => console.error('Error loading invoice stats:', err));
             
             // Load quote stats for dashboard
-            fetch('api/get_quotes.php')
+            fetch('api/get_quotes.php', {
+                credentials: 'same-origin', credentials: 'same-origin' })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.quotes) {
@@ -5823,7 +5845,7 @@ invoices.forEach(invoice => {
             });
 
             // Load status breakdown chart
-            fetch('api/crm_dashboard.php')
+            fetch('api/crm_dashboard.php', { credentials: 'same-origin' })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.stats) {
@@ -6331,6 +6353,7 @@ invoices.forEach(invoice => {
             };
             
             fetch('api/activities.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(formData)
@@ -6355,6 +6378,7 @@ invoices.forEach(invoice => {
             if (!confirm('Delete this activity?')) return;
             
             fetch('api/activities.php', {
+                credentials: 'same-origin',
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
@@ -6425,6 +6449,7 @@ invoices.forEach(invoice => {
             };
             
             fetch('api/notes.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(formData)
@@ -6449,6 +6474,7 @@ invoices.forEach(invoice => {
             if (!confirm('Delete this note?')) return;
             
             fetch('api/notes.php', {
+                credentials: 'same-origin',
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
@@ -6521,6 +6547,7 @@ invoices.forEach(invoice => {
             };
             
             fetch('api/update_client.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(formData)
@@ -6538,6 +6565,7 @@ invoices.forEach(invoice => {
                     };
                     
                     return fetch('api/activities.php', {
+                credentials: 'same-origin',
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify(activityData)
@@ -6989,7 +7017,7 @@ invoices.forEach(invoice => {
             const statusFilter = currentTaskFilter === '' || currentTaskFilter === 'all' ? '' : `&status=${currentTaskFilter}`;
             
             // return promise so callers (stat-card clicks) can chain further UI filtering
-            return fetch(`api/tasks.php?${statusFilter.substring(1)}`)
+            return fetch(`api/tasks.php?${statusFilter.substring(1)}`, { credentials: 'same-origin' })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.tasks) {
@@ -7248,7 +7276,7 @@ invoices.forEach(invoice => {
         // ==================== User Management Functions ====================
         
         function loadUsers() {
-            fetch('api/get_users.php')
+            fetch('api/get_users.php', { credentials: 'same-origin' })
                 .then(res => res.json())
                 .then(data => {
                     const tbody = document.getElementById('users-list-tbody');
@@ -7330,6 +7358,7 @@ invoices.forEach(invoice => {
             }
             
             fetch('api/create_user.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -7415,6 +7444,7 @@ invoices.forEach(invoice => {
             }
             
             fetch('api/update_user.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(updateData)
@@ -7449,6 +7479,7 @@ invoices.forEach(invoice => {
             const userId = document.getElementById('deleteUserId').value;
             
             fetch('api/delete_user.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ id: userId })
@@ -7513,6 +7544,7 @@ invoices.forEach(invoice => {
             
             // Send email
             fetch('api/send_email.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -7539,6 +7571,7 @@ invoices.forEach(invoice => {
                         };
                         
                         fetch('api/activities.php', {
+                credentials: 'same-origin',
                             method: 'POST',
                             headers: {'Content-Type': 'application/json'},
                             body: JSON.stringify(activityData)
@@ -7627,6 +7660,7 @@ invoices.forEach(invoice => {
             };
             
             fetch('api/save_email_settings.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(settings)
@@ -7663,6 +7697,7 @@ invoices.forEach(invoice => {
             alert('Testing email connection...');
             
             fetch('api/test_email.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(settings)
@@ -7795,6 +7830,7 @@ invoices.forEach(invoice => {
         
         function saveMenuOrder(order) {
             fetch('api/save_menu_order.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({order: order})
@@ -8017,6 +8053,7 @@ invoices.forEach(invoice => {
         
         function saveDashboardLayout(sections) {
             fetch('api/save_dashboard_layout.php', {
+                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({sections: sections})
