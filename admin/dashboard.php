@@ -4065,6 +4065,26 @@ if ($invoices_result) {
 
                 modal.classList.add('show');
 
+                // Defensive layout fix: ensure modal is a direct child of <body> and has measurable viewport size
+                // (covers cases where an ancestor or stylesheet collapses the modal unexpectedly)
+                try {
+                    if (modal.parentElement !== document.body) {
+                        document.body.appendChild(modal); // move to body to escape hidden/collapsed ancestors
+                        console.debug('addClientModal moved to document.body to avoid collapsed ancestor');
+                    }
+                    // force usable sizing when computed size is zero (temporary inline override)
+                    const rect = modal.getBoundingClientRect();
+                    if (rect.width === 0 || rect.height === 0) {
+                        modal.style.display = 'flex';
+                        modal.style.width = '100vw';
+                        modal.style.height = '100vh';
+                        modal.style.zIndex = String(Math.max(10000, (parseInt(window.getComputedStyle(modal).zIndex, 10) || 1000)));
+                        const mc = modal.querySelector('.modal-content');
+                        if (mc) mc.style.minWidth = mc.style.minWidth || '320px';
+                        console.debug('addClientModal inline sizing applied to work around collapsed layout', { width: modal.style.width, height: modal.style.height });
+                    }
+                } catch (err) { console.debug('addClientModal defensive layout error', err); }
+
                 // Diagnostic: log after adding .show
                 console.debug('addClientModal after add show:', { className: modal.className, display: window.getComputedStyle(modal).display, zIndex: window.getComputedStyle(modal).zIndex, visibility: window.getComputedStyle(modal).visibility });
 

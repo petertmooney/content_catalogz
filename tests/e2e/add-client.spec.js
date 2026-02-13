@@ -16,10 +16,13 @@ test('Add Client modal opens from dashboard (admin)', async ({ page }) => {
   await expect(addBtn).toBeVisible();
   await addBtn.click();
 
-  // Modal should be visible and first input focused
+  // Modal should be visible, first input focused and measurable (non-zero width)
   const modal = page.locator('#addClientModal');
   await expect(modal).toHaveClass(/show/);
-  await expect(page.locator('#newClientFirstName')).toBeFocused();
+  const firstInput = page.locator('#newClientFirstName');
+  await expect(firstInput).toBeFocused();
+  const inputWidth = await firstInput.evaluate(el => el.offsetWidth || el.getBoundingClientRect().width || 0);
+  expect(inputWidth).toBeGreaterThan(0);
 
   // Fill minimal required field and cancel (just verify UI)
   await page.fill('#newClientFirstName', 'E2E Test');
