@@ -3219,6 +3219,125 @@ if ($invoices_result) {
             });
         }
 
+        // ==================== Invoice Functions ====================
+
+        // Add a service row to the invoice modal
+        function addInvoiceServiceRow(serviceName = '', serviceCost = 0) {
+            const container = document.getElementById('invoiceServicesContainer');
+            const rowId = 'invoice-service-row-' + Date.now();
+
+            const row = document.createElement('div');
+            row.id = rowId;
+            row.className = 'invoice-service-row';
+            row.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; margin-bottom: 10px; align-items: end;';
+
+            row.innerHTML = `
+                <div class="form-group" style="margin: 0;">
+                    <label>Service Description</label>
+                    <input type="text" class="form-control invoice-service-name" placeholder="e.g., Website Design" oninput="calculateInvoiceTotalCost()">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label>Cost (£)</label>
+                    <div style="position: relative;">
+                        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 500; color: #333;">£</span>
+                        <input type="number" class="form-control invoice-service-cost" step="0.01" min="0" placeholder="0.00" oninput="calculateInvoiceTotalCost()" style="padding-left: 28px;">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeInvoiceServiceRow('${rowId}')" style="height: 38px;">Remove</button>
+            `;
+
+            container.appendChild(row);
+
+            // Set values after DOM insertion to avoid escaping issues
+            const nameInput = row.querySelector('.invoice-service-name');
+            const costInput = row.querySelector('.invoice-service-cost');
+            if (nameInput) nameInput.value = serviceName;
+            if (costInput) costInput.value = serviceCost;
+        }
+
+        function removeInvoiceServiceRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.remove();
+                calculateInvoiceTotalCost();
+            }
+        }
+
+        function calculateInvoiceTotalCost() {
+            let total = 0;
+            document.querySelectorAll('#invoiceServicesContainer .invoice-service-cost').forEach(input => {
+                total += parseFloat(input.value) || 0;
+            });
+            document.getElementById('totalCost').value = total.toFixed(2);
+
+            // Update paid and remaining
+            const paid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            const remaining = total - paid;
+
+            document.getElementById('totalPaidDisplay').value = paid.toFixed(2);
+            document.getElementById('totalRemaining').value = remaining.toFixed(2);
+        }
+
+        function updateInvoice(event) {
+            event.preventDefault();
+
+            // Collect services
+            const services = [];
+            document.querySelectorAll('#invoiceServicesContainer .invoice-service-row').forEach(row => {
+                const name = row.querySelector('.invoice-service-name').value.trim();
+                const cost = parseFloat(row.querySelector('.invoice-service-cost').value) || 0;
+                if (name) {
+                    services.push({ name, cost });
+                }
+            });
+
+            const formData = {
+                id: document.getElementById('invoiceId').value,
+                client_id: document.getElementById('clientId').value,
+                invoice_number: document.getElementById('invoiceNumber').value,
+                invoice_date: document.getElementById('invoiceDate').value,
+                total_cost: document.getElementById('totalCost').value,
+                total_paid: document.getElementById('totalPaid').value,
+                services: services,
+                // Address fields
+                address_street: document.getElementById('clientAddressStreet').value,
+                address_line2: document.getElementById('clientAddressLine2').value,
+                address_city: document.getElementById('clientAddressCity').value,
+                address_county: document.getElementById('clientAddressCounty').value,
+                address_postcode: document.getElementById('clientAddressPostcode').value,
+                address_country: document.getElementById('clientAddressCountry').value
+            };
+
+            fetch('api/save_invoice.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Invoice updated successfully!');
+                    closeInvoiceModal();
+                    searchInvoices(); // Refresh the invoice list
+                    loadDashboardStats(); // Refresh stats
+                } else {
+                    alert('Error updating invoice: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                alert('Network error: ' + error.message);
+            });
+        }
+
+        function confirmDeleteInvoice() {
+            const invoiceNumber = document.getElementById('invoiceNumber').value;
+            if (confirm('Are you sure you want to delete invoice "' + invoiceNumber + '"?\n\nThis action cannot be undone!')) {
+                deleteInvoice(document.getElementById('invoiceId').value);
+            }
+        }
+
         // Load existing clients (from new, in progress, and completed quotes)
         function loadExistingClients() {
             const search = document.getElementById('searchClients').value;
