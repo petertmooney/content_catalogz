@@ -770,16 +770,16 @@ if ($invoices_result) {
         }
 
         .stat-card.glow {
-            animation: glow 2s ease-in-out infinite alternate;
-            box-shadow: 0 0 20px rgba(255, 193, 7, 0.6), 0 0 40px rgba(255, 193, 7, 0.4), 0 0 60px rgba(255, 193, 7, 0.2);
+            animation: glow 1.5s ease-in-out infinite alternate;
+            box-shadow: 0 0 10px rgba(219, 28, 86, 0.6), 0 0 20px rgba(219, 28, 86, 0.4), 0 0 30px rgba(219, 28, 86, 0.2);
         }
 
         @keyframes glow {
             from {
-                box-shadow: 0 0 20px rgba(255, 193, 7, 0.6), 0 0 40px rgba(255, 193, 7, 0.4), 0 0 60px rgba(255, 193, 7, 0.2);
+                box-shadow: 0 0 10px rgba(219, 28, 86, 0.6), 0 0 20px rgba(219, 28, 86, 0.4), 0 0 30px rgba(219, 28, 86, 0.2);
             }
             to {
-                box-shadow: 0 0 30px rgba(255, 193, 7, 0.8), 0 0 60px rgba(255, 193, 7, 0.6), 0 0 90px rgba(255, 193, 7, 0.4);
+                box-shadow: 0 0 15px rgba(219, 28, 86, 0.8), 0 0 30px rgba(219, 28, 86, 0.6), 0 0 45px rgba(219, 28, 86, 0.4);
             }
         }
 
