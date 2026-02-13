@@ -995,31 +995,7 @@ if ($invoices_result) {
                         </div>
                     </div>
 
-                    <div class="crm-flex">
-                        <!-- Removed Recent Activities from CRM view -->
 
-                        <!-- Tasks column now occupies main area of CRM summary -->
-                        <div class="tasks-column">
-                            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;">
-                                <div class="stat-small">Tasks &amp; To-Do</div>
-                                <div style="display:flex;gap:6px;align-items:center;">
-                                    <button class="btn btn-primary btn-sm" onclick="openAddTaskModal()">+ Add</button>
-                                    <select id="dashTaskStatusFilter" onchange="(function(){ currentTaskFilter = this.value || 'all'; loadTasks(); }).call(this)" style="padding:6px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text-lighter);font-size:13px;">
-                                        <option value="all">All</option>
-                                        <option value="pending">Pending</option>
-                                        <option value="in_progress">In Progress</option>
-                                        <option value="completed">Completed</option>
-                                        <option value="cancelled">Cancelled</option>
-                                    </select>
-                                    <button class="btn btn-secondary btn-sm" onclick="loadTasks()">🔄</button>
-                                </div>
-                            </div>
-
-                            <div id="dash-tasks-list" style="max-height:420px;overflow:auto;padding-right:6px;">
-                                <div class="empty-state">Loading tasks…</div>
-                            </div>
-                        </div>
-                    </div>
 
                     <div class="revenue-trend full-bleed">
                         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
@@ -4545,6 +4521,9 @@ invoices.forEach(invoice => {
                                 utEl.innerHTML = '<li>No upcoming tasks</li>';
                             }
                         }
+
+                        // Ensure dashboard copy of full Tasks list (if present) is refreshed from tasks API
+                        // loadTasks() will populate `#tasks-list`; renderTasksList will mirror into `#dash-tasks-list` if present.
 
                         // Ensure dashboard copy of full Tasks list (if present) is refreshed from tasks API
                         // loadTasks() will populate `#tasks-list`; renderTasksList will mirror into `#dash-tasks-list` if present.
