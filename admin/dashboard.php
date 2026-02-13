@@ -6379,6 +6379,16 @@ invoices.forEach(invoice => {
                     }
                 } catch (err) { /* ignore */ }
             } catch (e) { /* ignore */ }
+
+            // Expose common functions as globals so inline `onclick` attributes work reliably
+            try {
+                const expose = ['showSection','toggleSubmenu','scrollToCRM','openAddClientModal','closeAddClientModal','saveNewClient','loadExistingClients'];
+                expose.forEach(name => {
+                    if (typeof window[name] === 'undefined' && typeof eval(name) === 'function') {
+                        window[name] = eval(name);
+                    }
+                });
+            } catch (err) { /* ignore - best-effort exposure */ }
         });
     </script>
 </body>

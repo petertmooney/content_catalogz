@@ -5449,6 +5449,16 @@ if ($invoices_result) {
                 }, true);
                 document._boundAddClientDelegation = true;
             }
+
+            // Expose global helpers (inline onclick uses these)
+            try {
+                const expose = ['showSection','toggleSubmenu','scrollToCRM','openAddClientModal','closeAddClientModal','saveNewClient','loadExistingClients'];
+                expose.forEach(name => {
+                    if (typeof window[name] === 'undefined' && typeof eval(name) === 'function') {
+                        window[name] = eval(name);
+                    }
+                });
+            } catch (err) { /* ignore - best-effort */ }
         });
     </script>
 </body>
