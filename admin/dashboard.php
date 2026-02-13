@@ -1896,13 +1896,19 @@ if ($invoices_result) {
                     </div>
                     <div class="form-group">
                         <label for="newClientService">Service Interested In</label>
-                        <select id="newClientService" name="service_type" class="form-control">
+                        <select id="newClientService" name="service_type" class="form-control" onchange="toggleServiceOther(this)">
                             <option value="">-- Select Service --</option>
-                            <option value="starter-pack">Starter Pack</option>
-                            <option value="growth-bundle">Growth Bundle</option>
-                            <option value="premium-suite">Premium Suite</option>
-                            <option value="custom">Custom Package</option>
+                            <option value="Strategy Development">Strategy Development</option>
+                            <option value="Content Planning & Creation">Content Planning & Creation</option>
+                            <option value="Weekly Check-Ins">Weekly Check-Ins</option>
+                            <option value="Social Media Audit">Social Media Audit</option>
+                            <option value="Copywriting">Copywriting</option>
+                            <option value="Performance Reports">Performance Reports</option>
+                            <option value="Social Media Management">Social Media Management</option>
+                            <option value="1 to 1 focused session">1 to 1 focused session</option>
+                            <option value="Other">Other</option>
                         </select>
+                        <input type="text" id="newClientServiceOther" name="service_type_other" class="form-control" placeholder="Enter custom service" style="margin-top: 5px; display: none;">
                     </div>
                     <div class="form-group">
                         <label for="newClientStatus">Status</label>
@@ -1911,6 +1917,20 @@ if ($invoices_result) {
                             <option value="contacted">Contacted</option>
                             <option value="in_progress">In Progress</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="newClientLeadSource">Lead Source</label>
+                        <select id="newClientLeadSource" name="lead_source" class="form-control" onchange="toggleLeadSourceOther(this)">
+                            <option value="">-- Select Source --</option>
+                            <option value="Website">Website</option>
+                            <option value="Facebook">Facebook</option>
+                            <option value="Instagram">Instagram</option>
+                            <option value="TikTok">TikTok</option>
+                            <option value="Phone">Phone</option>
+                            <option value="Meeting">Meeting</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <input type="text" id="newClientLeadSourceOther" name="lead_source_other" class="form-control" placeholder="Enter custom source" style="margin-top: 5px; display: none;">
                     </div>
                     <div class="form-group" style="grid-column: 1 / -1;">
                         <label for="newClientNotes">Notes</label>
