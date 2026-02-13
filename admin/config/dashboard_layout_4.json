@@ -1,0 +1,27 @@
+[
+    {
+        "id": "crm-charts",
+        "label": "\ud83d\udcca CRM Analytics",
+        "visible": true
+    },
+    {
+        "id": "email-stats",
+        "label": "\ud83d\udce7 Email Statistics",
+        "visible": true
+    },
+    {
+        "id": "client-stats",
+        "label": "\ud83d\udcca Clients & Quotes",
+        "visible": true
+    },
+    {
+        "id": "task-stats",
+        "label": "\u2705 Tasks & To-Do",
+        "visible": true
+    },
+    {
+        "id": "invoice-stats",
+        "label": "\ud83d\udcc4 Invoice Statistics",
+        "visible": true
+    }
+]
