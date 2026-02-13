@@ -1044,6 +1044,7 @@ if ($invoices_result) {
                     <input type="text" id="searchClients" placeholder="Search by name, email, company..." style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ddd; width: 250px; font-size: 13px;" onkeyup="loadExistingClients()">
                     <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 13px;" onclick="loadExistingClients()">Refresh</button>
                     <button class="btn btn-outline" style="padding: 6px 12px; font-size: 13px;" onclick="filterExistingClients('all')">Show All</button>
+                    <button class="btn btn-outline" style="padding: 6px 12px; font-size: 13px;" onclick="printAllClients()">🖨️ Print All Clients</button>
                     <button class="btn btn-primary" style="padding: 6px 12px; font-size: 13px;" onclick="openAddClientModal()">+ Add New Client</button>
                 </div>
 
@@ -4505,6 +4506,235 @@ if ($invoices_result) {
             const detailsWindow = window.open('', '_blank');
             detailsWindow.document.write(clientDetailsHTML);
             detailsWindow.document.close();
+        }
+
+        // Print all clients
+        function printAllClients() {
+            const search = document.getElementById('searchClients').value;
+            
+            // Fetch all quotes except 'contacted' and 'declined' to show as existing clients
+            fetch('api/get_quotes.php')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Filter to show only new, in_progress, and completed
+                        let filteredClients = data.quotes.filter(quote => 
+                            quote.status === 'new' || 
+                            quote.status === 'in_progress' || 
+                            quote.status === 'completed'
+                        );
+                        
+                        // Apply status filter
+                        if (currentClientFilter === 'active') {
+                            filteredClients = filteredClients.filter(client => 
+                                client.status === 'new' || client.status === 'in_progress'
+                            );
+                        } else if (currentClientFilter === 'completed') {
+                            filteredClients = filteredClients.filter(client => 
+                                client.status === 'completed'
+                            );
+                        }
+                        
+                        // Apply search filter if provided
+                        if (search) {
+                            const searchLower = search.toLowerCase();
+                            filteredClients = filteredClients.filter(client =>
+                                client.name.toLowerCase().includes(searchLower) ||
+                                client.email.toLowerCase().includes(searchLower) ||
+                                (client.company && client.company.toLowerCase().includes(searchLower))
+                            );
+                        }
+                        
+                        // Generate print HTML for all clients
+                        printAllClientsDetails(filteredClients);
+                    } else {
+                        alert('Failed to load clients for printing: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    alert('Error loading clients for printing: ' + error.message);
+                });
+        }
+
+        // Print all clients details
+        function printAllClientsDetails(clients) {
+            const printDate = new Date().toLocaleDateString('en-GB');
+            const totalClients = clients.length;
+            
+            let clientsHTML = '';
+            clients.forEach((client, index) => {
+                const clientName = client.name;
+                const clientCompany = client.company || 'N/A';
+                const clientEmail = client.email;
+                const clientPhone = client.phone || 'N/A';
+                const status = client.status;
+                
+                // Format address
+                let formattedAddress = '';
+                if (client.address_street) formattedAddress += client.address_street + ', ';
+                if (client.address_line2) formattedAddress += client.address_line2 + ', ';
+                if (client.address_city) formattedAddress += client.address_city;
+                if (client.address_county) formattedAddress += (formattedAddress ? ', ' : '') + client.address_county;
+                if (client.address_postcode) formattedAddress += (formattedAddress ? ', ' : '') + client.address_postcode;
+                if (client.address_country) formattedAddress += (formattedAddress ? ', ' : '') + client.address_country;
+                if (!formattedAddress) formattedAddress = 'N/A';
+                
+                // Get financial information
+                const totalCost = parseFloat(client.total_cost) || 0;
+                const totalPaid = parseFloat(client.total_paid) || 0;
+                const totalRemaining = totalCost - totalPaid;
+                
+                clientsHTML += `
+                    <div class="client-card" style="page-break-inside: avoid; margin-bottom: 30px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+                        <div class="client-header" style="background: #ff69b4; color: white; padding: 15px; font-size: 18px; font-weight: bold;">
+                            ${index + 1}. ${clientName}
+                            <span style="float: right; font-size: 12px; background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px;">${status.replace('_', ' ').toUpperCase()}</span>
+                        </div>
+                        <div style="padding: 15px;">
+                            <div class="client-info" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                                <div><strong>Company:</strong> ${clientCompany}</div>
+                                <div><strong>Email:</strong> ${clientEmail}</div>
+                                <div><strong>Phone:</strong> ${clientPhone}</div>
+                                <div><strong>Address:</strong> ${formattedAddress}</div>
+                            </div>
+                            <div class="financial-info" style="background: #f8f9fa; padding: 10px; border-radius: 4px;">
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
+                                    <div><strong>Total Cost:</strong><br>£${totalCost.toFixed(2)}</div>
+                                    <div><strong>Total Paid:</strong><br>£${totalPaid.toFixed(2)}</div>
+                                    <div><strong>Balance Due:</strong><br>£${totalRemaining.toFixed(2)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            const allClientsHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>All Clients Report - Content Catalogz</title>
+                    <style>
+                        @media print {
+                            body { margin: 0; }
+                            .no-print { display: none; }
+                            .client-card { page-break-inside: avoid; }
+                        }
+                        body {
+                            font-family: Arial, sans-serif;
+                            max-width: 1000px;
+                            margin: 20px auto;
+                            padding: 20px;
+                            color: #333;
+                            line-height: 1.6;
+                        }
+                        .header {
+                            text-align: center;
+                            margin-bottom: 30px;
+                            padding-bottom: 20px;
+                            border-bottom: 3px solid #ff69b4;
+                        }
+                        .header h1 {
+                            margin: 0;
+                            color: #ff69b4;
+                            font-size: 28px;
+                        }
+                        .header p {
+                            margin: 5px 0;
+                            color: #666;
+                        }
+                        .summary {
+                            background: #f8f9fa;
+                            padding: 20px;
+                            border-radius: 8px;
+                            margin-bottom: 30px;
+                            text-align: center;
+                        }
+                        .summary h2 {
+                            margin: 0 0 10px 0;
+                            color: #333;
+                        }
+                        .print-btn {
+                            background: #ff69b4;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 16px;
+                            margin-bottom: 20px;
+                        }
+                        .print-btn:hover {
+                            background: #ff85c1;
+                        }
+                        .client-card {
+                            border: 1px solid #ddd;
+                            border-radius: 8px;
+                            overflow: hidden;
+                            margin-bottom: 20px;
+                        }
+                        .client-header {
+                            background: #ff69b4;
+                            color: white;
+                            padding: 15px;
+                            font-size: 18px;
+                            font-weight: bold;
+                        }
+                        .client-info {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 10px;
+                            margin-bottom: 15px;
+                        }
+                        .financial-info {
+                            background: #f8f9fa;
+                            padding: 10px;
+                            border-radius: 4px;
+                        }
+                        .footer {
+                            margin-top: 40px;
+                            padding-top: 20px;
+                            border-top: 1px solid #ddd;
+                            text-align: center;
+                            color: #666;
+                            font-size: 12px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <button class="print-btn no-print" onclick="window.print()">🖨️ Print All Clients Report</button>
+                    
+                    <div class="header">
+                        <img src="/assets/images/LogoPink.png" alt="Content Catalogz" style="height: 60px; margin-bottom: 10px;">
+                        <h1>All Clients Report</h1>
+                        <p>Generated on ${printDate}</p>
+                    </div>
+                    
+                    <div class="summary">
+                        <h2>Total Clients: ${totalClients}</h2>
+                        <p>This report includes all currently displayed clients based on applied filters and search criteria.</p>
+                    </div>
+                    
+                    ${clientsHTML}
+                    
+                    <div class="footer">
+                        <p>Content Catalogz - Professional Content Services</p>
+                        <p>All clients report generated from admin dashboard</p>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            // Open all clients report in new window
+            const reportWindow = window.open('', '_blank');
+            reportWindow.document.write(allClientsHTML);
+            reportWindow.document.close();
         }
 
         // Email invoice as PDF
