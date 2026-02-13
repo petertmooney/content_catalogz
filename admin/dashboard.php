@@ -269,6 +269,43 @@ if ($invoices_result) {
             margin: 0 2px;
         }
 
+        /* Custom button colors for client actions */
+        .btn-generate {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-generate:hover {
+            background: #218838;
+        }
+
+        .btn-print {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: #138496;
+        }
+
+        .btn-email {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-email:hover {
+            background: #e0a800;
+        }
+
+        .btn-details {
+            background: #6f42c1;
+            color: white;
+        }
+
+        .btn-details:hover {
+            background: #5a359a;
+        }
+
         .table-container {
             background: white;
             border-radius: 8px;
@@ -1661,6 +1698,8 @@ if ($invoices_result) {
                 <div id="client-tab-details" class="client-tab-content" style="flex: 1; overflow-y: auto; padding: 20px;">
                 <form id="clientForm" onsubmit="updateClient(event)">
                     <input type="hidden" id="clientId" name="id">
+                    <input type="hidden" id="originalTotalCost" name="originalTotalCost">
+                    <input type="hidden" id="originalTotalPaid" name="originalTotalPaid">
                 
                 <!-- Client Information -->
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
@@ -1792,11 +1831,11 @@ if ($invoices_result) {
                     <button type="button" class="btn btn-danger" onclick="confirmDeleteClient()" title="Delete this client and all related data">🗑️ Delete Client</button>
                     <div style="display: flex; gap: 10px;">
                         <button type="button" class="btn btn-secondary" onclick="closeClientModal()">Close</button>
-                        <button type="button" class="btn btn-primary" onclick="generateInvoiceForClient()" title="Generate and save invoice to database">📄 Generate Invoice</button>
-                        <button type="button" class="btn btn-secondary" onclick="composeEmail()">✉️ Send Email</button>
-                        <button type="button" class="btn btn-secondary" onclick="printClientDetails()" title="Print client details">🖨️ Print Details</button>
-                        <button type="button" class="btn btn-secondary" onclick="printInvoice()">🖨️ Print Invoice</button>
-                        <button type="button" class="btn btn-secondary" onclick="emailInvoice()">📧 Email Invoice</button>
+                        <button type="button" class="btn btn-generate" onclick="generateInvoiceForClient()" title="Generate and save invoice to database">📄 Generate Invoice</button>
+                        <button type="button" class="btn btn-email" onclick="composeEmail()" title="Send email to client">✉️ Send Email</button>
+                        <button type="button" class="btn btn-details" onclick="printClientDetails()" title="Print client details">🖨️ Print Details</button>
+                        <button type="button" class="btn btn-print" onclick="printInvoice()" title="Print client invoice">🖨️ Print Invoice</button>
+                        <button type="button" class="btn btn-email" onclick="emailInvoice()" title="Email invoice to client">📧 Email Invoice</button>
                         <button type="submit" class="btn btn-primary">Save Changes</button>
                     </div>
                 </div>
@@ -3683,6 +3722,10 @@ if ($invoices_result) {
             
             document.getElementById('totalPaid').value = client.total_paid || 0.00;
             
+            // Store original values for change detection
+            document.getElementById('originalTotalCost').value = client.total_cost || 0.00;
+            document.getElementById('originalTotalPaid').value = client.total_paid || 0.00;
+            
             // Load services
             const services = client.services || [];
             const servicesContainer = document.getElementById('servicesContainer');
@@ -3977,6 +4020,18 @@ if ($invoices_result) {
             .then(data => {
                 if (data.success) {
                     alert('Client information updated successfully!');
+                    
+                    // Automatically generate updated invoice if services or payments changed
+                    const oldTotalCost = parseFloat(document.getElementById('originalTotalCost').value) || 0;
+                    const oldTotalPaid = parseFloat(document.getElementById('originalTotalPaid').value) || 0;
+                    
+                    if (totalCost !== oldTotalCost || totalPaid !== oldTotalPaid || services.length > 0) {
+                        // Generate new invoice automatically
+                        setTimeout(() => {
+                            generateInvoiceForClient();
+                        }, 500); // Small delay to ensure client data is saved
+                    }
+                    
                     closeClientModal();
                     loadExistingClients(); // Refresh the clients list
                 } else {
@@ -4039,7 +4094,8 @@ if ($invoices_result) {
                     if (data.exists) {
                         showNotification('Invoice already exists for this client', 'info');
                     } else {
-                        showNotification('Invoice ' + invoiceNumber + ' generated successfully for ' + clientName + '!', 'success');
+                        // Show success popup
+                        showSuccessPopup('Invoice Generated Successfully!', `Invoice ${invoiceNumber} has been generated for ${clientName}.`);
                         // Reload invoice stats
                         loadInvoiceStats();
                         loadDashboardStats();
@@ -6780,6 +6836,61 @@ invoices.forEach(invoice => {
         function showNotification(message, type) {
             // Simple alert for now - can be enhanced with a toast notification system
             console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        // Success popup function
+        function showSuccessPopup(title, message) {
+            // Create popup modal
+            const popup = document.createElement('div');
+            popup.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+            `;
+
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: white;
+                padding: 30px;
+                border-radius: 8px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                text-align: center;
+                max-width: 400px;
+                width: 90%;
+            `;
+
+            content.innerHTML = `
+                <div style="font-size: 48px; color: #28a745; margin-bottom: 15px;">✅</div>
+                <h3 style="margin: 0 0 10px 0; color: #333;">${title}</h3>
+                <p style="margin: 0 0 20px 0; color: #666;">${message}</p>
+                <button onclick="this.closest('.success-popup').remove()" style="
+                    background: #28a745;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 14px;
+                ">OK</button>
+            `;
+
+            popup.className = 'success-popup';
+            popup.appendChild(content);
+            document.body.appendChild(popup);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (popup.parentNode) {
+                    popup.remove();
+                }
+            }, 5000);
         }
         
         // ==================== Main Tasks Section Functions ====================
