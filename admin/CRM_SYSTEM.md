@@ -195,7 +195,7 @@ New sidebar menu item with:
 - `.activity-subject`, `.activity-description` - Content styling
 - `.activity-meta` - Metadata (date, duration, user)
 
-### Notes
+### Note styles
 
 - `.note-item` - Note card (yellow background)
 - `.note-item.important` - Important note (red background)
@@ -203,7 +203,7 @@ New sidebar menu item with:
 - `.note-text` - Note content
 - `.note-meta` - Timestamp and actions
 
-### Tasks
+### Task styles
 
 - `.task-item` - Main task card
 - `.task-item.completed` - Completed/cancelled tasks (faded)
@@ -235,7 +235,7 @@ New sidebar menu item with:
 - `saveNote(event)` - Save new note
 - `deleteNote(noteId)` - Delete a note
 
-### Tasks
+### Task functions
 
 - `loadTasks()` - Load all tasks with filtering
 - `loadClientTasks(clientId)` - Load client-specific tasks

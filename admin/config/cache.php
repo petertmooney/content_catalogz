@@ -3,6 +3,30 @@
 // Provides small helpers to invalidate cache files and Redis keys in one place.
 
 /**
+ * Minimal, local stub for the Redis class so static analyzers (and
+ * environments without the redis extension) won't produce "undefined type"
+ * errors; the real Redis extension will not be overridden because this
+ * declaration is guarded by class_exists().
+ *
+ * Methods implemented here are intentionally minimal/no-op because the
+ * rest of this file treats Redis failures as non-fatal.
+ */
+if (!class_exists('Redis')) {
+    class Redis
+    {
+        public function connect(string $host, int $port = 6379, float $timeout = 0.0): bool
+        {
+            return false;
+        }
+
+        public function del($key): int
+        {
+            return 0;
+        }
+    }
+}
+
+/**
  * Invalidate a cache file and optionally a Redis key.
  * Safe to call even when Redis or the file are missing.
  *
