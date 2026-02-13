@@ -906,24 +906,24 @@ if ($invoices_result) {
 
                 <!-- CRM Charts -->
                 <h3 style="color: #333; margin-bottom: 15px; margin-top: 40px;">📊 CRM Analytics</h3>
-                <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                    <div class="chart-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                        <h4 style="color: #333; font-size: 14px; margin-bottom: 10px;">Quote Status Breakdown</h4>
-                        <canvas id="statusChart" width="250" height="150"></canvas>
+                <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-bottom: 30px;">
+                    <div class="chart-card" style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #333; font-size: 14px; margin-bottom: 8px;">Quote Status Breakdown</h4>
+                        <canvas id="statusChart" width="200" height="120"></canvas>
                     </div>
-                    <div class="chart-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                        <h4 style="color: #333; font-size: 14px; margin-bottom: 10px;">Lead Sources</h4>
-                        <canvas id="leadSourceChart" width="250" height="150"></canvas>
+                    <div class="chart-card" style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #333; font-size: 14px; margin-bottom: 8px;">Lead Sources</h4>
+                        <canvas id="leadSourceChart" width="200" height="120"></canvas>
                     </div>
                 </div>
-                <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                    <div class="chart-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                        <h4 style="color: #333; font-size: 14px; margin-bottom: 10px;">Monthly Revenue Trends</h4>
-                        <canvas id="revenueChart" width="250" height="150"></canvas>
+                <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-bottom: 30px;">
+                    <div class="chart-card" style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #333; font-size: 14px; margin-bottom: 8px;">Monthly Revenue Trends</h4>
+                        <canvas id="revenueChart" width="200" height="120"></canvas>
                     </div>
-                    <div class="chart-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                        <h4 style="color: #333; font-size: 14px; margin-bottom: 10px;">Task Priority Distribution</h4>
-                        <canvas id="taskPriorityChart" width="250" height="150"></canvas>
+                    <div class="chart-card" style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #333; font-size: 14px; margin-bottom: 8px;">Task Priority Distribution</h4>
+                        <canvas id="taskPriorityChart" width="200" height="120"></canvas>
                     </div>
                 </div>
             </div>
