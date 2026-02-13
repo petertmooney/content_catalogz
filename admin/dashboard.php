@@ -4292,6 +4292,9 @@ invoices.forEach(invoice => {
                 
                 console.log('Loading dashboard stats...');
                 loadDashboardStats();
+
+                // preload CRM settings (lead-source colors)
+                loadCrmSettings();
                 
                 console.log('%c All data loading functions called successfully', 'background: #667eea; color: white; padding: 2px 8px; border-radius: 3px;');
             } catch (error) {
@@ -5902,6 +5905,63 @@ invoices.forEach(invoice => {
             });
         }
         
+        // CRM settings UI helpers
+        function addCrmColorRow(source = '', color = '#f6d365') {
+            const tpl = document.getElementById('crmColorRowTpl');
+            const frag = tpl.content.cloneNode(true);
+            const wrapper = frag.querySelector('div');
+            const srcInput = frag.querySelector('.crm-source');
+            const colorInput = frag.querySelector('.crm-color');
+            const removeBtn = frag.querySelector('.crm-remove');
+            srcInput.value = source;
+            colorInput.value = color;
+            removeBtn.addEventListener('click', () => wrapper.remove());
+            document.getElementById('crmColorsList').appendChild(wrapper);
+        }
+
+        function loadCrmSettings() {
+            fetch('api/get_crm_settings.php')
+                .then(r => r.json())
+                .then(json => {
+                    if (!json.success) return;
+                    const colors = json.settings && json.settings.lead_source_colors ? json.settings.lead_source_colors : {};
+                    const list = document.getElementById('crmColorsList');
+                    list.innerHTML = '';
+                    for (const src in colors) {
+                        addCrmColorRow(src, colors[src]);
+                    }
+                    window.crmLeadColorMap = colors || {};
+                })
+                .catch(err => console.error('Error loading CRM settings:', err));
+        }
+
+        function saveCrmSettings() {
+            const list = document.getElementById('crmColorsList');
+            const rows = list.querySelectorAll('div');
+            const colors = {};
+            rows.forEach(row => {
+                const src = row.querySelector('.crm-source').value.trim();
+                const color = row.querySelector('.crm-color').value || '#d1fae5';
+                if (src) colors[src] = color;
+            });
+
+            fetch('api/save_crm_settings.php', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ lead_source_colors: colors }) })
+                .then(r => r.json())
+                .then(json => {
+                    if (json.success) {
+                        window.crmLeadColorMap = colors;
+                        // refresh dashboard stats so UI reflects updated colors immediately
+                        loadDashboardStats();
+                        // warm crm cache
+                        fetch('api/crm_dashboard.php').catch(()=>{});
+                        alert('CRM settings saved');
+                    } else {
+                        alert('Failed to save CRM settings: ' + (json.message || 'unknown'));
+                    }
+                })
+                .catch(err => { console.error(err); alert('Error saving CRM settings'); });
+        }
+
         // ==================== Menu Customization ====================
         
         const defaultMenuOrder = [
