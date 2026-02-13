@@ -4052,12 +4052,34 @@ if ($invoices_result) {
 
         // Add New Client modal functions
         function openAddClientModal() {
-            document.getElementById('addClientForm').reset();
-            document.getElementById('addClientModal').classList.add('show');
+            try {
+                console.log('openAddClientModal invoked');
+                const form = document.getElementById('addClientForm');
+                const modal = document.getElementById('addClientModal');
+                if (form) form.reset();
+                if (!modal) { console.warn('addClientModal not found'); return; }
+                modal.classList.add('show');
+                // focus first input when modal opens
+                const first = document.getElementById('newClientFirstName');
+                if (first) setTimeout(() => first.focus(), 60);
+            } catch (e) { console.error('openAddClientModal error', e); }
         }
         
+        // Attach fallback click handler in case inline onclick is blocked
+        document.addEventListener('DOMContentLoaded', function() {
+            const navAdd = document.getElementById('nav-add-client');
+            if (navAdd && !navAdd._boundAddClient) {
+                navAdd.addEventListener('click', function(ev) {
+                    ev.preventDefault();
+                    openAddClientModal();
+                });
+                navAdd._boundAddClient = true;
+            }
+        });
+        
         function closeAddClientModal() {
-            document.getElementById('addClientModal').classList.remove('show');
+            const modal = document.getElementById('addClientModal');
+            if (modal) modal.classList.remove('show');
         }
         
         function saveNewClient(event) {
