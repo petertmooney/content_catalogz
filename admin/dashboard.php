@@ -175,7 +175,9 @@ if ($invoices_result) {
 
         .main-content {
             flex: 1;
-            padding: 30px;
+            padding: 20px;
+            max-width: none;
+            width: 100%;
         }
 
         .content-section {
@@ -3214,7 +3216,7 @@ if ($invoices_result) {
             };
             
             let html = '<div class="table-container"><table style="font-size: 14px;"><thead><tr>';
-            html += '<th style="padding: 8px 12px;">Name</th><th style="padding: 8px 12px;">Company</th><th style="padding: 8px 12px;">Email</th><th style="padding: 8px 12px;">Phone</th><th style="padding: 8px 12px;">Service</th><th style="padding: 8px 12px;">Status</th><th style="padding: 8px 12px;">Date</th><th style="padding: 8px 12px; width: 180px;">Actions</th>';
+            html += '<th style="padding: 8px 12px;">Name</th><th style="padding: 8px 12px;">Company</th><th style="padding: 8px 12px;">Email</th><th style="padding: 8px 12px;">Phone</th><th style="padding: 8px 12px;">Service</th><th style="padding: 8px 12px;">Status</th><th style="padding: 8px 12px;">Date</th><th style="padding: 8px 12px; min-width: 220px;">Actions</th>';
             html += '</tr></thead><tbody>';
             
             clients.forEach(client => {
@@ -3231,10 +3233,11 @@ if ($invoices_result) {
                     <td style="padding: 8px 12px;"><span style="display: inline-block; padding: 3px 8px; border-radius: 10px; background: ${statusColor}; color: white; font-size: 11px; font-weight: 600;">${statusLabel}</span></td>
                     <td style="padding: 8px 12px; font-size: 13px;">${clientDate}</td>
                     <td style="padding: 8px 12px;">
-                        <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-                            <button class="btn btn-primary btn-sm" onclick="viewClientDetails(${client.id})" style="padding: 4px 8px; font-size: 11px;" title="View Details">👁️ View</button>
-                            <button class="btn btn-secondary btn-sm" onclick="viewClientDetails(${client.id})" style="padding: 4px 8px; font-size: 11px;" title="Edit Client">✏️ Edit</button>
-                            <a href="mailto:${escapeHtml(client.email)}" class="btn btn-secondary btn-sm" style="padding: 4px 8px; font-size: 11px; text-decoration: none; display: inline-block;" title="Send Email">📧 Email</a>
+                        <div style="display: flex; gap: 3px; flex-wrap: wrap; align-items: center;">
+                            <button class="btn btn-primary btn-sm" onclick="viewClientDetails(${client.id})" style="padding: 3px 6px; font-size: 10px;" title="View Details">👁️ View</button>
+                            <button class="btn btn-secondary btn-sm" onclick="viewClientDetails(${client.id})" style="padding: 3px 6px; font-size: 10px;" title="Edit Client">✏️ Edit</button>
+                            <button class="btn btn-secondary btn-sm" onclick="printClientFromTable(${client.id})" style="padding: 3px 6px; font-size: 10px;" title="Print Client Details">🖨️ Print</button>
+                            <a href="mailto:${escapeHtml(client.email)}" class="btn btn-secondary btn-sm" style="padding: 3px 6px; font-size: 10px; text-decoration: none; display: inline-block;" title="Send Email">📧 Email</a>
                         </div>
                     </td>
                 </tr>`;
@@ -3252,6 +3255,24 @@ if ($invoices_result) {
                 .then(data => {
                     if (data.success) {
                         openClientModal(data.client);
+                    } else {
+                        alert('Error loading client details: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to load client details');
+                });
+        }
+
+        // Print client details directly from table (without opening modal)
+        function printClientFromTable(clientId) {
+            // Fetch client data
+            fetch('api/get_client.php?id=' + clientId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        printClientDetailsFromData(data.client);
                     } else {
                         alert('Error loading client details: ' + data.message);
                     }
@@ -4017,6 +4038,258 @@ if ($invoices_result) {
                         <tr>
                             <td style="padding: 8px; border-bottom: 1px solid #ddd;">${escapeHtml(service.name)}</td>
                             <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">£${service.cost.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                servicesHTML = '<tr><td colspan="2" style="padding: 8px; text-align: center; color: #666;">No services recorded</td></tr>';
+            }
+            
+            const printDate = new Date().toLocaleDateString('en-GB');
+            
+            const clientDetailsHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Client Details - ${clientName}</title>
+                    <style>
+                        @media print {
+                            body { margin: 0; }
+                            .no-print { display: none; }
+                        }
+                        body {
+                            font-family: Arial, sans-serif;
+                            max-width: 800px;
+                            margin: 20px auto;
+                            padding: 20px;
+                            color: #333;
+                            line-height: 1.6;
+                        }
+                        .header {
+                            text-align: center;
+                            margin-bottom: 30px;
+                            padding-bottom: 20px;
+                            border-bottom: 3px solid #ff69b4;
+                        }
+                        .header h1 {
+                            margin: 0;
+                            color: #ff69b4;
+                            font-size: 28px;
+                        }
+                        .header p {
+                            margin: 5px 0;
+                            color: #666;
+                        }
+                        .section {
+                            margin-bottom: 25px;
+                            background: #f8f9fa;
+                            padding: 20px;
+                            border-radius: 8px;
+                        }
+                        .section h3 {
+                            margin-top: 0;
+                            color: #333;
+                            border-bottom: 2px solid #ff69b4;
+                            padding-bottom: 8px;
+                        }
+                        .info-grid {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 15px;
+                            margin-bottom: 15px;
+                        }
+                        .info-item {
+                            background: white;
+                            padding: 12px;
+                            border-radius: 4px;
+                            border: 1px solid #ddd;
+                        }
+                        .info-item strong {
+                            display: block;
+                            color: #666;
+                            font-size: 12px;
+                            text-transform: uppercase;
+                            margin-bottom: 4px;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 15px;
+                            background: white;
+                        }
+                        th {
+                            background: #ff69b4;
+                            color: white;
+                            padding: 10px;
+                            text-align: left;
+                        }
+                        td {
+                            padding: 8px;
+                            border-bottom: 1px solid #ddd;
+                        }
+                        .financial-summary {
+                            background: white;
+                            padding: 15px;
+                            border-radius: 4px;
+                            border: 1px solid #ddd;
+                            margin-top: 15px;
+                        }
+                        .financial-grid {
+                            display: grid;
+                            grid-template-columns: repeat(3, 1fr);
+                            gap: 15px;
+                        }
+                        .financial-item {
+                            text-align: center;
+                            padding: 10px;
+                            background: #f8f9fa;
+                            border-radius: 4px;
+                        }
+                        .financial-item .amount {
+                            font-size: 18px;
+                            font-weight: bold;
+                            display: block;
+                        }
+                        .total-cost .amount { color: #333; }
+                        .total-paid .amount { color: #28a745; }
+                        .balance-due .amount { color: #dc3545; }
+                        .print-btn {
+                            background: #ff69b4;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 16px;
+                            margin-bottom: 20px;
+                        }
+                        .print-btn:hover {
+                            background: #ff85c1;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <button class="print-btn no-print" onclick="window.print()">🖨️ Print Client Details</button>
+                    
+                    <div class="header">
+                        <img src="/assets/images/LogoPink.png" alt="Content Catalogz" style="height: 60px; margin-bottom: 10px;">
+                        <h1>Client Details</h1>
+                        <p>Generated on ${printDate}</p>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>📋 Contact Information</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <strong>Client Name</strong>
+                                ${clientName}
+                            </div>
+                            <div class="info-item">
+                                <strong>Company</strong>
+                                ${clientCompany}
+                            </div>
+                            <div class="info-item">
+                                <strong>Email Address</strong>
+                                ${clientEmail}
+                            </div>
+                            <div class="info-item">
+                                <strong>Phone Number</strong>
+                                ${clientPhone}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>🏠 Address Information</h3>
+                        <div class="info-item" style="grid-column: 1 / -1;">
+                            <strong>Full Address</strong>
+                            ${formattedAddress}
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>💼 Services & Pricing</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Service Description</th>
+                                    <th style="text-align: right;">Cost (GBP)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${servicesHTML}
+                            </tbody>
+                        </table>
+                        
+                        <div class="financial-summary">
+                            <h4 style="margin-top: 0; margin-bottom: 15px;">Financial Summary</h4>
+                            <div class="financial-grid">
+                                <div class="financial-item total-cost">
+                                    <span class="amount">£${totalCost.toFixed(2)}</span>
+                                    <strong>Total Cost</strong>
+                                </div>
+                                <div class="financial-item total-paid">
+                                    <span class="amount">£${totalPaid.toFixed(2)}</span>
+                                    <strong>Total Paid</strong>
+                                </div>
+                                <div class="financial-item balance-due">
+                                    <span class="amount">£${totalRemaining.toFixed(2)}</span>
+                                    <strong>Balance Due</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666; font-size: 12px;">
+                        <p>Content Catalogz - Professional Content Services</p>
+                        <p>Client details generated from admin dashboard</p>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            // Open client details in new window
+            const detailsWindow = window.open('', '_blank');
+            detailsWindow.document.write(clientDetailsHTML);
+            detailsWindow.document.close();
+        }
+
+        // Print client details from data object (used by table print button)
+        function printClientDetailsFromData(client) {
+            const clientName = client.name;
+            const clientCompany = client.company || 'N/A';
+            const clientEmail = client.email;
+            const clientPhone = client.phone || 'N/A';
+            
+            // Format address
+            let formattedAddress = '';
+            if (client.address_street) formattedAddress += client.address_street + '<br>';
+            if (client.address_line2) formattedAddress += client.address_line2 + '<br>';
+            if (client.address_city || client.address_county || client.address_postcode) {
+                let cityLine = '';
+                if (client.address_city) cityLine += client.address_city;
+                if (client.address_county) cityLine += (cityLine ? ', ' : '') + client.address_county;
+                if (client.address_postcode) cityLine += (cityLine ? ', ' : '') + client.address_postcode;
+                formattedAddress += cityLine + '<br>';
+            }
+            if (client.address_country) formattedAddress += client.address_country;
+            if (!formattedAddress) formattedAddress = 'N/A';
+            
+            // Get financial information
+            const totalCost = parseFloat(client.total_cost) || 0;
+            const totalPaid = parseFloat(client.total_paid) || 0;
+            const totalRemaining = totalCost - totalPaid;
+            
+            // Collect services
+            const services = client.services || [];
+            let servicesHTML = '';
+            if (services.length > 0) {
+                services.forEach(service => {
+                    servicesHTML += `
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${escapeHtml(service.name)}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">£${parseFloat(service.cost).toFixed(2)}</td>
                         </tr>
                     `;
                 });
