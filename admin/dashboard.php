@@ -952,7 +952,7 @@ if ($invoices_result) {
                 <div id="crm-charts-section" class="charts-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 30px;">
                     <div class="chart-card" style="background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #333; font-size: 12px; margin-bottom: 4px;">Quote Status Breakdown</h4>
-                        <canvas id="statusChart" width="100" height="60"></canvas>
+                        <canvas id="statusChart" width="100" height="120"></canvas>
                     </div>
                     <div class="chart-card" style="background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #333; font-size: 12px; margin-bottom: 4px;">Lead Sources</h4>
@@ -960,11 +960,11 @@ if ($invoices_result) {
                     </div>
                     <div class="chart-card" style="background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #333; font-size: 12px; margin-bottom: 4px;">Monthly Revenue Trends</h4>
-                        <canvas id="revenueChart" width="100" height="60"></canvas>
+                        <canvas id="revenueChart" width="100" height="120"></canvas>
                     </div>
                     <div class="chart-card" style="background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #333; font-size: 12px; margin-bottom: 4px;">Task Priority Distribution</h4>
-                        <canvas id="taskPriorityChart" width="100" height="60"></canvas>
+                        <canvas id="taskPriorityChart" width="100" height="120"></canvas>
                     </div>
                 </div>
             </div>
