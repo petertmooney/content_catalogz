@@ -3643,28 +3643,49 @@ if ($invoices_result) {
             row.className = 'service-row';
             row.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; margin-bottom: 10px; align-items: end;';
             
+            // Define the service options
+            const serviceOptions = [
+                'Strategy Development',
+                'Content Planning & Creation',
+                'Weekly Check-Ins',
+                'Social Media Audit',
+                'Copywriting',
+                'Performance Reports',
+                'Social Media Management',
+                '1 to 1 focused session',
+                'Other'
+            ];
+            
+            // Check if serviceName matches a predefined option or should be treated as custom
+            let selectedOption = '';
+            let customValue = '';
+            if (serviceOptions.includes(serviceName)) {
+                selectedOption = serviceName;
+            } else if (serviceName) {
+                selectedOption = 'Other';
+                customValue = serviceName;
+            }
+            
             row.innerHTML = `
                 <div class="form-group" style="margin: 0;">
                     <label>Service Description</label>
-                    <input type="text" class="form-control service-name" placeholder="e.g., Website Design" oninput="calculateTotalCost()">
+                    <select class="form-control service-select" onchange="toggleCustomService(this, '${rowId}')">
+                        <option value="">-- Select Service --</option>
+                        ${serviceOptions.map(option => `<option value="${option}" ${selectedOption === option ? 'selected' : ''}>${option}</option>`).join('')}
+                    </select>
+                    <input type="text" class="form-control service-custom" placeholder="Enter custom service" style="margin-top: 5px; display: ${selectedOption === 'Other' ? 'block' : 'none'};" value="${customValue}">
                 </div>
                 <div class="form-group" style="margin: 0;">
                     <label>Cost (£)</label>
                     <div style="position: relative;">
                         <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 500; color: #333;">£</span>
-                        <input type="number" class="form-control service-cost" step="0.01" min="0" placeholder="0.00" oninput="calculateTotalCost()" style="padding-left: 28px;">
+                        <input type="number" class="form-control service-cost" step="0.01" min="0" placeholder="0.00" oninput="calculateTotalCost()" style="padding-left: 28px;" value="${serviceCost}">
                     </div>
                 </div>
                 <button type="button" class="btn btn-danger btn-sm" onclick="removeServiceRow('${rowId}')" style="height: 38px;">Remove</button>
             `;
             
             container.appendChild(row);
-            
-            // Set values after DOM insertion to avoid escaping issues
-            const nameInput = row.querySelector('.service-name');
-            const costInput = row.querySelector('.service-cost');
-            if (nameInput) nameInput.value = serviceName;
-            if (costInput) costInput.value = serviceCost;
         }
 
         function removeServiceRow(rowId) {
@@ -3672,6 +3693,18 @@ if ($invoices_result) {
             if (row) {
                 row.remove();
                 calculateTotalCost();
+            }
+        }
+
+        function toggleCustomService(selectElement, rowId) {
+            const row = document.getElementById(rowId);
+            const customInput = row.querySelector('.service-custom');
+            if (selectElement.value === 'Other') {
+                customInput.style.display = 'block';
+                customInput.focus();
+            } else {
+                customInput.style.display = 'none';
+                customInput.value = '';
             }
         }
 
@@ -3744,8 +3777,16 @@ if ($invoices_result) {
             const services = [];
             const serviceRows = document.querySelectorAll('.service-row');
             serviceRows.forEach(row => {
-                const name = row.querySelector('.service-name').value.trim();
+                const select = row.querySelector('.service-select');
+                const customInput = row.querySelector('.service-custom');
                 const cost = parseFloat(row.querySelector('.service-cost').value) || 0;
+                
+                let name = '';
+                if (select.value === 'Other') {
+                    name = customInput.value.trim();
+                } else {
+                    name = select.value;
+                }
                 
                 if (name) {  // Only add if service has a name
                     services.push({ name, cost });
