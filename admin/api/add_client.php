@@ -46,7 +46,6 @@ if (empty($message)) {
     $message = 'Manually added client';
 }
 $service = trim($data['service'] ?? '');
-$lead_source = trim($data['lead_source'] ?? '');
 $status = trim($data['status'] ?? 'new');
 $notes = trim($data['notes'] ?? '');
 
@@ -81,8 +80,8 @@ if ($result->num_rows > 0) {
 $stmt->close();
 
 // Insert the new client into quotes table - use correct column names
-$stmt = $conn->prepare("INSERT INTO quotes (name, first_name, last_name, email, company, phone, address_street, address_line2, address_city, address_county, address_postcode, address_country, message, service, lead_source, status, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
-$stmt->bind_param("sssssssssssssssss", $name, $first_name, $last_name, $email, $company, $phone, $address_street, $address_line2, $address_city, $address_county, $address_postcode, $address_country, $message, $service, $lead_source, $status, $notes);
+$stmt = $conn->prepare("INSERT INTO quotes (name, first_name, last_name, email, company, phone, address_street, address_line2, address_city, address_county, address_postcode, address_country, message, service, status, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+$stmt->bind_param("ssssssssssssssss", $name, $first_name, $last_name, $email, $company, $phone, $address_street, $address_line2, $address_city, $address_county, $address_postcode, $address_country, $message, $service, $status, $notes);
 
 if ($stmt->execute()) {
     $clientId = $conn->insert_id;

@@ -37,7 +37,7 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 }
 
 // Insert quote into database
-$sql = "INSERT INTO quotes (name, email, company, phone, service, message, status, lead_source) VALUES (?, ?, ?, ?, ?, ?, 'new', 'Website')";
+$sql = "INSERT INTO quotes (name, email, company, phone, service, message, status) VALUES (?, ?, ?, ?, ?, ?, 'new')";
 $stmt = $conn->prepare($sql);
 
 if (!$stmt) {

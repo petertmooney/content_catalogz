@@ -226,16 +226,14 @@ if ($invoices_result) {
 
         .btn {
             display: inline-block;
-            padding: 8px 16px;
+            padding: 12px 24px;
             margin-right: 10px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 14px;
             text-decoration: none;
             transition: all 0.3s;
-            height: auto;
-            line-height: 1.2;
         }
 
         .btn-primary {
@@ -269,43 +267,6 @@ if ($invoices_result) {
             padding: 4px 8px;
             font-size: 11px;
             margin: 0 2px;
-        }
-
-        /* Custom button colors for client actions */
-        .btn-generate {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-generate:hover {
-            background: #218838;
-        }
-
-        .btn-print {
-            background: #17a2b8;
-            color: white;
-        }
-
-        .btn-print:hover {
-            background: #138496;
-        }
-
-        .btn-email {
-            background: #ffc107;
-            color: #212529;
-        }
-
-        .btn-email:hover {
-            background: #e0a800;
-        }
-
-        .btn-details {
-            background: #6f42c1;
-            color: white;
-        }
-
-        .btn-details:hover {
-            background: #5a359a;
         }
 
         .table-container {
@@ -808,24 +769,6 @@ if ($invoices_result) {
             background: linear-gradient(135deg, rgba(0, 123, 255, 0.1) 0%, rgba(0, 123, 255, 0.05) 100%);
         }
 
-        :root {
-            --glow-color: #db1c56;
-        }
-
-        .stat-card.glow {
-            animation: glow 1.5s ease-in-out infinite alternate;
-            box-shadow: 0 0 10px rgba(var(--glow-color-rgb, 219, 28, 86), 0.6), 0 0 20px rgba(var(--glow-color-rgb, 219, 28, 86), 0.4), 0 0 30px rgba(var(--glow-color-rgb, 219, 28, 86), 0.2);
-        }
-
-        @keyframes glow {
-            from {
-                box-shadow: 0 0 10px rgba(var(--glow-color-rgb, 219, 28, 86), 0.6), 0 0 20px rgba(var(--glow-color-rgb, 219, 28, 86), 0.4), 0 0 30px rgba(var(--glow-color-rgb, 219, 28, 86), 0.2);
-            }
-            to {
-                box-shadow: 0 0 15px rgba(var(--glow-color-rgb, 219, 28, 86), 0.8), 0 0 30px rgba(var(--glow-color-rgb, 219, 28, 86), 0.6), 0 0 45px rgba(var(--glow-color-rgb, 219, 28, 86), 0.4);
-            }
-        }
-
         .btn-outline {
             background: white;
             color: #007bff;
@@ -842,10 +785,10 @@ if ($invoices_result) {
             color: white;
         }
     </style>
-    <script src="../assets/js/chart.js?v=<?php echo time(); ?>"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-
+    
     <div class="navbar">
         <div class="navbar-left">
             <h1><img src="../assets/images/LogoWhiteSmall.png" alt="Content Catalogz"></h1>
@@ -1009,19 +952,19 @@ if ($invoices_result) {
                 <div id="crm-charts-section" class="charts-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 30px;">
                     <div class="chart-card" style="background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #333; font-size: 12px; margin-bottom: 4px;">Quote Status Breakdown</h4>
-                        <canvas id="statusChart" width="100" height="120"></canvas>
+                        <canvas id="statusChart" width="100" height="60"></canvas>
                     </div>
                     <div class="chart-card" style="background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #333; font-size: 12px; margin-bottom: 4px;">Lead Sources</h4>
-                        <canvas id="leadSourceChart" width="100" height="120"></canvas>
+                        <canvas id="leadSourceChart" width="100" height="60"></canvas>
                     </div>
                     <div class="chart-card" style="background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #333; font-size: 12px; margin-bottom: 4px;">Monthly Revenue Trends</h4>
-                        <canvas id="revenueChart" width="100" height="120"></canvas>
+                        <canvas id="revenueChart" width="100" height="60"></canvas>
                     </div>
                     <div class="chart-card" style="background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #333; font-size: 12px; margin-bottom: 4px;">Task Priority Distribution</h4>
-                        <canvas id="taskPriorityChart" width="100" height="120"></canvas>
+                        <canvas id="taskPriorityChart" width="100" height="60"></canvas>
                     </div>
                 </div>
             </div>
@@ -1700,8 +1643,6 @@ if ($invoices_result) {
                 <div id="client-tab-details" class="client-tab-content" style="flex: 1; overflow-y: auto; padding: 20px;">
                 <form id="clientForm" onsubmit="updateClient(event)">
                     <input type="hidden" id="clientId" name="id">
-                    <input type="hidden" id="originalTotalCost" name="originalTotalCost">
-                    <input type="hidden" id="originalTotalPaid" name="originalTotalPaid">
                 
                 <!-- Client Information -->
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
@@ -1722,14 +1663,6 @@ if ($invoices_result) {
                         <div>
                             <strong>Phone:</strong><br>
                             <span id="clientPhone"></span>
-                        </div>
-                        <div>
-                            <strong>Lead Source:</strong><br>
-                            <span id="clientLeadSource"></span>
-                        </div>
-                        <div>
-                            <strong>Status:</strong><br>
-                            <span id="clientStatus"></span>
                         </div>
                     </div>
                 </div>
@@ -1761,18 +1694,6 @@ if ($invoices_result) {
                         <div class="form-group">
                             <label for="clientAddressCountry">Country</label>
                             <input type="text" id="clientAddressCountry" name="address_country" class="form-control" value="United Kingdom">
-                        </div>
-                        <div class="form-group">
-                            <label for="clientLeadSource">Lead Source</label>
-                            <select id="clientLeadSource" name="lead_source" class="form-control">
-                                <option value="">Select Lead Source</option>
-                                <option value="Website">Website</option>
-                                <option value="Referral">Referral</option>
-                                <option value="Social Media">Social Media</option>
-                                <option value="Email Marketing">Email Marketing</option>
-                                <option value="Direct Contact">Direct Contact</option>
-                                <option value="Other">Other</option>
-                            </select>
                         </div>
                     </div>
                 </div>
@@ -1833,11 +1754,11 @@ if ($invoices_result) {
                     <button type="button" class="btn btn-danger" onclick="confirmDeleteClient()" title="Delete this client and all related data">🗑️ Delete Client</button>
                     <div style="display: flex; gap: 10px;">
                         <button type="button" class="btn btn-secondary" onclick="closeClientModal()">Close</button>
-                        <button type="button" class="btn btn-generate" onclick="generateInvoiceForClient()" title="Generate and save invoice to database">📄 Generate Invoice</button>
-                        <button type="button" class="btn btn-email" onclick="composeEmail()" title="Send email to client">✉️ Send Email</button>
-                        <button type="button" class="btn btn-details" onclick="printClientDetails()" title="Print client details">🖨️ Print Details</button>
-                        <button type="button" class="btn btn-print" onclick="printInvoice()" title="Print client invoice">🖨️ Print Invoice</button>
-                        <button type="button" class="btn btn-email" onclick="emailInvoice()" title="Email invoice to client">📧 Email Invoice</button>
+                        <button type="button" class="btn btn-primary" onclick="generateInvoiceForClient()" title="Generate and save invoice to database">📄 Generate Invoice</button>
+                        <button type="button" class="btn btn-secondary" onclick="composeEmail()">✉️ Send Email</button>
+                        <button type="button" class="btn btn-secondary" onclick="printClientDetails()" title="Print client details">🖨️ Print Details</button>
+                        <button type="button" class="btn btn-secondary" onclick="printInvoice()">🖨️ Print Invoice</button>
+                        <button type="button" class="btn btn-secondary" onclick="emailInvoice()">📧 Email Invoice</button>
                         <button type="submit" class="btn btn-primary">Save Changes</button>
                     </div>
                 </div>
@@ -1975,19 +1896,13 @@ if ($invoices_result) {
                     </div>
                     <div class="form-group">
                         <label for="newClientService">Service Interested In</label>
-                        <select id="newClientService" name="service_type" class="form-control" onchange="toggleServiceOther(this)">
+                        <select id="newClientService" name="service_type" class="form-control">
                             <option value="">-- Select Service --</option>
-                            <option value="Strategy Development">Strategy Development</option>
-                            <option value="Content Planning & Creation">Content Planning & Creation</option>
-                            <option value="Weekly Check-Ins">Weekly Check-Ins</option>
-                            <option value="Social Media Audit">Social Media Audit</option>
-                            <option value="Copywriting">Copywriting</option>
-                            <option value="Performance Reports">Performance Reports</option>
-                            <option value="Social Media Management">Social Media Management</option>
-                            <option value="1 to 1 focused session">1 to 1 focused session</option>
-                            <option value="Other">Other</option>
+                            <option value="starter-pack">Starter Pack</option>
+                            <option value="growth-bundle">Growth Bundle</option>
+                            <option value="premium-suite">Premium Suite</option>
+                            <option value="custom">Custom Package</option>
                         </select>
-                        <input type="text" id="newClientServiceOther" name="service_type_other" class="form-control" placeholder="Enter custom service" style="margin-top: 5px; display: none;">
                     </div>
                     <div class="form-group">
                         <label for="newClientStatus">Status</label>
@@ -1996,20 +1911,6 @@ if ($invoices_result) {
                             <option value="contacted">Contacted</option>
                             <option value="in_progress">In Progress</option>
                         </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="newClientLeadSource">Lead Source</label>
-                        <select id="newClientLeadSource" name="lead_source" class="form-control" onchange="toggleLeadSourceOther(this)">
-                            <option value="">-- Select Source --</option>
-                            <option value="Website">Website</option>
-                            <option value="Facebook">Facebook</option>
-                            <option value="Instagram">Instagram</option>
-                            <option value="TikTok">TikTok</option>
-                            <option value="Phone">Phone</option>
-                            <option value="Meeting">Meeting</option>
-                            <option value="Other">Other</option>
-                        </select>
-                        <input type="text" id="newClientLeadSourceOther" name="lead_source_other" class="form-control" placeholder="Enter custom source" style="margin-top: 5px; display: none;">
                     </div>
                     <div class="form-group" style="grid-column: 1 / -1;">
                         <label for="newClientNotes">Notes</label>
@@ -2335,25 +2236,8 @@ if ($invoices_result) {
             </div>
             <div style="padding: 20px;">
                 <p style="color: #666; margin-bottom: 20px;">Show/hide dashboard sections and reorder them. Changes save automatically.</p>
-                <div id="dashboard-sections-list" style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <div id="dashboard-sections-list" style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
                     <!-- Dashboard sections will be loaded here -->
-                </div>
-
-                <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
-                    <h4 style="margin: 0 0 15px 0; color: #333;">✨ Visual Effects</h4>
-
-                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                            <input type="checkbox" id="glow-enabled" checked onchange="toggleGlowEffect()">
-                            <span>Enable glow effect on stat cards</span>
-                        </label>
-                    </div>
-
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <label style="font-weight: 500; color: #555;">Glow Color:</label>
-                        <input type="color" id="glow-color" value="#db1c56" onchange="changeGlowColor()" style="border: 1px solid #ddd; border-radius: 4px; width: 50px; height: 30px; cursor: pointer;">
-                        <span id="glow-color-preview" style="font-size: 12px; color: #666;">#db1c56</span>
-                    </div>
                 </div>
             </div>
             <div style="padding: 20px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end; gap: 10px;">
@@ -2572,27 +2456,6 @@ if ($invoices_result) {
     <script>
         // Dashboard initialization and error handling
         console.log('%c Dashboard Script Loading...', 'background: #667eea; color: white; padding: 2px 8px; border-radius: 3px;');
-
-        // Ensure all requests to local API include session cookies (fixes missing DB content)
-        (function () {
-            const _fetch = window.fetch.bind(window);
-            window.fetch = function (resource, init) {
-                try {
-                    const url = typeof resource === 'string' ? resource : (resource && resource.url) || '';
-                    // target site-local API endpoints only
-                    if (url && (url.indexOf('/api/') !== -1 || url.indexOf('api/') === 0)) {
-                        init = init || {};
-                        if (!Object.prototype.hasOwnProperty.call(init, 'credentials')) {
-                            init.credentials = 'same-origin';
-                        }
-                    }
-                } catch (e) {
-                    // swallow — shouldn't block app
-                    console.warn('fetch-wrapper error', e);
-                }
-                return _fetch(resource, init);
-            };
-        })();
         
         // Global error handler
         window.addEventListener('error', function(e) {
@@ -2663,7 +2526,6 @@ if ($invoices_result) {
             const formData = new FormData(document.getElementById('pageForm'));
             
             fetch('api/save_page.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 body: formData
             })
@@ -2685,7 +2547,6 @@ if ($invoices_result) {
         function deletePage(pageId) {
             if (confirm('Are you sure you want to delete this page? This action cannot be undone.')) {
                 fetch('api/delete_page.php', {
-                credentials: 'same-origin',
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -2840,7 +2701,7 @@ if ($invoices_result) {
 
         // Load HTML files
         function loadHtmlFiles() {
-            fetch('api/get_html_files.php', { credentials: 'same-origin' })
+            fetch('api/get_html_files.php')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('HTTP ' + response.status);
@@ -2925,7 +2786,6 @@ if ($invoices_result) {
             const formData = new FormData(document.getElementById('htmlEditorForm'));
             
             fetch('api/save_html_file.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 body: formData
             })
@@ -3017,7 +2877,6 @@ if ($invoices_result) {
             formData.append('content', htmlTemplate);
             
             fetch('api/save_html_file.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 body: formData
             })
@@ -3057,7 +2916,7 @@ if ($invoices_result) {
                 url += 'search=' + encodeURIComponent(search);
             }
             
-            fetch(url, { credentials: 'same-origin' })
+            fetch(url)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('HTTP ' + response.status);
@@ -3143,8 +3002,7 @@ if ($invoices_result) {
 
         // Open quote detail modal
         function openQuoteModal(quoteId) {
-            fetch('api/get_quotes.php', {
-                credentials: 'same-origin', credentials: 'same-origin' })
+            fetch('api/get_quotes.php')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('HTTP ' + response.status);
@@ -3278,11 +3136,11 @@ if ($invoices_result) {
             // First, save the quote
             const formData = new FormData(document.getElementById('quoteForm'));
             formData.append('services', JSON.stringify(services));
+            formData.append('total_cost', totalCost);
+            
             fetch('api/update_quote.php', {
-                credentials: 'same-origin',
                 method: 'POST',
-                body: formData,
-                credentials: 'same-origin'
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
@@ -3291,7 +3149,6 @@ if ($invoices_result) {
                 }
                 // Quote saved, now send email
                 return fetch('api/email_quote.php', {
-                credentials: 'same-origin',
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -3300,8 +3157,7 @@ if ($invoices_result) {
                         quote_id: quoteId,
                         services: services,
                         total_cost: totalCost
-                    }),
-                    credentials: 'same-origin'
+                    })
                 });
             })
             .then(response => response.json())
@@ -3320,7 +3176,6 @@ if ($invoices_result) {
                     };
                     
                     fetch('api/activities.php', {
-                credentials: 'same-origin',
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify(activityData)
@@ -3359,7 +3214,6 @@ if ($invoices_result) {
             const quoteName = document.getElementById('quoteName').textContent;
             
             fetch('api/delete_quote.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -3403,7 +3257,6 @@ if ($invoices_result) {
             formData.append('total_cost', document.getElementById('quoteTotalCost').value || 0);
             
             fetch('api/update_quote.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 body: formData
             })
@@ -3527,7 +3380,6 @@ if ($invoices_result) {
             };
 
             fetch('api/save_invoice.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -3562,7 +3414,7 @@ if ($invoices_result) {
             const search = document.getElementById('searchClients').value;
             
             // Fetch all quotes except 'contacted' and 'declined' to show as existing clients
-            fetch('api/get_quotes.php', { credentials: 'same-origin' })
+            fetch('api/get_quotes.php')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('HTTP ' + response.status);
@@ -3743,7 +3595,6 @@ if ($invoices_result) {
             document.getElementById('clientCompany').textContent = client.company || 'N/A';
             document.getElementById('clientEmail').textContent = client.email;
             document.getElementById('clientPhone').textContent = client.phone || 'N/A';
-            document.getElementById('clientLeadSource').textContent = client.lead_source || 'N/A';
             
             // Load address fields
             document.getElementById('clientAddressStreet').value = client.address_street || '';
@@ -3752,13 +3603,8 @@ if ($invoices_result) {
             document.getElementById('clientAddressCounty').value = client.address_county || '';
             document.getElementById('clientAddressPostcode').value = client.address_postcode || '';
             document.getElementById('clientAddressCountry').value = client.address_country || 'United Kingdom';
-            document.getElementById('clientLeadSource').value = client.lead_source || '';
             
             document.getElementById('totalPaid').value = client.total_paid || 0.00;
-            
-            // Store original values for change detection
-            document.getElementById('originalTotalCost').value = client.total_cost || 0.00;
-            document.getElementById('originalTotalPaid').value = client.total_paid || 0.00;
             
             // Load services
             const services = client.services || [];
@@ -3816,7 +3662,6 @@ if ($invoices_result) {
             const clientName = document.getElementById('clientModalName').textContent;
             
             fetch('api/delete_client.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -3915,28 +3760,6 @@ if ($invoices_result) {
             }
         }
 
-        function toggleServiceOther(selectElement) {
-            const customInput = document.getElementById('newClientServiceOther');
-            if (selectElement.value === 'Other') {
-                customInput.style.display = 'block';
-                customInput.focus();
-            } else {
-                customInput.style.display = 'none';
-                customInput.value = '';
-            }
-        }
-
-        function toggleLeadSourceOther(selectElement) {
-            const customInput = document.getElementById('newClientLeadSourceOther');
-            if (selectElement.value === 'Other') {
-                customInput.style.display = 'block';
-                customInput.focus();
-            } else {
-                customInput.style.display = 'none';
-                customInput.value = '';
-            }
-        }
-
         function calculateTotalCost() {
             const serviceCosts = document.querySelectorAll('.service-cost');
             let total = 0;
@@ -3999,7 +3822,6 @@ if ($invoices_result) {
             const addressCounty = document.getElementById('clientAddressCounty').value;
             const addressPostcode = document.getElementById('clientAddressPostcode').value;
             const addressCountry = document.getElementById('clientAddressCountry').value;
-            const leadSource = document.getElementById('clientLeadSource').value;
             const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
             const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
             
@@ -4031,14 +3853,12 @@ if ($invoices_result) {
                 address_county: addressCounty,
                 address_postcode: addressPostcode,
                 address_country: addressCountry,
-                lead_source: leadSource,
                 services: services,
                 total_cost: totalCost,
                 total_paid: totalPaid
             };
             
             fetch('api/update_client.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -4056,18 +3876,6 @@ if ($invoices_result) {
             .then(data => {
                 if (data.success) {
                     alert('Client information updated successfully!');
-                    
-                    // Automatically generate updated invoice if services or payments changed
-                    const oldTotalCost = parseFloat(document.getElementById('originalTotalCost').value) || 0;
-                    const oldTotalPaid = parseFloat(document.getElementById('originalTotalPaid').value) || 0;
-                    
-                    if (totalCost !== oldTotalCost || totalPaid !== oldTotalPaid || services.length > 0) {
-                        // Generate new invoice automatically
-                        setTimeout(() => {
-                            generateInvoiceForClient();
-                        }, 500); // Small delay to ensure client data is saved
-                    }
-                    
                     closeClientModal();
                     loadExistingClients(); // Refresh the clients list
                 } else {
@@ -4096,7 +3904,6 @@ if ($invoices_result) {
             const invoiceNumber = `INV-${new Date().getFullYear()}-${clientId}-${invoiceDate.replace(/-/g, '')}`;
             
             fetch('api/save_invoice.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -4131,8 +3938,7 @@ if ($invoices_result) {
                     if (data.exists) {
                         showNotification('Invoice already exists for this client', 'info');
                     } else {
-                        // Show success popup
-                        showSuccessPopup('Invoice Generated Successfully!', `Invoice ${invoiceNumber} has been generated for ${clientName}.`);
+                        showNotification('Invoice ' + invoiceNumber + ' generated successfully for ' + clientName + '!', 'success');
                         // Reload invoice stats
                         loadInvoiceStats();
                         loadDashboardStats();
@@ -4148,28 +3954,20 @@ if ($invoices_result) {
         }
 
         async function printInvoice() {
-            try {
-                // Check if we're in the client details modal
-                const clientIdEl = document.getElementById('clientId');
-                if (!clientIdEl) {
-                    alert('Please open a client details modal first.');
-                    return;
-                }
-
-                // Get current client data from the form
-                const clientId = (clientIdEl.value || '').trim();
-                const clientName = ((document.getElementById('clientName') || {}).textContent || '').trim();
-                const clientCompany = ((document.getElementById('clientCompany') || {}).textContent || '').trim();
-                const clientEmail = ((document.getElementById('clientEmail') || {}).textContent || '').trim();
-                const clientPhone = ((document.getElementById('clientPhone') || {}).textContent || '').trim();
-
-                // Get structured address
-                const addressStreet = ((document.getElementById('clientAddressStreet') || {}).value || '').trim();
-                const addressLine2 = ((document.getElementById('clientAddressLine2') || {}).value || '').trim();
-                const addressCity = ((document.getElementById('clientAddressCity') || {}).value || '').trim();
-                const addressCounty = ((document.getElementById('clientAddressCounty') || {}).value || '').trim();
-                const addressPostcode = ((document.getElementById('clientAddressPostcode') || {}).value || '').trim();
-                const addressCountry = ((document.getElementById('clientAddressCountry') || {}).value || 'United Kingdom').trim();
+            // Get current client data from the form
+            const clientId = document.getElementById('clientId').value;
+            const clientName = document.getElementById('clientName').textContent;
+            const clientCompany = document.getElementById('clientCompany').textContent;
+            const clientEmail = document.getElementById('clientEmail').textContent;
+            const clientPhone = document.getElementById('clientPhone').textContent;
+            
+            // Get structured address
+            const addressStreet = document.getElementById('clientAddressStreet').value || '';
+            const addressLine2 = document.getElementById('clientAddressLine2').value || '';
+            const addressCity = document.getElementById('clientAddressCity').value || '';
+            const addressCounty = document.getElementById('clientAddressCounty').value || '';
+            const addressPostcode = document.getElementById('clientAddressPostcode').value || '';
+            const addressCountry = document.getElementById('clientAddressCountry').value || 'United Kingdom';
             
             // Fetch payment history
             let paymentsHTML = '';
@@ -4242,10 +4040,8 @@ if ($invoices_result) {
             const services = [];
             const serviceRows = document.querySelectorAll('.service-row');
             serviceRows.forEach(row => {
-                const nameEl = row.querySelector('.service-name');
-                const costEl = row.querySelector('.service-cost');
-                const name = nameEl ? nameEl.value.trim() : '';
-                const cost = costEl ? (parseFloat(costEl.value) || 0) : 0;
+                const name = row.querySelector('.service-name').value.trim();
+                const cost = parseFloat(row.querySelector('.service-cost').value) || 0;
                 if (name) {
                     services.push({ name, cost });
                 }
@@ -4258,7 +4054,6 @@ if ($invoices_result) {
             // Save invoice to database
             const invoiceDateISO = new Date().toISOString().split('T')[0];
             fetch('api/save_invoice.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -4522,45 +4317,29 @@ if ($invoices_result) {
                         }
                     \x3c/script>
                 </body>
+                </html>
             `;
             
             // Open invoice in new window
             const invoiceWindow = window.open('', '_blank');
-            if (!invoiceWindow) {
-                alert('Please allow popups for this site to print invoices.');
-                return;
-            }
             invoiceWindow.document.write(invoiceHTML);
             invoiceWindow.document.close();
-            invoiceWindow.focus();
-            invoiceWindow.print();
-        } catch (error) {
-            console.error('Error printing invoice:', error);
-            alert('An error occurred while printing the invoice. Please check the console for details.');
         }
 
         // Print client details
         function printClientDetails() {
-            try {
-                // Check if we're in the client details modal
-                const clientNameEl = document.getElementById('clientName');
-                if (!clientNameEl) {
-                    alert('Please open a client details modal first.');
-                    return;
-                }
-
-                const clientName = (clientNameEl.textContent || '').trim();
-                const clientCompany = ((document.getElementById('clientCompany') || {}).textContent || '').trim();
-                const clientEmail = ((document.getElementById('clientEmail') || {}).textContent || '').trim();
-                const clientPhone = ((document.getElementById('clientPhone') || {}).textContent || '').trim();
-
-                // Get address information with safe access
-                const addressStreet = ((document.getElementById('clientAddressStreet') || {}).value || '').trim();
-                const addressLine2 = ((document.getElementById('clientAddressLine2') || {}).value || '').trim();
-                const addressCity = ((document.getElementById('clientAddressCity') || {}).value || '').trim();
-                const addressCounty = ((document.getElementById('clientAddressCounty') || {}).value || '').trim();
-                const addressPostcode = ((document.getElementById('clientAddressPostcode') || {}).value || '').trim();
-                const addressCountry = ((document.getElementById('clientAddressCountry') || {}).value || 'United Kingdom').trim();
+            const clientName = document.getElementById('clientName').textContent;
+            const clientCompany = document.getElementById('clientCompany').textContent;
+            const clientEmail = document.getElementById('clientEmail').textContent;
+            const clientPhone = document.getElementById('clientPhone').textContent;
+            
+            // Get address information
+            const addressStreet = document.getElementById('clientAddressStreet').value || '';
+            const addressLine2 = document.getElementById('clientAddressLine2').value || '';
+            const addressCity = document.getElementById('clientAddressCity').value || '';
+            const addressCounty = document.getElementById('clientAddressCounty').value || '';
+            const addressPostcode = document.getElementById('clientAddressPostcode').value || '';
+            const addressCountry = document.getElementById('clientAddressCountry').value || 'United Kingdom';
             
             // Format address
             let formattedAddress = '';
@@ -4585,10 +4364,8 @@ if ($invoices_result) {
             const services = [];
             const serviceRows = document.querySelectorAll('.service-row');
             serviceRows.forEach(row => {
-                const nameEl = row.querySelector('.service-name');
-                const costEl = row.querySelector('.service-cost');
-                const name = nameEl ? nameEl.value.trim() : '';
-                const cost = costEl ? (parseFloat(costEl.value) || 0) : 0;
+                const name = row.querySelector('.service-name').value.trim();
+                const cost = parseFloat(row.querySelector('.service-cost').value) || 0;
                 if (name) {
                     services.push({ name, cost });
                 }
@@ -4809,27 +4586,18 @@ if ($invoices_result) {
                         <p>Client details generated from admin dashboard</p>
                     </div>
                 </body>
+                </html>
             `;
             
             // Open client details in new window
             const detailsWindow = window.open('', '_blank');
-            if (!detailsWindow) {
-                alert('Please allow popups for this site to print client details.');
-                return;
-            }
             detailsWindow.document.write(clientDetailsHTML);
             detailsWindow.document.close();
-            detailsWindow.focus();
-            detailsWindow.print();
-        } catch (error) {
-            console.error('Error printing client details:', error);
-            alert('An error occurred while printing client details. Please check the console for details.');
         }
 
         // Print client details from data object (used by table print button)
         function printClientDetailsFromData(client) {
-            try {
-                const clientName = client.name;
+            const clientName = client.name;
             const clientCompany = client.company || 'N/A';
             const clientEmail = client.email;
             const clientPhone = client.phone || 'N/A';
@@ -5070,21 +4838,13 @@ if ($invoices_result) {
                         <p>Client details generated from admin dashboard</p>
                     </div>
                 </body>
+                </html>
             `;
             
             // Open client details in new window
             const detailsWindow = window.open('', '_blank');
-            if (!detailsWindow) {
-                alert('Please allow popups for this site to print client details.');
-                return;
-            }
             detailsWindow.document.write(clientDetailsHTML);
             detailsWindow.document.close();
-            detailsWindow.focus();
-            detailsWindow.print();
-        } catch (error) {
-            console.error('Error printing client details from data:', error);
-            alert('An error occurred while printing client details. Please check the console for details.');
         }
 
         // Print all clients
@@ -5346,7 +5106,6 @@ if ($invoices_result) {
             
             // Send to server to generate PDF and email
             fetch('api/email_invoice.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -5375,7 +5134,6 @@ if ($invoices_result) {
                     };
                     
                     fetch('api/activities.php', {
-                credentials: 'same-origin',
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify(activityData)
@@ -5408,18 +5166,6 @@ if ($invoices_result) {
         function saveNewClient(event) {
             event.preventDefault();
             
-            // Handle service selection
-            let service = document.getElementById('newClientService').value;
-            if (service === 'Other') {
-                service = document.getElementById('newClientServiceOther').value.trim() || 'Other';
-            }
-
-            // Handle lead source selection
-            let leadSource = document.getElementById('newClientLeadSource').value;
-            if (leadSource === 'Other') {
-                leadSource = document.getElementById('newClientLeadSourceOther').value.trim() || 'Other';
-            }
-
             const formData = {
                 first_name: document.getElementById('newClientFirstName').value,
                 last_name: document.getElementById('newClientLastName').value,
@@ -5433,14 +5179,12 @@ if ($invoices_result) {
                 address_postcode: document.getElementById('newClientPostcode').value,
                 address_country: document.getElementById('newClientCountry').value,
                 message: document.getElementById('newClientMessage').value,
-                service: service,
-                lead_source: leadSource,
+                service: document.getElementById('newClientService').value,
                 status: document.getElementById('newClientStatus').value,
                 notes: document.getElementById('newClientNotes').value
             };
             
             fetch('api/add_client.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(formData)
@@ -5463,7 +5207,7 @@ if ($invoices_result) {
 
         // Invoice stats and search functions
         function loadInvoiceStats() {
-            fetch('api/invoice_stats.php', { credentials: 'same-origin' })
+            fetch('api/invoice_stats.php')
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -5600,6 +5344,7 @@ invoices.forEach(invoice => {
             // Check if required elements exist
             const requiredElements = [
                 'section-dashboard',
+                'html-count',
                 'quotes-count',
                 'nav-dashboard'
             ];
@@ -5712,7 +5457,6 @@ invoices.forEach(invoice => {
         }
         function deleteInvoice(invoiceId) {
             fetch('api/delete_invoice.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -5738,8 +5482,7 @@ invoices.forEach(invoice => {
         // Load all dashboard stats
         function loadDashboardStats() {
             // Load task stats
-            fetch('api/tasks.php', {
-                credentials: 'same-origin', credentials: 'same-origin' })
+            fetch('api/tasks.php')
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.tasks) {
@@ -5756,8 +5499,7 @@ invoices.forEach(invoice => {
                 .catch(err => console.error('Error loading task stats:', err));
             
             // Load invoice stats
-            fetch('api/invoice_stats.php', {
-                credentials: 'same-origin', credentials: 'same-origin' })
+            fetch('api/invoice_stats.php')
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -5772,8 +5514,7 @@ invoices.forEach(invoice => {
                 .catch(err => console.error('Error loading invoice stats:', err));
             
             // Load quote stats for dashboard
-            fetch('api/get_quotes.php', {
-                credentials: 'same-origin', credentials: 'same-origin' })
+            fetch('api/get_quotes.php')
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.quotes) {
@@ -5794,204 +5535,341 @@ invoices.forEach(invoice => {
             document.getElementById('dash-emails-total').textContent = 0;
             document.getElementById('dash-emails-drafts').textContent = 0;
 
-            // Apply glow effect to stat cards with values > 0
-            setTimeout(applyGlowEffect, 100);
-
             // Load CRM charts
             loadCRMCharts();
         }
 
-        // Apply glow effect to stat cards with values > 0
-        function applyGlowEffect() {
-            try {
-                const enabled = localStorage.getItem('dashboardGlowEnabled') !== 'false';
-                if (!enabled) return;
-
-                // Define the stat cards that should glow when > 0
-                const glowCards = [
-                    { id: 'dash-emails-unread', cardId: 'dash-emails-unread' },
-                    { id: 'dash-quotes-new', cardId: 'dash-quotes-new' },
-                    { id: 'dash-tasks-overdue', cardId: 'dash-tasks-overdue' },
-                    { id: 'dash-invoices-overdue', cardId: 'dash-invoices-overdue' }
-                ];
-
-                glowCards.forEach(card => {
-                    const element = document.getElementById(card.id);
-                    const cardElement = element ? element.closest('.stat-card') : null;
-
-                    if (element && cardElement) {
-                        const value = parseInt(element.textContent) || 0;
-
-                        if (value > 0) {
-                            cardElement.classList.add('glow');
-                        } else {
-                            cardElement.classList.remove('glow');
-                        }
-                    }
-                });
-            } catch (e) {
-                console.warn('Error applying glow effect:', e);
-            }
-        }
-
         // Load CRM Charts
         function loadCRMCharts() {
-            // Only run when dashboard section is visible
+            // Check if we're on the dashboard section
             const dashboardSection = document.getElementById('section-dashboard');
-            if (!dashboardSection || !dashboardSection.classList.contains('active')) return;
+            if (!dashboardSection || !dashboardSection.classList.contains('active')) {
+                return; // Don't load charts if not on dashboard
+            }
 
-            // Destroy previous charts if present
-            ['statusChart','leadSourceChart','revenueChart','taskPriorityChart'].forEach(id => {
-                const c = document.getElementById(id);
-                if (!c) return;
-                if (c.chart && typeof c.chart.destroy === 'function') {
-                    try { c.chart.destroy(); } catch(e) { console.warn('destroy chart failed', e); }
-                    c.chart = null;
-                }
-                try { const ctx = c.getContext && c.getContext('2d'); ctx && ctx.clearRect && ctx.clearRect(0,0,c.width,c.height); } catch(e){}
-                c.onclick = null;
-            });
-
-            // --- Status & Lead charts (CRM dashboard) ---
-            fetch('api/crm_dashboard.php', { credentials: 'same-origin' })
+            // Load status breakdown chart
+            fetch('api/crm_dashboard.php')
                 .then(res => res.json())
                 .then(data => {
-                    if (!data.success || !data.stats) return;
-                    const stats = data.stats;
+                    if (data.success && data.stats) {
+                        const stats = data.stats;
 
-                    // Status breakdown (doughnut)
-                    const statusCanvas = document.getElementById('statusChart');
-                    if (statusCanvas) {
-                        try {
+                        // Status breakdown pie chart
+                        const statusCanvas = document.getElementById('statusChart');
+                        if (statusCanvas) {
                             const statusCtx = statusCanvas.getContext('2d');
-                            const values = [
-                                stats.status_breakdown?.new || 0,
-                                stats.status_breakdown?.contacted || 0,
-                                stats.status_breakdown?.in_progress || 0,
-                                stats.status_breakdown?.completed || 0,
-                                stats.status_breakdown?.declined || 0
-                            ];
-
                             const statusChart = new Chart(statusCtx, {
                                 type: 'doughnut',
                                 data: {
-                                    labels: ['New','Contacted','In Progress','Completed','Declined'],
-                                    datasets: [{ data: values, backgroundColor: ['#007bff','#ffc107','#17a2b8','#28a745','#dc3545'] }]
+                                    labels: ['New', 'Contacted', 'In Progress', 'Completed', 'Declined'],
+                                    datasets: [{
+                                        data: [
+                                            stats.status_breakdown?.new || 0,
+                                            stats.status_breakdown?.contacted || 0,
+                                            stats.status_breakdown?.in_progress || 0,
+                                            stats.status_breakdown?.completed || 0,
+                                            stats.status_breakdown?.declined || 0
+                                        ],
+                                        backgroundColor: [
+                                            '#007bff', // New - Blue
+                                            '#ffc107', // Contacted - Yellow
+                                            '#17a2b8', // In Progress - Teal
+                                            '#28a745', // Completed - Green
+                                            '#dc3545'  // Declined - Red
+                                        ]
+                                    }]
                                 },
                                 options: {
                                     responsive: true,
-                                    plugins: { legend: { position: 'bottom' } },
-                                    onClick: function(evt, elements) {
-                                        if (!elements.length) return;
-                                        const idx = elements[0].index;
-                                        const labels = ['New','Contacted','In Progress','Completed','Declined'];
-                                        const count = values[idx] || 0;
-                                        const total = values.reduce((a,b)=>a+b,0);
-                                        const pct = total ? ((count/total)*100).toFixed(1) : 0;
-                                        openChartModal('Quote Status: ' + labels[idx],
-                                            `<div style="text-align:center;margin-bottom:20px;"><div style="font-size:48px;margin:10px 0;">${count}</div><div style="font-size:18px;color:#666;">${pct}% of total quotes</div></div>` +
-                                            `<div style="margin-top:20px;">` +
-                                            `<h4 style="margin-bottom:10px;">Status Breakdown:</h4>` +
-                                            `<ul style="list-style:none;padding:0;">` +
-                                            `<li style="padding:5px 0;border-bottom:1px solid #eee;">New: ${stats.status_breakdown?.new || 0} quotes</li>` +
-                                            `<li style="padding:5px 0;border-bottom:1px solid #eee;">Contacted: ${stats.status_breakdown?.contacted || 0} quotes</li>` +
-                                            `<li style="padding:5px 0;border-bottom:1px solid #eee;">In Progress: ${stats.status_breakdown?.in_progress || 0} quotes</li>` +
-                                            `<li style="padding:5px 0;border-bottom:1px solid #eee;">Completed: ${stats.status_breakdown?.completed || 0} quotes</li>` +
-                                            `<li style="padding:5px 0;">Declined: ${stats.status_breakdown?.declined || 0} quotes</li>` +
-                                            `</ul></div>`
-                                        );
+                                    plugins: {
+                                        legend: {
+                                            position: 'bottom'
+                                        }
+                                    },
+                                    onClick: function(event, elements) {
+                                        if (elements.length > 0) {
+                                            const index = elements[0].index;
+                                            const labels = ['New', 'Contacted', 'In Progress', 'Completed', 'Declined'];
+                                            const values = [
+                                                stats.status_breakdown?.new || 0,
+                                                stats.status_breakdown?.contacted || 0,
+                                                stats.status_breakdown?.in_progress || 0,
+                                                stats.status_breakdown?.completed || 0,
+                                                stats.status_breakdown?.declined || 0
+                                            ];
+                                            const status = labels[index];
+                                            const count = values[index];
+                                            const total = values.reduce((a, b) => a + b, 0);
+                                            const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+
+                                            openChartModal('Quote Status: ' + status,
+                                                `<div style="text-align: center; margin-bottom: 20px;">
+                                                    <div style="font-size: 48px; margin: 10px 0;">${count}</div>
+                                                    <div style="font-size: 18px; color: #666;">${percentage}% of total quotes</div>
+                                                </div>
+                                                <div style="margin-top: 20px;">
+                                                    <h4 style="margin-bottom: 10px;">Status Breakdown:</h4>
+                                                    <ul style="list-style: none; padding: 0;">
+                                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee;">New: ${stats.status_breakdown?.new || 0} quotes</li>
+                                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee;">Contacted: ${stats.status_breakdown?.contacted || 0} quotes</li>
+                                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee;">In Progress: ${stats.status_breakdown?.in_progress || 0} quotes</li>
+                                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee;">Completed: ${stats.status_breakdown?.completed || 0} quotes</li>
+                                                        <li style="padding: 5px 0;">Declined: ${stats.status_breakdown?.declined || 0} quotes</li>
+                                                    </ul>
+                                                </div>`);
+                                        }
                                     }
                                 }
                             });
-                            statusCanvas.chart = statusChart;
-                        } catch (err) {
-                            console.error('statusChart error', err);
-                        }
-                    }
 
-                    // Lead sources (bar)
-                    const leadCanvas = document.getElementById('leadSourceChart');
-                    if (leadCanvas) {
-                        try {
-                            const leadCtx = leadCanvas.getContext('2d');
-                            const leadLabels = stats.lead_sources?.map(s=>s.lead_source||'Unknown') || [];
-                            const leadCounts = stats.lead_sources?.map(s=>s.count) || [];
-
-                            // Use same colors as defined earlier; borderColors kept same as background for hex values
-                            const leadSourceColors = {
-                                'Website': '#007bff','Referral':'#28a745','Social Media':'#dc3545','Email Marketing':'#ffc107','Direct Contact':'#6f42c1','Other':'#6c757d','Facebook':'#1877f2','Instagram':'#e4405f','TikTok':'#000000','Phone':'#17a2b8','Meeting':'#fd7e14','Unknown':'#6c757d'
+                            // Make canvas clickable
+                            statusCanvas.onclick = function(event) {
+                                const rect = statusCanvas.getBoundingClientRect();
+                                const x = event.clientX - rect.left;
+                                const y = event.clientY - rect.top;
+                                statusChart._handleClick(event, statusChart, x, y);
                             };
-                            const backgroundColors = leadLabels.map(l => leadSourceColors[l] || leadSourceColors['Unknown']);
-                            const borderColors = backgroundColors.map(c => c); // keep hex border same for safety
+                        }
 
+                        // Lead sources bar chart
+                        const leadCanvas = document.getElementById('leadSourceChart');
+                        if (leadCanvas) {
+                            const leadCtx = leadCanvas.getContext('2d');
+                            const leadLabels = stats.lead_sources?.map(item => item.lead_source || 'Unknown') || [];
+                            const leadCounts = stats.lead_sources?.map(item => item.count) || [];
                             const leadChart = new Chart(leadCtx, {
                                 type: 'bar',
-                                data: { labels: leadLabels, datasets: [{ label: 'Leads', data: leadCounts, backgroundColor: backgroundColors, borderColor: borderColors, borderWidth: 1 }] },
+                                data: {
+                                    labels: leadLabels,
+                                    datasets: [{
+                                        label: 'Leads',
+                                        data: leadCounts,
+                                        backgroundColor: '#007bff',
+                                        borderColor: '#0056b3',
+                                        borderWidth: 1
+                                    }]
+                                },
                                 options: {
                                     responsive: true,
-                                    plugins: { legend: { display: false } },
-                                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
-                                    onClick: function(evt, elements) {
-                                        if (!elements.length) return;
-                                        const idx = elements[0].index;
-                                        const count = leadCounts[idx] || 0;
-                                        const total = leadCounts.reduce((a,b)=>a+b,0);
-                                        const pct = total ? ((count/total)*100).toFixed(1) : 0;
-                                        const src = leadLabels[idx] || 'Unknown';
-                                        openChartModal('Lead Source: ' + src, `<div style="text-align:center;margin-bottom:20px;"><div style="font-size:48px;margin:10px 0;">${count}</div><div style="font-size:18px;color:#666;">${pct}% of total leads</div></div>` +
-                                            `<div style="margin-top:20px;"><h4 style="margin-bottom:10px;">Lead Sources:</h4><ul style="list-style:none;padding:0;">` +
-                                            leadLabels.map((label,i)=>`<li style="padding:5px 0;border-bottom:1px solid #eee;"><span style="display:inline-block;width:12px;height:12px;background-color:${backgroundColors[i]};margin-right:8px;border-radius:2px;"></span>${label}: ${leadCounts[i]} leads</li>`).join('') +
-                                            `</ul></div>`);
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            ticks: {
+                                                stepSize: 1
+                                            }
+                                        }
+                                    },
+                                    onClick: function(event, elements) {
+                                        if (elements.length > 0) {
+                                            const index = elements[0].index;
+                                            const source = leadLabels[index];
+                                            const count = leadCounts[index];
+                                            const total = leadCounts.reduce((a, b) => a + b, 0);
+                                            const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+
+                                            openChartModal('Lead Source: ' + source,
+                                                `<div style="text-align: center; margin-bottom: 20px;">
+                                                    <div style="font-size: 48px; margin: 10px 0;">${count}</div>
+                                                    <div style="font-size: 18px; color: #666;">${percentage}% of total leads</div>
+                                                </div>
+                                                <div style="margin-top: 20px;">
+                                                    <h4 style="margin-bottom: 10px;">Lead Sources:</h4>
+                                                    <ul style="list-style: none; padding: 0;">
+                                                        ${leadLabels.map((label, i) => `<li style="padding: 5px 0; border-bottom: 1px solid #eee;">${label}: ${leadCounts[i]} leads</li>`).join('')}
+                                                    </ul>
+                                                </div>`);
+                                        }
                                     }
                                 }
                             });
-                            leadCanvas.chart = leadChart;
-                        } catch (err) { console.error('leadChart error', err); }
+
+                            // Make canvas clickable
+                            leadCanvas.onclick = function(event) {
+                                const rect = leadCanvas.getBoundingClientRect();
+                                const x = event.clientX - rect.left;
+                                const y = event.clientY - rect.top;
+                                leadChart._handleClick(event, leadChart, x, y);
+                            };
+                        }
                     }
                 })
                 .catch(err => console.error('Error loading CRM stats:', err));
 
-            // --- Revenue trends ---
-            fetch('api/invoice_trends.php?metric=collected&range=monthly', { credentials: 'same-origin' })
+            // Load revenue trends chart
+            fetch('api/invoice_trends.php?metric=collected&range=monthly')
                 .then(res => res.json())
                 .then(data => {
-                    if (!(data.success && data.months)) return;
-                    const revenueCanvas = document.getElementById('revenueChart');
-                    if (!revenueCanvas) return;
-                    try {
-                        const revenueCtx = revenueCanvas.getContext('2d');
-                        const labels = Object.keys(data.months);
-                        const values = Object.values(data.months);
-                        const revenueChart = new Chart(revenueCtx, {
-                            type: 'line',
-                            data: { labels, datasets: [{ label: 'Revenue (£)', data: values, borderColor: '#28a745', backgroundColor: 'rgba(40,167,69,0.08)', tension: 0.1 }] },
-                            options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { callback: v => '£' + v.toFixed(0) } } }, onClick: function(evt,elements){ if (!elements.length) return; const idx = elements[0].index; const month = labels[idx]; const amount = values[idx]; const total = values.reduce((a,b)=>a+b,0); const avg = total/values.length; openChartModal('Revenue: '+month, `<div style="text-align:center;margin-bottom:20px;"><div style="font-size:36px;margin:10px 0;color:#28a745;">£${amount.toFixed(2)}</div><div style="font-size:16px;color:#666;">Revenue for ${month}</div></div>` + `<div style="margin-top:20px;"><h4 style="margin-bottom:10px;">Monthly Breakdown:</h4><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;">` + labels.map((label,i)=>`<div style="text-align:center;padding:10px;background:#f8f9fa;border-radius:4px;"><div style="font-weight:bold;">${label}</div><div style="color:#28a745;">£${values[i].toFixed(0)}</div></div>`).join('') + `</div><div style="margin-top:15px;padding:10px;background:#e9ecef;border-radius:4px;"><strong>Total (12 months):</strong> £${total.toFixed(2)}<br><strong>Average per month:</strong> £${avg.toFixed(2)}</div></div>`); } }
-                        });
-                        revenueCanvas.chart = revenueChart;
-                    } catch(e){ console.error('revenueChart error', e); }
+                    if (data.success && data.months) {
+                        const revenueCanvas = document.getElementById('revenueChart');
+                        if (revenueCanvas) {
+                            const revenueCtx = revenueCanvas.getContext('2d');
+                            const labels = Object.keys(data.months);
+                            const values = Object.values(data.months);
+                            const revenueChart = new Chart(revenueCtx, {
+                                type: 'line',
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        label: 'Revenue (£)',
+                                        data: values,
+                                        borderColor: '#28a745',
+                                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                                        tension: 0.1
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            ticks: {
+                                                callback: function(value) {
+                                                    return '£' + value.toFixed(0);
+                                                }
+                                            }
+                                        }
+                                    },
+                                    onClick: function(event, elements) {
+                                        if (elements.length > 0) {
+                                            const index = elements[0].index;
+                                            const month = labels[index];
+                                            const amount = values[index];
+                                            const total = values.reduce((a, b) => a + b, 0);
+                                            const avg = total / values.length;
+
+                                            openChartModal('Revenue: ' + month,
+                                                `<div style="text-align: center; margin-bottom: 20px;">
+                                                    <div style="font-size: 36px; margin: 10px 0; color: #28a745;">£${amount.toFixed(2)}</div>
+                                                    <div style="font-size: 16px; color: #666;">Revenue for ${month}</div>
+                                                </div>
+                                                <div style="margin-top: 20px;">
+                                                    <h4 style="margin-bottom: 10px;">Monthly Breakdown:</h4>
+                                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;">
+                                                        ${labels.map((label, i) => `<div style="text-align: center; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                                                            <div style="font-weight: bold;">${label}</div>
+                                                            <div style="color: #28a745;">£${values[i].toFixed(0)}</div>
+                                                        </div>`).join('')}
+                                                    </div>
+                                                    <div style="margin-top: 15px; padding: 10px; background: #e9ecef; border-radius: 4px;">
+                                                        <strong>Total (12 months):</strong> £${total.toFixed(2)}<br>
+                                                        <strong>Average per month:</strong> £${avg.toFixed(2)}
+                                                    </div>
+                                                </div>`);
+                                        }
+                                    }
+                                }
+                            });
+
+                            // Make canvas clickable
+                            revenueCanvas.onclick = function(event) {
+                                const rect = revenueCanvas.getBoundingClientRect();
+                                const x = event.clientX - rect.left;
+                                const y = event.clientY - rect.top;
+                                revenueChart._handleClick(event, revenueChart, x, y);
+                            };
+                        }
+                    }
                 })
                 .catch(err => console.error('Error loading revenue trends:', err));
 
-            // --- Task priority pie ---
-            fetch('api/tasks.php', { credentials: 'same-origin' })
+            // Load task priority chart
+            fetch('api/tasks.php')
                 .then(res => res.json())
                 .then(data => {
-                    if (!(data.success && data.tasks)) return;
-                    const taskCanvas = document.getElementById('taskPriorityChart');
-                    if (!taskCanvas) return;
-                    try {
-                        const priorities = data.tasks.reduce((acc, task) => { const p = task.priority || 'normal'; acc[p] = (acc[p]||0)+1; return acc; }, {});
-                        const taskCtx = taskCanvas.getContext('2d');
-                        const taskChart = new Chart(taskCtx, { type: 'pie', data: { labels: ['Low','Normal','High','Urgent'], datasets:[{ data: [priorities.low||0, priorities.normal||0, priorities.high||0, priorities.urgent||0], backgroundColor: ['#28a745','#17a2b8','#ffc107','#dc3545'] }] }, options: { responsive:true, plugins:{ legend:{ position:'bottom' } }, onClick: function(evt, elements){ if (!elements.length) return; const idx = elements[0].index; const labels = ['Low','Normal','High','Urgent']; const vals = [priorities.low||0, priorities.normal||0, priorities.high||0, priorities.urgent||0]; const total = vals.reduce((a,b)=>a+b,0); const pct = total?((vals[idx]/total)*100).toFixed(1):0; openChartModal('Task Priority: '+labels[idx], `<div style="text-align:center;margin-bottom:20px;"><div style="font-size:48px;margin:10px 0;color:${['#28a745','#17a2b8','#ffc107','#dc3545'][idx]};">${vals[idx]}</div><div style="font-size:18px;color:#666;">${pct}% of total tasks</div></div>` + `<div style="margin-top:20px;"><h4 style="margin-bottom:10px;">Priority Breakdown:</h4><ul style="list-style:none;padding:0;"><li style="padding:5px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;"><span><span style='color:#28a745;'>●</span> Low Priority:</span><span>${priorities.low||0} tasks</span></li><li style="padding:5px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;"><span><span style='color:#17a2b8;'>●</span> Normal Priority:</span><span>${priorities.normal||0} tasks</span></li><li style="padding:5px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;"><span><span style='color:#ffc107;'>●</span> High Priority:</span><span>${priorities.high||0} tasks</span></li><li style="padding:5px 0;display:flex;justify-content:space-between;"><span><span style='color:#dc3545;'>●</span> Urgent Priority:</span><span>${priorities.urgent||0} tasks</span></li></ul></div>`); } } });
-                        taskCanvas.chart = taskChart;
-                    } catch(e){ console.error('taskChart error', e); }
+                    if (data.success && data.tasks) {
+                        const taskCanvas = document.getElementById('taskPriorityChart');
+                        if (taskCanvas) {
+                            const taskCtx = taskCanvas.getContext('2d');
+                            const priorities = data.tasks.reduce((acc, task) => {
+                                const priority = task.priority || 'normal';
+                                acc[priority] = (acc[priority] || 0) + 1;
+                                return acc;
+                            }, {});
+
+                            const taskChart = new Chart(taskCtx, {
+                                type: 'pie',
+                                data: {
+                                    labels: ['Low', 'Normal', 'High', 'Urgent'],
+                                    datasets: [{
+                                        data: [
+                                            priorities.low || 0,
+                                            priorities.normal || 0,
+                                            priorities.high || 0,
+                                            priorities.urgent || 0
+                                        ],
+                                        backgroundColor: [
+                                            '#28a745', // Low - Green
+                                            '#17a2b8', // Normal - Teal
+                                            '#ffc107', // High - Yellow
+                                            '#dc3545'  // Urgent - Red
+                                        ]
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    plugins: {
+                                        legend: {
+                                            position: 'bottom'
+                                        }
+                                    },
+                                    onClick: function(event, elements) {
+                                        if (elements.length > 0) {
+                                            const index = elements[0].index;
+                                            const priorityLabels = ['Low', 'Normal', 'High', 'Urgent'];
+                                            const priorityColors = ['#28a745', '#17a2b8', '#ffc107', '#dc3545'];
+                                            const priorityValues = [
+                                                priorities.low || 0,
+                                                priorities.normal || 0,
+                                                priorities.high || 0,
+                                                priorities.urgent || 0
+                                            ];
+                                            const priority = priorityLabels[index];
+                                            const count = priorityValues[index];
+                                            const total = priorityValues.reduce((a, b) => a + b, 0);
+                                            const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+
+                                            openChartModal('Task Priority: ' + priority,
+                                                `<div style="text-align: center; margin-bottom: 20px;">
+                                                    <div style="font-size: 48px; margin: 10px 0; color: ${priorityColors[index]};">${count}</div>
+                                                    <div style="font-size: 18px; color: #666;">${percentage}% of total tasks</div>
+                                                </div>
+                                                <div style="margin-top: 20px;">
+                                                    <h4 style="margin-bottom: 10px;">Priority Breakdown:</h4>
+                                                    <ul style="list-style: none; padding: 0;">
+                                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                                                            <span><span style="color: #28a745;">●</span> Low Priority:</span>
+                                                            <span>${priorities.low || 0} tasks</span>
+                                                        </li>
+                                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                                                            <span><span style="color: #17a2b8;">●</span> Normal Priority:</span>
+                                                            <span>${priorities.normal || 0} tasks</span>
+                                                        </li>
+                                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                                                            <span><span style="color: #ffc107;">●</span> High Priority:</span>
+                                                            <span>${priorities.high || 0} tasks</span>
+                                                        </li>
+                                                        <li style="padding: 5px 0; display: flex; justify-content: space-between;">
+                                                            <span><span style="color: #dc3545;">●</span> Urgent Priority:</span>
+                                                            <span>${priorities.urgent || 0} tasks</span>
+                                                        </li>
+                                                    </ul>
+                                                </div>`);
+                                        }
+                                    }
+                                }
+                            });
+
+                            // Make canvas clickable
+                            taskCanvas.onclick = function(event) {
+                                const rect = taskCanvas.getBoundingClientRect();
+                                const x = event.clientX - rect.left;
+                                const y = event.clientY - rect.top;
+                                taskChart._handleClick(event, taskChart, x, y);
+                            };
+                        }
+                    }
                 })
                 .catch(err => console.error('Error loading task stats:', err));
-        }
-
-
-
-
         }
 
         // Chart Modal Functions
@@ -6144,7 +6022,6 @@ invoices.forEach(invoice => {
             };
             
             fetch('api/activities.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(formData)
@@ -6169,7 +6046,6 @@ invoices.forEach(invoice => {
             if (!confirm('Delete this activity?')) return;
             
             fetch('api/activities.php', {
-                credentials: 'same-origin',
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
@@ -6240,7 +6116,6 @@ invoices.forEach(invoice => {
             };
             
             fetch('api/notes.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(formData)
@@ -6265,7 +6140,6 @@ invoices.forEach(invoice => {
             if (!confirm('Delete this note?')) return;
             
             fetch('api/notes.php', {
-                credentials: 'same-origin',
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
@@ -6338,7 +6212,6 @@ invoices.forEach(invoice => {
             };
             
             fetch('api/update_client.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(formData)
@@ -6356,7 +6229,6 @@ invoices.forEach(invoice => {
                     };
                     
                     return fetch('api/activities.php', {
-                credentials: 'same-origin',
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify(activityData)
@@ -6737,61 +6609,6 @@ invoices.forEach(invoice => {
             // Simple alert for now - can be enhanced with a toast notification system
             console.log(`[${type.toUpperCase()}] ${message}`);
         }
-
-        // Success popup function
-        function showSuccessPopup(title, message) {
-            // Create popup modal
-            const popup = document.createElement('div');
-            popup.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 10000;
-            `;
-
-            const content = document.createElement('div');
-            content.style.cssText = `
-                background: white;
-                padding: 30px;
-                border-radius: 8px;
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-                text-align: center;
-                max-width: 400px;
-                width: 90%;
-            `;
-
-            content.innerHTML = `
-                <div style="font-size: 48px; color: #28a745; margin-bottom: 15px;">✅</div>
-                <h3 style="margin: 0 0 10px 0; color: #333;">${title}</h3>
-                <p style="margin: 0 0 20px 0; color: #666;">${message}</p>
-                <button onclick="this.closest('.success-popup').remove()" style="
-                    background: #28a745;
-                    color: white;
-                    border: none;
-                    padding: 10px 20px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 14px;
-                ">OK</button>
-            `;
-
-            popup.className = 'success-popup';
-            popup.appendChild(content);
-            document.body.appendChild(popup);
-
-            // Auto-remove after 5 seconds
-            setTimeout(() => {
-                if (popup.parentNode) {
-                    popup.remove();
-                }
-            }, 5000);
-        }
         
         // ==================== Main Tasks Section Functions ====================
         
@@ -6808,7 +6625,7 @@ invoices.forEach(invoice => {
             const statusFilter = currentTaskFilter === '' || currentTaskFilter === 'all' ? '' : `&status=${currentTaskFilter}`;
             
             // return promise so callers (stat-card clicks) can chain further UI filtering
-            return fetch(`api/tasks.php?${statusFilter.substring(1)}`, { credentials: 'same-origin' })
+            return fetch(`api/tasks.php?${statusFilter.substring(1)}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.tasks) {
@@ -7067,7 +6884,7 @@ invoices.forEach(invoice => {
         // ==================== User Management Functions ====================
         
         function loadUsers() {
-            fetch('api/get_users.php', { credentials: 'same-origin' })
+            fetch('api/get_users.php')
                 .then(res => res.json())
                 .then(data => {
                     const tbody = document.getElementById('users-list-tbody');
@@ -7149,7 +6966,6 @@ invoices.forEach(invoice => {
             }
             
             fetch('api/create_user.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -7235,7 +7051,6 @@ invoices.forEach(invoice => {
             }
             
             fetch('api/update_user.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(updateData)
@@ -7270,7 +7085,6 @@ invoices.forEach(invoice => {
             const userId = document.getElementById('deleteUserId').value;
             
             fetch('api/delete_user.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ id: userId })
@@ -7335,7 +7149,6 @@ invoices.forEach(invoice => {
             
             // Send email
             fetch('api/send_email.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -7362,7 +7175,6 @@ invoices.forEach(invoice => {
                         };
                         
                         fetch('api/activities.php', {
-                credentials: 'same-origin',
                             method: 'POST',
                             headers: {'Content-Type': 'application/json'},
                             body: JSON.stringify(activityData)
@@ -7451,7 +7263,6 @@ invoices.forEach(invoice => {
             };
             
             fetch('api/save_email_settings.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(settings)
@@ -7488,7 +7299,6 @@ invoices.forEach(invoice => {
             alert('Testing email connection...');
             
             fetch('api/test_email.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(settings)
@@ -7621,7 +7431,6 @@ invoices.forEach(invoice => {
         
         function saveMenuOrder(order) {
             fetch('api/save_menu_order.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({order: order})
@@ -7780,7 +7589,6 @@ invoices.forEach(invoice => {
         
         function openDashboardCustomizationModal() {
             loadDashboardSections();
-            loadGlowSettings();
             document.getElementById('dashboardCustomizationModal').style.display = 'flex';
         }
         
@@ -7844,7 +7652,6 @@ invoices.forEach(invoice => {
         
         function saveDashboardLayout(sections) {
             fetch('api/save_dashboard_layout.php', {
-                credentials: 'same-origin',
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({sections: sections})
@@ -7915,78 +7722,6 @@ invoices.forEach(invoice => {
                 applyDashboardLayout(defaultDashboardSections);
             }
         }
-
-        // Glow effect settings functions
-        function loadGlowSettings() {
-            try {
-                const glowEnabled = localStorage.getItem('dashboardGlowEnabled') !== 'false'; // Default to true
-                const glowColor = localStorage.getItem('dashboardGlowColor') || '#db1c56'; // Default to navbar color
-
-                document.getElementById('glow-enabled').checked = glowEnabled;
-                document.getElementById('glow-color').value = glowColor;
-                document.getElementById('glow-color-preview').textContent = glowColor;
-
-                // Apply the settings
-                updateGlowEffect();
-            } catch (e) {
-                console.warn('Error loading glow settings:', e);
-            }
-        }
-
-        function toggleGlowEffect() {
-            try {
-                const enabled = document.getElementById('glow-enabled').checked;
-                localStorage.setItem('dashboardGlowEnabled', enabled);
-                updateGlowEffect();
-            } catch (e) {
-                console.warn('Error toggling glow effect:', e);
-            }
-        }
-
-        function changeGlowColor() {
-            try {
-                const color = document.getElementById('glow-color').value;
-                document.getElementById('glow-color-preview').textContent = color;
-                localStorage.setItem('dashboardGlowColor', color);
-                updateGlowEffect();
-            } catch (e) {
-                console.warn('Error changing glow color:', e);
-            }
-        }
-
-        function updateGlowEffect() {
-            try {
-                const enabled = localStorage.getItem('dashboardGlowEnabled') !== 'false';
-                const color = localStorage.getItem('dashboardGlowColor') || '#db1c56';
-
-                // Convert hex color to RGB
-                const rgb = hexToRgb(color);
-                if (rgb) {
-                    document.documentElement.style.setProperty('--glow-color-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
-                }
-
-                // Re-apply glow effect
-                if (enabled) {
-                    applyGlowEffect();
-                } else {
-                    // Remove glow from all stat cards
-                    document.querySelectorAll('.stat-card.glow').forEach(card => {
-                        card.classList.remove('glow');
-                    });
-                }
-            } catch (e) {
-                console.warn('Error updating glow effect:', e);
-            }
-        }
-
-        function hexToRgb(hex) {
-            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? {
-                r: parseInt(result[1], 16),
-                g: parseInt(result[2], 16),
-                b: parseInt(result[3], 16)
-            } : null;
-        }
         
         // Function to reload dashboard data after layout changes
         function loadDashboardData() {
@@ -8007,33 +7742,11 @@ invoices.forEach(invoice => {
                     // Use default layout if no saved layout exists
                 });
         }
-
-        // Initialize glow settings when page loads
-        function initializeGlowSettings() {
-            try {
-                const enabled = localStorage.getItem('dashboardGlowEnabled') !== 'false';
-                const color = localStorage.getItem('dashboardGlowColor') || '#db1c56';
-
-                // Convert hex color to RGB and set CSS custom property if enabled
-                if (enabled) {
-                    const rgb = hexToRgb(color);
-                    if (rgb) {
-                        document.documentElement.style.setProperty('--glow-color-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
-                    }
-                } else {
-                    // Remove glow if disabled
-                    document.documentElement.style.removeProperty('--glow-color-rgb');
-                }
-            } catch (e) {
-                console.warn('Error initializing glow settings:', e);
-            }
-        }
         
         // Initialize menu order when page loads
         document.addEventListener('DOMContentLoaded', () => {
             initializeMenuOrder();
             initializeDashboardLayout();
-            initializeGlowSettings();
 
             // Time-of-day greeting (Good morning/afternoon/evening)
             try {
@@ -8050,9 +7763,6 @@ invoices.forEach(invoice => {
                 }
             } catch (e) { /* ignore */ }
         });
-
-    // <-- Add this closing brace to end the main script block
-    }
     </script>
 </body>
 </html>
