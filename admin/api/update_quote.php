@@ -95,13 +95,13 @@ if ($useFullUpdate) {
     if ($includeLead && $includeExpected) {
         $lead = isset($_POST['lead_source']) ? trim($_POST['lead_source']) : null;
         $expected = isset($_POST['expected_value']) ? floatval($_POST['expected_value']) : 0.0;
-        $stmt->bind_param("sssdis", $status, $notes, $services, $total_cost, $lead, $expected, $quote_id);
+        $stmt->bind_param("sssdsdi", $status, $notes, $services, $total_cost, $lead, $expected, $quote_id);
     } elseif ($includeLead) {
         $lead = isset($_POST['lead_source']) ? trim($_POST['lead_source']) : null;
-        $stmt->bind_param("ssssid", $status, $notes, $services, $total_cost, $lead, $quote_id);
+        $stmt->bind_param("sssdsi", $status, $notes, $services, $total_cost, $lead, $quote_id);
     } elseif ($includeExpected) {
         $expected = isset($_POST['expected_value']) ? floatval($_POST['expected_value']) : 0.0;
-        $stmt->bind_param("sssidd", $status, $notes, $services, $total_cost, $expected, $quote_id);
+        $stmt->bind_param("sssddi", $status, $notes, $services, $total_cost, $expected, $quote_id);
     } else {
         $stmt->bind_param("sssdi", $status, $notes, $services, $total_cost, $quote_id);
     }

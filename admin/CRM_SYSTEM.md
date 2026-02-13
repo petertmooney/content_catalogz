@@ -275,7 +275,9 @@ GET /admin/api/crm_dashboard.php
 ```
 
 - Database migration available: `admin/migrations/2026-02-13_add_crm_fields.sql` (adds optional `lead_source`, `next_follow_up`, `expected_value`).
+- Run migrations on staging/production with the CLI helper: `php admin/setup/run_migrations.php` (or run the SQL directly).
 - CRM cache TTL reduced for near-real-time updates (now 60s).
+- UI updated: `Client Details` and `Add New Client` now expose `lead_source`, `next_follow_up`, and `expected_value` fields in the admin UI.
 
 ## Setup Instructions
 

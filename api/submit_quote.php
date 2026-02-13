@@ -36,8 +36,12 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
+// Optional CRM fields from the public form
+$lead_source = isset($_POST['lead_source']) ? trim($_POST['lead_source']) : null;
+$expected_value = isset($_POST['expected_value']) ? floatval($_POST['expected_value']) : null;
+
 // Insert quote into database
-$sql = "INSERT INTO quotes (name, email, company, phone, service, message, status) VALUES (?, ?, ?, ?, ?, ?, 'new')";
+$sql = "INSERT INTO quotes (name, email, company, phone, service, message, status, lead_source, expected_value) VALUES (?, ?, ?, ?, ?, ?, 'new', ?, ?)";
 $stmt = $conn->prepare($sql);
 
 if (!$stmt) {
@@ -48,7 +52,8 @@ if (!$stmt) {
     exit;
 }
 
-$stmt->bind_param("ssssss", $name, $email, $company, $phone, $service, $message);
+// bind expected_value as double (use 0.0 if null)
+$stmt->bind_param("sssssssd", $name, $email, $company, $phone, $service, $message, $lead_source, $expected_value);
 
 if ($stmt->execute()) {
     $quote_id = $stmt->insert_id;

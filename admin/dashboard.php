@@ -1675,6 +1675,21 @@ if ($invoices_result) {
                             <strong>Phone:</strong><br>
                             <span id="clientPhone"></span>
                         </div>
+                        <div>
+                            <label style="font-weight:600;">Lead Source</label><br>
+                            <input type="text" id="clientLeadSource" name="lead_source" class="form-control" placeholder="e.g. Website, Referral, Ad">
+                        </div>
+                        <div>
+                            <label style="font-weight:600;">Next follow-up</label><br>
+                            <input type="date" id="clientNextFollowUp" name="next_follow_up" class="form-control">
+                        </div>
+                        <div>
+                            <label style="font-weight:600;">Expected value (£)</label><br>
+                            <div style="position: relative;">
+                                <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 500; color: #333;">£</span>
+                                <input type="number" id="clientExpectedValue" name="expected_value" class="form-control" step="0.01" min="0" style="padding-left: 28px;">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1845,6 +1860,17 @@ if ($invoices_result) {
                     <div class="form-group">
                         <label for="newClientPhone">Phone</label>
                         <input type="text" id="newClientPhone" name="phone" class="form-control" placeholder="+44 123 456 7890">
+                    </div>
+                    <div class="form-group">
+                        <label for="newClientLeadSource">Lead Source</label>
+                        <input type="text" id="newClientLeadSource" name="lead_source" class="form-control" placeholder="e.g. Website, Referral">
+                    </div>
+                    <div class="form-group">
+                        <label for="newClientExpectedValue">Expected value (£)</label>
+                        <div style="position: relative;">
+                            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 500; color: #333;">£</span>
+                            <input type="number" id="newClientExpectedValue" name="expected_value" class="form-control" step="0.01" min="0" style="padding-left: 28px;">
+                        </div>
                     </div>
                     <div class="form-group" style="grid-column: 1 / -1;">
                         <label for="newClientAddressStreet">Address Street</label>
@@ -3254,6 +3280,12 @@ if ($invoices_result) {
             document.getElementById('clientAddressCountry').value = client.address_country || 'United Kingdom';
             
             document.getElementById('totalPaid').value = client.total_paid || 0.00;
+
+            // CRM-specific fields
+            document.getElementById('clientLeadSource').value = client.lead_source || '';
+            document.getElementById('clientNextFollowUp').value = client.next_follow_up || '';
+            document.getElementById('clientExpectedValue').value = client.expected_value || '';
+
             
             // Load services
             const services = client.services || [];
@@ -3463,7 +3495,11 @@ if ($invoices_result) {
                 address_country: addressCountry,
                 services: services,
                 total_cost: totalCost,
-                total_paid: totalPaid
+                total_paid: totalPaid,
+                // CRM fields
+                lead_source: document.getElementById('clientLeadSource').value || null,
+                next_follow_up: document.getElementById('clientNextFollowUp').value || null,
+                expected_value: parseFloat(document.getElementById('clientExpectedValue').value || 0) || null
             };
             
             fetch('api/update_client.php', {
@@ -4039,7 +4075,10 @@ if ($invoices_result) {
                 message: document.getElementById('newClientMessage').value,
                 service: document.getElementById('newClientService').value,
                 status: document.getElementById('newClientStatus').value,
-                notes: document.getElementById('newClientNotes').value
+                notes: document.getElementById('newClientNotes').value,
+                // CRM fields
+                lead_source: document.getElementById('newClientLeadSource').value || null,
+                expected_value: parseFloat(document.getElementById('newClientExpectedValue').value || 0) || null
             };
             
             fetch('api/add_client.php', {
