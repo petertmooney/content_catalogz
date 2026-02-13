@@ -1016,7 +1016,7 @@ if ($invoices_result) {
                         </select>
                     </div>
                     <div>
-                        <input type="text" id="searchQuotes" placeholder="Search by name, email, company..." style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ddd; width: 300px;" onkeyup="loadQuotes()">
+                        <input type="text" id="searchQuotes" placeholder="Search by name, email, company..." style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ddd; width: 300px;" onkeyup="loadQuotes()" autocomplete="off">
                     </div>
                     <button class="btn btn-secondary" onclick="loadQuotes()">Refresh</button>
                 </div>
@@ -1045,7 +1045,7 @@ if ($invoices_result) {
                 </div>
 
                 <div style="margin-bottom: 15px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                    <input type="text" id="searchClients" placeholder="Search by name, email, company..." style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ddd; width: 250px; font-size: 13px;" onkeyup="loadExistingClients()">
+                    <input type="text" id="searchClients" placeholder="Search by name, email, company..." style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ddd; width: 250px; font-size: 13px;" onkeyup="loadExistingClients()" autocomplete="off">
                     <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 13px;" onclick="loadExistingClients()">Refresh</button>
                     <button class="btn btn-outline" style="padding: 6px 12px; font-size: 13px;" onclick="filterExistingClients('all')">Show All</button>
                     <button class="btn btn-outline" style="padding: 6px 12px; font-size: 13px;" onclick="printAllClients()">🖨️ Print All Clients</button>
@@ -1109,11 +1109,11 @@ if ($invoices_result) {
                     <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: end;">
                         <div class="form-group" style="margin: 0;">
                             <label for="invoiceSearch">Invoice Number or Client Name</label>
-                            <input type="text" id="invoiceSearch" class="form-control" placeholder="INV-1234567890 or client name...">
+                            <input type="text" id="invoiceSearch" class="form-control" placeholder="INV-1234567890 or client name..." autocomplete="off">
                         </div>
                         <div class="form-group" style="margin: 0;">
                             <label for="invoiceDateSearch">Invoice Date</label>
-                            <input type="date" id="invoiceDateSearch" class="form-control">
+                            <input type="date" id="invoiceDateSearch" class="form-control" autocomplete="off">
                         </div>
                         <button class="btn btn-primary" onclick="searchInvoices()" style="height: 38px;">🔍 Search</button>
                     </div>
