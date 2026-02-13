@@ -249,9 +249,9 @@ if ($invoices_result) {
         }
 
         .btn-sm {
-            padding: 6px 12px;
-            font-size: 12px;
-            margin: 0 3px;
+            padding: 4px 8px;
+            font-size: 11px;
+            margin: 0 2px;
         }
 
         .table-container {
@@ -261,21 +261,23 @@ if ($invoices_result) {
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .table-container table {
+            font-size: 13px;
+            line-height: 1.3;
         }
 
-        th, td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
+        .table-container th,
+        .table-container td {
+            padding: 8px 10px;
         }
 
-        th {
-            background: #f9f9f9;
+        .table-container th {
+            background: #f9f9fa;
             font-weight: 600;
             color: #333;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         tr:hover {
