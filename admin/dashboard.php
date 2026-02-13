@@ -1664,6 +1664,14 @@ if ($invoices_result) {
                             <strong>Phone:</strong><br>
                             <span id="clientPhone"></span>
                         </div>
+                        <div>
+                            <strong>Lead Source:</strong><br>
+                            <span id="clientLeadSource"></span>
+                        </div>
+                        <div>
+                            <strong>Status:</strong><br>
+                            <span id="clientStatus"></span>
+                        </div>
                     </div>
                 </div>
 
@@ -1694,6 +1702,18 @@ if ($invoices_result) {
                         <div class="form-group">
                             <label for="clientAddressCountry">Country</label>
                             <input type="text" id="clientAddressCountry" name="address_country" class="form-control" value="United Kingdom">
+                        </div>
+                        <div class="form-group">
+                            <label for="clientLeadSource">Lead Source</label>
+                            <select id="clientLeadSource" name="lead_source" class="form-control">
+                                <option value="">Select Lead Source</option>
+                                <option value="Website">Website</option>
+                                <option value="Referral">Referral</option>
+                                <option value="Social Media">Social Media</option>
+                                <option value="Email Marketing">Email Marketing</option>
+                                <option value="Direct Contact">Direct Contact</option>
+                                <option value="Other">Other</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -3615,6 +3635,7 @@ if ($invoices_result) {
             document.getElementById('clientCompany').textContent = client.company || 'N/A';
             document.getElementById('clientEmail').textContent = client.email;
             document.getElementById('clientPhone').textContent = client.phone || 'N/A';
+            document.getElementById('clientLeadSource').textContent = client.lead_source || 'N/A';
             
             // Load address fields
             document.getElementById('clientAddressStreet').value = client.address_street || '';
@@ -3623,6 +3644,7 @@ if ($invoices_result) {
             document.getElementById('clientAddressCounty').value = client.address_county || '';
             document.getElementById('clientAddressPostcode').value = client.address_postcode || '';
             document.getElementById('clientAddressCountry').value = client.address_country || 'United Kingdom';
+            document.getElementById('clientLeadSource').value = client.lead_source || '';
             
             document.getElementById('totalPaid').value = client.total_paid || 0.00;
             
@@ -3864,6 +3886,7 @@ if ($invoices_result) {
             const addressCounty = document.getElementById('clientAddressCounty').value;
             const addressPostcode = document.getElementById('clientAddressPostcode').value;
             const addressCountry = document.getElementById('clientAddressCountry').value;
+            const leadSource = document.getElementById('clientLeadSource').value;
             const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
             const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
             
@@ -3895,6 +3918,7 @@ if ($invoices_result) {
                 address_county: addressCounty,
                 address_postcode: addressPostcode,
                 address_country: addressCountry,
+                lead_source: leadSource,
                 services: services,
                 total_cost: totalCost,
                 total_paid: totalPaid
