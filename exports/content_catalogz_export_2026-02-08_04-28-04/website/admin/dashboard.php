@@ -3798,8 +3798,26 @@ if ($invoices_result) {
 
         // Add New Client modal functions
         function openAddClientModal() {
-            document.getElementById('addClientForm').reset();
+            const form = document.getElementById('addClientForm');
+            const modal = document.getElementById('addClientModal');
+            if (form) form.reset();
+            if (!modal) { console.warn('addClientModal not found'); return; }
+
+            console.debug('addClientModal before:', { className: modal.className, display: window.getComputedStyle(modal).display, zIndex: window.getComputedStyle(modal).zIndex, visibility: window.getComputedStyle(modal).visibility });
+
             document.getElementById('addClientModal').classList.add('show');
+
+            console.debug('addClientModal after add show:', { className: modal.className, display: window.getComputedStyle(modal).display, zIndex: window.getComputedStyle(modal).zIndex, visibility: window.getComputedStyle(modal).visibility });
+
+            const first = document.getElementById('newClientFirstName');
+            if (first) {
+                setTimeout(() => {
+                    first.focus();
+                    console.debug('addClientModal focus applied to first input:', document.activeElement && document.activeElement.id);
+                }, 60);
+            } else {
+                console.debug('addClientModal: first input not found');
+            }
         }
         
         function closeAddClientModal() {
