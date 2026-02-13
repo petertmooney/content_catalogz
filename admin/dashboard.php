@@ -4430,57 +4430,112 @@ invoices.forEach(invoice => {
                             window.prevKpis[key] = cur;
                         });
 
-                        // Recent activities (render lead-source chips when available)
+                        // Recent activities (render lead-source chips and activity badges)
                         const raEl = document.getElementById('dash-recent-activities');
                         raEl.innerHTML = '';
                         if (s.recent_activities && s.recent_activities.length) {
                             s.recent_activities.forEach(a => {
                                 const li = document.createElement('li');
 
-                                // main text
-                                const txt = document.createElement('span');
-                                txt.textContent = `${a.activity_date} — ${a.activity_type} — ${a.client_name || 'General'}`;
-                                li.appendChild(txt);
+                                const left = document.createElement('div');
+                                left.style.flex = '1';
 
-                                // optional note
+                                const topRow = document.createElement('div');
+                                topRow.style.display = 'flex';
+                                topRow.style.alignItems = 'center';
+                                topRow.style.gap = '8px';
+
+                                // activity type badge
+                                const at = document.createElement('span');
+                                at.className = 'activity-badge';
+                                at.textContent = a.activity_type || 'activity';
+                                at.style.backgroundColor = (function(t){
+                                    if (!t) return 'rgba(255,255,255,0.04)';
+                                    const k = t.toLowerCase();
+                                    if (k.includes('call')) return '#e6f7ff';
+                                    if (k.includes('email')) return '#f0fdf4';
+                                    if (k.includes('meeting')) return '#fff7ed';
+                                    return 'rgba(255,255,255,0.04)';
+                                })(a.activity_type);
+                                at.style.color = '#0b0b0b';
+                                topRow.appendChild(at);
+
+                                const title = document.createElement('strong');
+                                title.textContent = `${a.client_name || 'General'}`;
+                                topRow.appendChild(title);
+
+                                left.appendChild(topRow);
+
                                 if (a.note) {
                                     const note = document.createElement('div');
                                     note.style.opacity = '0.9';
                                     note.style.fontSize = '12px';
                                     note.style.marginTop = '6px';
                                     note.textContent = a.note;
-                                    li.appendChild(note);
+                                    left.appendChild(note);
                                 }
 
-                                // lead-source chip (if available)
+                                // right-side meta (date + lead chip)
+                                const meta = document.createElement('div');
+                                meta.className = 'activity-meta';
+                                const date = document.createElement('div');
+                                date.textContent = a.activity_date;
+                                date.style.opacity = '0.7';
+                                date.style.fontSize = '12px';
+                                meta.appendChild(date);
+
                                 if (a.lead_source) {
                                     const chip = document.createElement('span');
                                     chip.className = 'lead-chip';
                                     chip.textContent = a.lead_source;
                                     chip.style.backgroundColor = getLeadColor(a.lead_source);
                                     chip.style.color = '#0b0b0b';
-                                    chip.style.padding = '4px 8px';
-                                    chip.style.borderRadius = '999px';
-                                    chip.style.fontSize = '11px';
-                                    chip.style.marginLeft = '8px';
-                                    chip.style.display = 'inline-block';
-                                    chip.style.fontWeight = '700';
-                                    txt.appendChild(chip);
+                                    meta.appendChild(chip);
                                 }
 
+                                li.appendChild(left);
+                                li.appendChild(meta);
                                 raEl.appendChild(li);
                             });
                         } else {
                             raEl.innerHTML = '<li>No recent activity</li>';
                         }
 
-                        // Upcoming tasks
+                        // Upcoming tasks (priority & status badges)
                         const utEl = document.getElementById('dash-upcoming-tasks');
                         utEl.innerHTML = '';
                         if (s.upcoming_tasks && s.upcoming_tasks.length) {
                             s.upcoming_tasks.forEach(t => {
                                 const li = document.createElement('li');
-                                li.textContent = `${t.due_date} — ${t.title} (${t.client_name || 'General'})`;
+
+                                const left = document.createElement('div');
+                                left.style.flex = '1';
+                                left.textContent = `${t.due_date} — ${t.title}`;
+
+                                const meta = document.createElement('div');
+                                meta.className = 'activity-meta';
+
+                                // priority badge
+                                const p = document.createElement('span');
+                                p.className = 'priority-badge ' + ((t.priority || '').toLowerCase() || 'medium');
+                                p.textContent = (t.priority || 'medium').toUpperCase();
+                                meta.appendChild(p);
+
+                                // status badge
+                                const st = document.createElement('span');
+                                st.className = 'status-badge ' + ((t.status || '').toLowerCase() || 'pending');
+                                st.textContent = (t.status || 'pending').replace('_',' ');
+                                meta.appendChild(st);
+
+                                // client name small
+                                const client = document.createElement('div');
+                                client.style.opacity = '0.8';
+                                client.style.fontSize = '12px';
+                                client.textContent = t.client_name || 'General';
+                                meta.appendChild(client);
+
+                                li.appendChild(left);
+                                li.appendChild(meta);
                                 utEl.appendChild(li);
                             });
                         } else {
