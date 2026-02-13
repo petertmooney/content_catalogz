@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test": "jest --color"
+    "test": "jest --color",
+    "e2e": "playwright test --retries=0 --reporter=list"
   },
   "devDependencies": {
     "jest": "^29.6.0",
-    "jsdom": "^22.1.0"
+    "jsdom": "^22.1.0",
+    "@playwright/test": "^1.40.0",
+    "playwright": "^1.40.0"
   }
 }
