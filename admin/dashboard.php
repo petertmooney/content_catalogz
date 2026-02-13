@@ -2521,7 +2521,10 @@ if ($invoices_result) {
                 // Ensure CRM summary is only visible when the dashboard section is active
                 const crmEl = document.getElementById('crm-summary');
                 if (crmEl) {
-                    crmEl.style.display = (sectionName === 'dashboard') ? '' : 'none';
+                    const show = sectionName === 'dashboard';
+                    crmEl.style.display = show ? '' : 'none';
+                    crmEl.hidden = !show;                    // also set aria for accessibility
+                    crmEl.setAttribute('aria-hidden', (!show).toString());
                 }
                 
                 const navElement = document.getElementById('nav-' + sectionName);
