@@ -746,6 +746,7 @@ if ($invoices_result) {
             font-size: 13px;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     
@@ -900,6 +901,29 @@ if ($invoices_result) {
                         <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Collected</h4>
                         <p class="stat-number" id="dash-invoices-collected" style="font-size: 28px; font-weight: bold; color: #28a745;">£0.00</p>
                         <small style="color: #666;">All time</small>
+                    </div>
+                </div>
+
+                <!-- CRM Charts -->
+                <h3 style="color: #333; margin-bottom: 15px; margin-top: 40px;">📊 CRM Analytics</h3>
+                <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                    <div class="chart-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #333; font-size: 16px; margin-bottom: 15px;">Quote Status Breakdown</h4>
+                        <canvas id="statusChart" width="300" height="200"></canvas>
+                    </div>
+                    <div class="chart-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #333; font-size: 16px; margin-bottom: 15px;">Lead Sources</h4>
+                        <canvas id="leadSourceChart" width="300" height="200"></canvas>
+                    </div>
+                </div>
+                <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                    <div class="chart-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #333; font-size: 16px; margin-bottom: 15px;">Monthly Revenue Trends</h4>
+                        <canvas id="revenueChart" width="300" height="200"></canvas>
+                    </div>
+                    <div class="chart-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <h4 style="color: #333; font-size: 16px; margin-bottom: 15px;">Task Priority Distribution</h4>
+                        <canvas id="taskPriorityChart" width="300" height="200"></canvas>
                     </div>
                 </div>
             </div>
@@ -4185,9 +4209,11 @@ invoices.forEach(invoice => {
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.quotes) {
+                        const totalQuotes = data.quotes.length;
                         const newQuotes = data.quotes.filter(q => q.status === 'new').length;
                         const inProgress = data.quotes.filter(q => q.status === 'in_progress' || q.status === 'contacted').length;
                         
+                        document.getElementById('quotes-count').textContent = totalQuotes;
                         document.getElementById('dash-quotes-new').textContent = newQuotes;
                         document.getElementById('dash-quotes-progress').textContent = inProgress;
                     }
@@ -4199,6 +4225,184 @@ invoices.forEach(invoice => {
             document.getElementById('dash-emails-unread').textContent = 0;
             document.getElementById('dash-emails-total').textContent = 0;
             document.getElementById('dash-emails-drafts').textContent = 0;
+
+            // Load CRM charts
+            loadCRMCharts();
+        }
+
+        // Load CRM Charts
+        function loadCRMCharts() {
+            // Check if we're on the dashboard section
+            const dashboardSection = document.getElementById('section-dashboard');
+            if (!dashboardSection || !dashboardSection.classList.contains('active')) {
+                return; // Don't load charts if not on dashboard
+            }
+
+            // Load status breakdown chart
+            fetch('api/crm_dashboard.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.stats) {
+                        const stats = data.stats;
+
+                        // Status breakdown pie chart
+                        const statusCanvas = document.getElementById('statusChart');
+                        if (statusCanvas) {
+                            const statusCtx = statusCanvas.getContext('2d');
+                            new Chart(statusCtx, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: ['New', 'Contacted', 'In Progress', 'Completed', 'Declined'],
+                                    datasets: [{
+                                        data: [
+                                            stats.status_breakdown?.new || 0,
+                                            stats.status_breakdown?.contacted || 0,
+                                            stats.status_breakdown?.in_progress || 0,
+                                            stats.status_breakdown?.completed || 0,
+                                            stats.status_breakdown?.declined || 0
+                                        ],
+                                        backgroundColor: [
+                                            '#007bff', // New - Blue
+                                            '#ffc107', // Contacted - Yellow
+                                            '#17a2b8', // In Progress - Teal
+                                            '#28a745', // Completed - Green
+                                            '#dc3545'  // Declined - Red
+                                        ]
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    plugins: {
+                                        legend: {
+                                            position: 'bottom'
+                                        }
+                                    }
+                                }
+                            });
+                        }
+
+                        // Lead sources bar chart
+                        const leadCanvas = document.getElementById('leadSourceChart');
+                        if (leadCanvas) {
+                            const leadCtx = leadCanvas.getContext('2d');
+                            const leadLabels = stats.lead_sources?.map(item => item.lead_source || 'Unknown') || [];
+                            const leadCounts = stats.lead_sources?.map(item => item.count) || [];
+                            new Chart(leadCtx, {
+                                type: 'bar',
+                                data: {
+                                    labels: leadLabels,
+                                    datasets: [{
+                                        label: 'Leads',
+                                        data: leadCounts,
+                                        backgroundColor: '#007bff',
+                                        borderColor: '#0056b3',
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            ticks: {
+                                                stepSize: 1
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                })
+                .catch(err => console.error('Error loading CRM stats:', err));
+
+            // Load revenue trends chart
+            fetch('api/invoice_trends.php?metric=collected&range=monthly')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.months) {
+                        const revenueCanvas = document.getElementById('revenueChart');
+                        if (revenueCanvas) {
+                            const revenueCtx = revenueCanvas.getContext('2d');
+                            const labels = Object.keys(data.months);
+                            const values = Object.values(data.months);
+                            new Chart(revenueCtx, {
+                                type: 'line',
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        label: 'Revenue (£)',
+                                        data: values,
+                                        borderColor: '#28a745',
+                                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                                        tension: 0.1
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            ticks: {
+                                                callback: function(value) {
+                                                    return '£' + value.toFixed(0);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                })
+                .catch(err => console.error('Error loading revenue trends:', err));
+
+            // Load task priority chart
+            fetch('api/tasks.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.tasks) {
+                        const taskCanvas = document.getElementById('taskPriorityChart');
+                        if (taskCanvas) {
+                            const taskCtx = taskCanvas.getContext('2d');
+                            const priorities = data.tasks.reduce((acc, task) => {
+                                const priority = task.priority || 'normal';
+                                acc[priority] = (acc[priority] || 0) + 1;
+                                return acc;
+                            }, {});
+
+                            new Chart(taskCtx, {
+                                type: 'pie',
+                                data: {
+                                    labels: ['Low', 'Normal', 'High', 'Urgent'],
+                                    datasets: [{
+                                        data: [
+                                            priorities.low || 0,
+                                            priorities.normal || 0,
+                                            priorities.high || 0,
+                                            priorities.urgent || 0
+                                        ],
+                                        backgroundColor: [
+                                            '#28a745', // Low - Green
+                                            '#17a2b8', // Normal - Teal
+                                            '#ffc107', // High - Yellow
+                                            '#dc3545'  // Urgent - Red
+                                        ]
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    plugins: {
+                                        legend: {
+                                            position: 'bottom'
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                })
+                .catch(err => console.error('Error loading task stats:', err));
         }
         
         // ==================== CRM Functions ====================
