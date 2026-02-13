@@ -4287,6 +4287,12 @@ invoices.forEach(invoice => {
                 console.log('Loading dashboard stats...');
                 loadDashboardStats();
 
+                // Ensure existing client stats/cards are populated on initial load
+                try {
+                    console.log('Loading existing clients...');
+                    loadExistingClients();
+                } catch (e) { console.warn('loadExistingClients failed on init', e); }
+
 
                 
                 console.log('%c All data loading functions called successfully', 'background: #667eea; color: white; padding: 2px 8px; border-radius: 3px;');
