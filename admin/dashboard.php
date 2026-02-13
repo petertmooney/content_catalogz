@@ -845,7 +845,15 @@ if ($invoices_result) {
     <script src="../assets/js/chart.js?v=<?php echo time(); ?>"></script>
 </head>
 <body>
-    
+    <script>
+        // Early UI stubs to prevent inline onclick ReferenceErrors if main script fails to parse
+        (function(){
+            if (!window.__uiQueue) window.__uiQueue = [];
+            function ensure(name){ if (typeof window[name] === 'undefined') window[name] = function(){ try{ window.__uiQueue.push({name, args: Array.from(arguments)}); }catch(e){} }; }
+            ['showSection','toggleSubmenu','openAddClientModal','openNewPageModal','openCreateUserModal','openMenuCustomizationModal','openDashboardCustomizationModal','filterQuotesByStatus','filterExistingClients','showFilteredInvoices','openHtmlEditor','openEditPageModal','openPaymentModal','composeEmail','closePageModal','closeHtmlEditorModal','loadQuotes','loadExistingClients'].forEach(ensure);
+        })();
+    </script>
+
     <div class="navbar">
         <div class="navbar-left">
             <h1><img src="../assets/images/LogoWhiteSmall.png" alt="Content Catalogz"></h1>
@@ -4809,7 +4817,6 @@ if ($invoices_result) {
                         <p>Client details generated from admin dashboard</p>
                     </div>
                 </body>
-                </html>
             `;
             
             // Open client details in new window
@@ -8279,6 +8286,20 @@ invoices.forEach(invoice => {
                 }
             } catch (e) { /* ignore */ }
         });
+
+        // Replay any UI calls queued by the early stubs (if real implementations are now available)
+        (function(){
+            try{
+                if (window.__uiQueue && window.__uiQueue.length){
+                    const q = window.__uiQueue.splice(0);
+                    q.forEach(item => {
+                        if (typeof window[item.name] === 'function'){
+                            try{ window[item.name].apply(window, item.args); }catch(_e){}
+                        }
+                    });
+                }
+            }catch(e){ console.warn('ui-queue replay failed', e); }
+        })();
     </script>
 </body>
 </html>
