@@ -845,14 +845,6 @@ if ($invoices_result) {
     <script src="../assets/js/chart.js?v=<?php echo time(); ?>"></script>
 </head>
 <body>
-    <script>
-        // Early UI stubs to prevent inline onclick ReferenceErrors if main script fails to parse
-        (function(){
-            if (!window.__uiQueue) window.__uiQueue = [];
-            function ensure(name){ if (typeof window[name] === 'undefined') window[name] = function(){ try{ window.__uiQueue.push({name, args: Array.from(arguments)}); }catch(e){} }; }
-            ['showSection','toggleSubmenu','openAddClientModal','openNewPageModal','openCreateUserModal','openMenuCustomizationModal','openDashboardCustomizationModal','filterQuotesByStatus','filterExistingClients','showFilteredInvoices','openHtmlEditor','openEditPageModal','openPaymentModal','composeEmail','closePageModal','closeHtmlEditorModal','loadQuotes','loadExistingClients'].forEach(ensure);
-        })();
-    </script>
 
     <div class="navbar">
         <div class="navbar-left">
@@ -5845,102 +5837,160 @@ invoices.forEach(invoice => {
 
         // Load CRM Charts
         function loadCRMCharts() {
-                // Temporary safety stub — replace full chart rendering later.
-                // The original implementation contained complex nested template
-                // literals that caused a parser failure in some browsers. Keeping
-                // a small, safe no-op here so the rest of the dashboard script
-                // can parse and run (sidebar handlers + data loads).
-                try {
-                    ['statusChart','leadSourceChart','revenueChart','taskPriorityChart'].forEach(id => {
-                        const c = document.getElementById(id);
-                        if (!c) return;
-                        try { const ctx = c.getContext('2d'); ctx && ctx.clearRect && ctx.clearRect(0,0,c.width,c.height); } catch(e){}
-                        c.chart = null;
-                        c.onclick = null;
-                    });
-                } catch (e) {
-                    console.warn('loadCRMCharts stub error', e);
-                }
-            }
-            /* crm_dashboard rendering removed (was causing parse error) */
+            // Only run when dashboard section is visible
+            const dashboardSection = document.getElementById('section-dashboard');
+            if (!dashboardSection || !dashboardSection.classList.contains('active')) return;
 
-            // Load revenue trends chart
-            fetch('api/invoice_trends.php?metric=collected&range=monthly')
+            // Destroy previous charts if present
+            ['statusChart','leadSourceChart','revenueChart','taskPriorityChart'].forEach(id => {
+                const c = document.getElementById(id);
+                if (!c) return;
+                if (c.chart && typeof c.chart.destroy === 'function') {
+                    try { c.chart.destroy(); } catch(e) { console.warn('destroy chart failed', e); }
+                    c.chart = null;
+                }
+                try { const ctx = c.getContext && c.getContext('2d'); ctx && ctx.clearRect && ctx.clearRect(0,0,c.width,c.height); } catch(e){}
+                c.onclick = null;
+            });
+
+            // --- Status & Lead charts (CRM dashboard) ---
+            fetch('api/crm_dashboard.php', { credentials: 'same-origin' })
                 .then(res => res.json())
                 .then(data => {
-                    if (data.success && data.months) {
-                        const revenueCanvas = document.getElementById('revenueChart');
-                        if (revenueCanvas) {
-                            const revenueCtx = revenueCanvas.getContext('2d');
-                            const labels = Object.keys(data.months);
-                            const values = Object.values(data.months);
-                            const revenueChart = new Chart(revenueCtx, {
-                                type: 'line',
+                    if (!data.success || !data.stats) return;
+                    const stats = data.stats;
+
+                    // Status breakdown (doughnut)
+                    const statusCanvas = document.getElementById('statusChart');
+                    if (statusCanvas) {
+                        try {
+                            const statusCtx = statusCanvas.getContext('2d');
+                            const values = [
+                                stats.status_breakdown?.new || 0,
+                                stats.status_breakdown?.contacted || 0,
+                                stats.status_breakdown?.in_progress || 0,
+                                stats.status_breakdown?.completed || 0,
+                                stats.status_breakdown?.declined || 0
+                            ];
+
+                            const statusChart = new Chart(statusCtx, {
+                                type: 'doughnut',
                                 data: {
-                                    labels: labels,
-                                    datasets: [{
-                                        label: 'Revenue (£)',
-                                        data: values,
-                                        borderColor: '#28a745',
-                                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                                        tension: 0.1
-                                    }]
+                                    labels: ['New','Contacted','In Progress','Completed','Declined'],
+                                    datasets: [{ data: values, backgroundColor: ['#007bff','#ffc107','#17a2b8','#28a745','#dc3545'] }]
                                 },
                                 options: {
                                     responsive: true,
-                                    scales: {
-                                        y: {
-                                            beginAtZero: true,
-                                            ticks: {
-                                                callback: function(value) {
-                                                    return '£' + value.toFixed(0);
-                                                }
-                                            }
-                                        }
-                                    },
-                                    onClick: function(event, elements) {
-                                        if (elements.length > 0) {
-                                            const index = elements[0].index;
-                                            const month = labels[index];
-                                            const amount = values[index];
-                                            const total = values.reduce((a, b) => a + b, 0);
-                                            const avg = total / values.length;
-
-                                            openChartModal('Revenue: ' + month,
-                                                `<div style="text-align: center; margin-bottom: 20px;">
-                                                    <div style="font-size: 36px; margin: 10px 0; color: #28a745;">£${amount.toFixed(2)}</div>
-                                                    <div style="font-size: 16px; color: #666;">Revenue for ${month}</div>
-                                                </div>
-                                                <div style="margin-top: 20px;">
-                                                    <h4 style="margin-bottom: 10px;">Monthly Breakdown:</h4>
-                                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;">
-                                                        ${labels.map((label, i) => `<div style="text-align: center; padding: 10px; background: #f8f9fa; border-radius: 4px;">
-                                                            <div style="font-weight: bold;">${label}</div>
-                                                            <div style="color: #28a745;">£${values[i].toFixed(0)}</div>
-                                                        </div>`).join('')}
-                                                    </div>
-                                                    <div style="margin-top: 15px; padding: 10px; background: #e9ecef; border-radius: 4px;">
-                                                        <strong>Total (12 months):</strong> £${total.toFixed(2)}<br>
-                                                        <strong>Average per month:</strong> £${avg.toFixed(2)}
-                                                    </div>
-                                                </div>`);
-                                        }
+                                    plugins: { legend: { position: 'bottom' } },
+                                    onClick: function(evt, elements) {
+                                        if (!elements.length) return;
+                                        const idx = elements[0].index;
+                                        const labels = ['New','Contacted','In Progress','Completed','Declined'];
+                                        const count = values[idx] || 0;
+                                        const total = values.reduce((a,b)=>a+b,0);
+                                        const pct = total ? ((count/total)*100).toFixed(1) : 0;
+                                        openChartModal('Quote Status: ' + labels[idx],
+                                            `<div style="text-align:center;margin-bottom:20px;"><div style="font-size:48px;margin:10px 0;">${count}</div><div style="font-size:18px;color:#666;">${pct}% of total quotes</div></div>` +
+                                            `<div style="margin-top:20px;">` +
+                                            `<h4 style="margin-bottom:10px;">Status Breakdown:</h4>` +
+                                            `<ul style="list-style:none;padding:0;">` +
+                                            `<li style="padding:5px 0;border-bottom:1px solid #eee;">New: ${stats.status_breakdown?.new || 0} quotes</li>` +
+                                            `<li style="padding:5px 0;border-bottom:1px solid #eee;">Contacted: ${stats.status_breakdown?.contacted || 0} quotes</li>` +
+                                            `<li style="padding:5px 0;border-bottom:1px solid #eee;">In Progress: ${stats.status_breakdown?.in_progress || 0} quotes</li>` +
+                                            `<li style="padding:5px 0;border-bottom:1px solid #eee;">Completed: ${stats.status_breakdown?.completed || 0} quotes</li>` +
+                                            `<li style="padding:5px 0;">Declined: ${stats.status_breakdown?.declined || 0} quotes</li>` +
+                                            `</ul></div>`
+                                        );
                                     }
                                 }
                             });
-                            revenueCanvas.chart = revenueChart;
-
-                            // Make canvas clickable
-                            revenueCanvas.onclick = function(event) {
-                                const rect = revenueCanvas.getBoundingClientRect();
-                                const x = event.clientX - rect.left;
-                                const y = event.clientY - rect.top;
-                                revenueChart._handleClick(event, revenueChart, x, y);
-                            };
+                            statusCanvas.chart = statusChart;
+                        } catch (err) {
+                            console.error('statusChart error', err);
                         }
                     }
+
+                    // Lead sources (bar)
+                    const leadCanvas = document.getElementById('leadSourceChart');
+                    if (leadCanvas) {
+                        try {
+                            const leadCtx = leadCanvas.getContext('2d');
+                            const leadLabels = stats.lead_sources?.map(s=>s.lead_source||'Unknown') || [];
+                            const leadCounts = stats.lead_sources?.map(s=>s.count) || [];
+
+                            // Use same colors as defined earlier; borderColors kept same as background for hex values
+                            const leadSourceColors = {
+                                'Website': '#007bff','Referral':'#28a745','Social Media':'#dc3545','Email Marketing':'#ffc107','Direct Contact':'#6f42c1','Other':'#6c757d','Facebook':'#1877f2','Instagram':'#e4405f','TikTok':'#000000','Phone':'#17a2b8','Meeting':'#fd7e14','Unknown':'#6c757d'
+                            };
+                            const backgroundColors = leadLabels.map(l => leadSourceColors[l] || leadSourceColors['Unknown']);
+                            const borderColors = backgroundColors.map(c => c); // keep hex border same for safety
+
+                            const leadChart = new Chart(leadCtx, {
+                                type: 'bar',
+                                data: { labels: leadLabels, datasets: [{ label: 'Leads', data: leadCounts, backgroundColor: backgroundColors, borderColor: borderColors, borderWidth: 1 }] },
+                                options: {
+                                    responsive: true,
+                                    plugins: { legend: { display: false } },
+                                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                                    onClick: function(evt, elements) {
+                                        if (!elements.length) return;
+                                        const idx = elements[0].index;
+                                        const count = leadCounts[idx] || 0;
+                                        const total = leadCounts.reduce((a,b)=>a+b,0);
+                                        const pct = total ? ((count/total)*100).toFixed(1) : 0;
+                                        const src = leadLabels[idx] || 'Unknown';
+                                        openChartModal('Lead Source: ' + src, `<div style="text-align:center;margin-bottom:20px;"><div style="font-size:48px;margin:10px 0;">${count}</div><div style="font-size:18px;color:#666;">${pct}% of total leads</div></div>` +
+                                            `<div style="margin-top:20px;"><h4 style="margin-bottom:10px;">Lead Sources:</h4><ul style="list-style:none;padding:0;">` +
+                                            leadLabels.map((label,i)=>`<li style="padding:5px 0;border-bottom:1px solid #eee;"><span style="display:inline-block;width:12px;height:12px;background-color:${backgroundColors[i]};margin-right:8px;border-radius:2px;"></span>${label}: ${leadCounts[i]} leads</li>`).join('') +
+                                            `</ul></div>`);
+                                    }
+                                }
+                            });
+                            leadCanvas.chart = leadChart;
+                        } catch (err) { console.error('leadChart error', err); }
+                    }
+                })
+                .catch(err => console.error('Error loading CRM stats:', err));
+
+            // --- Revenue trends ---
+            fetch('api/invoice_trends.php?metric=collected&range=monthly', { credentials: 'same-origin' })
+                .then(res => res.json())
+                .then(data => {
+                    if (!(data.success && data.months)) return;
+                    const revenueCanvas = document.getElementById('revenueChart');
+                    if (!revenueCanvas) return;
+                    try {
+                        const revenueCtx = revenueCanvas.getContext('2d');
+                        const labels = Object.keys(data.months);
+                        const values = Object.values(data.months);
+                        const revenueChart = new Chart(revenueCtx, {
+                            type: 'line',
+                            data: { labels, datasets: [{ label: 'Revenue (£)', data: values, borderColor: '#28a745', backgroundColor: 'rgba(40,167,69,0.08)', tension: 0.1 }] },
+                            options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { callback: v => '£' + v.toFixed(0) } } }, onClick: function(evt,elements){ if (!elements.length) return; const idx = elements[0].index; const month = labels[idx]; const amount = values[idx]; const total = values.reduce((a,b)=>a+b,0); const avg = total/values.length; openChartModal('Revenue: '+month, `<div style="text-align:center;margin-bottom:20px;"><div style="font-size:36px;margin:10px 0;color:#28a745;">£${amount.toFixed(2)}</div><div style="font-size:16px;color:#666;">Revenue for ${month}</div></div>` + `<div style="margin-top:20px;"><h4 style="margin-bottom:10px;">Monthly Breakdown:</h4><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;">` + labels.map((label,i)=>`<div style="text-align:center;padding:10px;background:#f8f9fa;border-radius:4px;"><div style="font-weight:bold;">${label}</div><div style="color:#28a745;">£${values[i].toFixed(0)}</div></div>`).join('') + `</div><div style="margin-top:15px;padding:10px;background:#e9ecef;border-radius:4px;"><strong>Total (12 months):</strong> £${total.toFixed(2)}<br><strong>Average per month:</strong> £${avg.toFixed(2)}</div></div>`); } }
+                        });
+                        revenueCanvas.chart = revenueChart;
+                    } catch(e){ console.error('revenueChart error', e); }
                 })
                 .catch(err => console.error('Error loading revenue trends:', err));
+
+            // --- Task priority pie ---
+            fetch('api/tasks.php', { credentials: 'same-origin' })
+                .then(res => res.json())
+                .then(data => {
+                    if (!(data.success && data.tasks)) return;
+                    const taskCanvas = document.getElementById('taskPriorityChart');
+                    if (!taskCanvas) return;
+                    try {
+                        const priorities = data.tasks.reduce((acc, task) => { const p = task.priority || 'normal'; acc[p] = (acc[p]||0)+1; return acc; }, {});
+                        const taskCtx = taskCanvas.getContext('2d');
+                        const taskChart = new Chart(taskCtx, { type: 'pie', data: { labels: ['Low','Normal','High','Urgent'], datasets:[{ data: [priorities.low||0, priorities.normal||0, priorities.high||0, priorities.urgent||0], backgroundColor: ['#28a745','#17a2b8','#ffc107','#dc3545'] }] }, options: { responsive:true, plugins:{ legend:{ position:'bottom' } }, onClick: function(evt, elements){ if (!elements.length) return; const idx = elements[0].index; const labels = ['Low','Normal','High','Urgent']; const vals = [priorities.low||0, priorities.normal||0, priorities.high||0, priorities.urgent||0]; const total = vals.reduce((a,b)=>a+b,0); const pct = total?((vals[idx]/total)*100).toFixed(1):0; openChartModal('Task Priority: '+labels[idx], `<div style="text-align:center;margin-bottom:20px;"><div style="font-size:48px;margin:10px 0;color:${['#28a745','#17a2b8','#ffc107','#dc3545'][idx]};">${vals[idx]}</div><div style="font-size:18px;color:#666;">${pct}% of total tasks</div></div>` + `<div style="margin-top:20px;"><h4 style="margin-bottom:10px;">Priority Breakdown:</h4><ul style="list-style:none;padding:0;"><li style="padding:5px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;"><span><span style='color:#28a745;'>●</span> Low Priority:</span><span>${priorities.low||0} tasks</span></li><li style="padding:5px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;"><span><span style='color:#17a2b8;'>●</span> Normal Priority:</span><span>${priorities.normal||0} tasks</span></li><li style="padding:5px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;"><span><span style='color:#ffc107;'>●</span> High Priority:</span><span>${priorities.high||0} tasks</span></li><li style="padding:5px 0;display:flex;justify-content:space-between;"><span><span style='color:#dc3545;'>●</span> Urgent Priority:</span><span>${priorities.urgent||0} tasks</span></li></ul></div>`); } } });
+                        taskCanvas.chart = taskChart;
+                    } catch(e){ console.error('taskChart error', e); }
+                })
+                .catch(err => console.error('Error loading task stats:', err));
+        }
+
+
 
             // Load task priority chart
             fetch('api/tasks.php')
@@ -8100,19 +8150,6 @@ invoices.forEach(invoice => {
             } catch (e) { /* ignore */ }
         });
 
-        // Replay any UI calls queued by the early stubs (if real implementations are now available)
-        (function(){
-            try{
-                if (window.__uiQueue && window.__uiQueue.length){
-                    const q = window.__uiQueue.splice(0);
-                    q.forEach(item => {
-                        if (typeof window[item.name] === 'function'){
-                            try{ window[item.name].apply(window, item.args); }catch(_e){}
-                        }
-                    });
-                }
-            }catch(e){ console.warn('ui-queue replay failed', e); }
-        })();
     </script>
 </body>
 </html>
