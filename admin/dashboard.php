@@ -266,6 +266,7 @@ if ($invoices_result) {
         .table-container table {
             font-size: 13px;
             line-height: 1.3;
+            width: 100%;
         }
 
         .table-container th,
