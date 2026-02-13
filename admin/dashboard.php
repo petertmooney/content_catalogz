@@ -8051,6 +8051,8 @@ invoices.forEach(invoice => {
             } catch (e) { /* ignore */ }
         });
 
+    // <-- Add this closing brace to end the main script block
+    }
     </script>
 </body>
 </html>
