@@ -117,12 +117,9 @@ if ($invoices_result) {
 
         .sidebar {
             width: 250px;
-            flex: 0 0 250px; /* explicitly fix sidebar width so main content can be calculated */
             background: white;
             padding: 20px 0;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
-            position: relative;
-            z-index: 5; /* keep sidebar above dashboard panels */
         }
 
         .sidebar a {
@@ -177,43 +174,8 @@ if ($invoices_result) {
         }
 
         .main-content {
-            flex: 1 1 auto;
-            /* ensure main area exactly fills space next to the fixed-width sidebar */
-            width: calc(100% - 250px);
-            max-width: calc(100% - 250px);
+            flex: 1;
             padding: 30px;
-            position: relative; /* contain children */
-            overflow-x: hidden; /* prevent horizontal overflow that can cover the sidebar */
-            box-sizing: border-box;
-        }
-
-        /* Make invoice panel span the full width of the main content area */
-        #section-invoices .invoice-panel {
-            width: 100%;
-            max-width: 100%;
-            margin-left: 0;
-            margin-right: 0;
-            box-sizing: border-box;
-        }
-
-        /* Ensure inner grids don't constrain the full-width panel */
-        #section-invoices .invoice-panel .stats-grid,
-        #section-invoices .invoice-panel > div {
-            width: 100%;
-            max-width: 100%;
-            box-sizing: border-box;
-        }
-
-        /* Prevent inner elements from forcing the main column wider than the sidebar */
-        .main-content img, .main-content table, .main-content pre, .main-content .stat-card, .main-content canvas {
-            max-width: 100%;
-            box-sizing: border-box;
-            word-break: break-word;
-        }
-
-        /* Ensure grid children don't impose minimum widths */
-        .main-content .stats-grid, .main-content .crm-charts {
-            min-width: 0;
         }
 
         .content-section {
@@ -242,20 +204,6 @@ if ($invoices_result) {
             color: #222;
         }
         #dashboardGreeting .role-badge { font-size: 13px; padding: 4px 10px; }
-
-        /* CRM summary styles */
-        .crm-summary { margin: 18px 0 28px; background: #fafafa; padding: 18px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.03); position: relative; z-index: 0; max-width: 100%; box-sizing: border-box; overflow: hidden; }
-        .crm-summary h3 { margin: 0 0 12px; font-size: 16px; color: #333; }
-        .crm-summary .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 14px; }
-        .crm-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-        .crm-charts canvas { width: 100% !important; height: 220px !important; }
-        .revenue-trend { margin-top: 12px; background: white; padding: 12px; border-radius: 8px; }
-        .revenue-trend canvas { width: 100% !important; height: 220px !important; }
-        .recent-activities { max-height: 220px; overflow: auto; border-top: 1px solid #eee; padding-top: 12px; }
-        .recent-activities li { padding: 8px 0; border-bottom: 1px solid #f3f3f3; font-size: 13px; color: #444; }
-        .stat-small { font-size: 13px; color: #666; }
-        .stat-number-sm { font-size: 20px; font-weight: 700; }
-
 
         .btn-group {
             margin-bottom: 20px;
@@ -798,8 +746,6 @@ if ($invoices_result) {
             font-size: 13px;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="../assets/js/dashboard-ui.js"></script>
 </head>
 <body>
     
@@ -821,14 +767,14 @@ if ($invoices_result) {
 
     <div class="container">
         <div class="sidebar">
-            <a href="#" data-action="showSection:dashboard" id="nav-dashboard" class="active">📋 Dashboard</a>
-            <a href="#" data-action="scrollToCRM" id="nav-crm">📈 CRM Summary</a>
-            <a href="#" data-action="showSection:clients" id="nav-clients">📝 Quote Requests</a>
+            <a href="#" onclick="showSection('dashboard'); return false;" id="nav-dashboard" class="active">📋 Dashboard</a>
             
-            <a href="#" class="menu-parent" data-action="toggleSubmenu:clients-submenu">👥 Clients</a>
+            <a href="#" onclick="showSection('clients'); return false;" id="nav-clients">📝 Quote Requests</a>
+            
+            <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'clients-submenu'); return false;">👥 Clients</a>
             <div class="submenu" id="clients-submenu">
-                <a href="#" data-action="showSection:existing-clients" id="nav-existing-clients">👤 Existing Clients</a>
-                <a href="#" data-action="openAddClientModal" id="nav-add-client">➕ Add New Client</a>
+                <a href="#" onclick="showSection('existing-clients'); return false;" id="nav-existing-clients">👤 Existing Clients</a>
+                <a href="#" onclick="openAddClientModal(); return false;" id="nav-add-client">➕ Add New Client</a>
             </div>
             
             <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'email-submenu'); return false;">📧 Email</a>
@@ -881,7 +827,7 @@ if ($invoices_result) {
                     <p>Overview of your business at a glance</p>
                 </div>
 
-
+                <!-- Email Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">📧 Email</h3>
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
                     <div class="stat-card" onclick="showSection('email-inbox')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
@@ -898,11 +844,9 @@ if ($invoices_result) {
                     </div>
                 </div>
 
-                <!-- Client & Quotes Stats (full-bleed) -->
+                <!-- Client & Quotes Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">📊 Clients & Quotes</h3>
-                <div class="stats-grid full-bleed" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;"> 
-
-
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
                     <div class="stat-card" onclick="showSection('clients')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Total Quotes</h4>
                         <p class="stat-number" id="quotes-count" style="font-size: 28px; font-weight: bold; color: #28a745;">0</p>
@@ -917,9 +861,9 @@ if ($invoices_result) {
                     </div>
                 </div>
 
-                <!-- Tasks Stats (full-bleed) -->
+                <!-- Tasks Stats -->
                 <h3 style="color: #333; margin-bottom: 15px;">✅ Tasks & To-Do</h3>
-                <div class="stats-grid full-bleed" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
                     <div class="stat-card" onclick="showSection('tasks')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Pending Tasks</h4>
                         <p class="stat-number" id="dash-tasks-pending" style="font-size: 28px; font-weight: bold; color: #ffc107;">0</p>
@@ -956,68 +900,6 @@ if ($invoices_result) {
                         <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Collected</h4>
                         <p class="stat-number" id="dash-invoices-collected" style="font-size: 28px; font-weight: bold; color: #28a745;">£0.00</p>
                         <small style="color: #666;">All time</small>
-                    </div>
-                </div>
-
-                <!-- CRM Summary (placed after Invoice Stats) -->
-                <div id="crm-summary" class="crm-summary" style="margin-top:18px;">
-                    <h3>CRM Summary</h3>
-                    <div class="stats-grid">
-                        <div class="stat-card crm-kpi">
-                            <div class="stat-small">Total Revenue</div>
-                            <div class="stat-number-sm" id="dash-total-revenue">£0.00 <span class="kpi-delta" id="delta-total-revenue"></span></div>
-                        </div>
-                        <div class="stat-card crm-kpi">
-                            <div class="stat-small">Pipeline Value</div>
-                            <div class="stat-number-sm" id="dash-pipeline-value">£0.00 <span class="kpi-delta" id="delta-pipeline-value"></span></div>
-                        </div>
-                        <div class="stat-card crm-kpi">
-                            <div class="stat-small">New Leads</div>
-                            <div class="stat-number-sm" id="dash-new-leads">0 <span class="kpi-delta" id="delta-new-leads"></span></div>
-                        </div>
-                        <div class="stat-card crm-kpi">
-                            <div class="stat-small">Conversion Rate</div>
-                            <div class="stat-number-sm" id="dash-conversion-rate">0% <span class="kpi-delta" id="delta-conversion-rate"></span></div>
-                        </div>
-                    </div>
-
-                    <div class="crm-charts full-bleed">
-                        <div class="chart-card">
-                            <div class="stat-small">Quotes by Status</div>
-                            <canvas id="chart-status-breakdown"></canvas>
-                        </div>
-                        <div class="chart-card">
-                            <div class="stat-small">Leads by Source</div>
-                            <canvas id="chart-lead-sources"></canvas>
-                        </div>
-                    </div>
-
-
-
-                    <div class="revenue-trend full-bleed">
-                        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-                            <div class="stat-small">Revenue trend</div>
-                            <div class="controls">
-                                <label class="stat-small" style="margin-right:6px">Metric</label>
-                                <select id="revenueMetric">
-                                    <option value="collected">Collected</option>
-                                    <option value="invoiced">Invoiced</option>
-                                </select>
-                                <label class="stat-small" style="margin-left:8px; margin-right:6px">Range</label>
-                                <select id="revenueRange">
-                                    <option value="monthly">Last 12 months</option>
-                                    <option value="yearly">Last 5 years</option>
-                                </select>
-                                <label class="stat-small" style="margin-left:8px; margin-right:6px">Chart</label>
-                                <select id="revenueChartType">
-                                    <option value="line">Line (area)</option>
-                                    <option value="bar">Bar</option>
-                                    <option value="stacked">Stacked area</option>
-                                </select>
-                                <button id="downloadRevenueCsv" class="btn btn-primary" style="padding:6px 10px;font-size:13px;">Download CSV</button>
-                            </div>
-                        </div>
-                        <canvas id="chart-revenue-trend"></canvas>
                     </div>
                 </div>
             </div>
@@ -1098,7 +980,7 @@ if ($invoices_result) {
                 <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <input type="text" id="searchClients" placeholder="Search by name, email, company..." style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ddd; width: 300px;" onkeyup="loadExistingClients()">
                     <button class="btn btn-secondary" onclick="loadExistingClients()">Refresh</button>
-                    <button id="btn-add-client" class="btn btn-primary" type="button" data-action="openAddClientModal" aria-haspopup="dialog" aria-controls="addClientModal">+ Add New Client</button>
+                    <button class="btn btn-primary" onclick="openAddClientModal()">+ Add New Client</button>
                 </div>
 
                 <div id="existing-clients-list">
@@ -1153,7 +1035,7 @@ if ($invoices_result) {
                     </div>
                 </div>
 
-                <div class="invoice-panel full-bleed" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px;">
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px;">
                     <h3 style="margin-bottom: 15px; color: #333;">Search Invoices</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: end;">
                         <div class="form-group" style="margin: 0;">
@@ -1203,9 +1085,7 @@ if ($invoices_result) {
                     <button class="btn btn-primary" onclick="openAddTaskModal()">+ Add New Task</button>
                 </div>
 
-                <div class="invoice-panel full-bleed" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px;">
-                    <div id="tasks-list"></div>
-                </div>
+                <div id="tasks-list"></div>
             </div>
             
             <!-- Users Section -->
@@ -1473,8 +1353,6 @@ if ($invoices_result) {
         </div>
     </div>
 
-
-
     <!-- HTML File Editor Modal -->
     <div id="htmlEditorModal" class="modal">
         <div class="modal-content" style="max-width: 90%; max-height: 90vh;">
@@ -1664,10 +1542,13 @@ if ($invoices_result) {
                 <button class="close-btn" onclick="closeClientModal()">&times;</button>
             </div>
             
-            <!-- Client Tabs (CRM tabs removed - only Details visible) -->
+            <!-- CRM Tabs -->
             <div style="border-bottom: 2px solid #ddd; margin-bottom: 20px;">
                 <div style="display: flex; gap: 5px;">
-                    <button type="button" class="tab active" onclick="switchClientTab('details')" id="tab-details">📋 Details & Billing</button>
+                    <button type="button" class="crm-tab active" onclick="switchClientTab('details')" id="tab-details">📋 Details & Billing</button>
+                    <button type="button" class="crm-tab" onclick="switchClientTab('activities')" id="tab-activities">📅 Activity Timeline</button>
+                    <button type="button" class="crm-tab" onclick="switchClientTab('notes')" id="tab-notes">📝 Notes</button>
+                    <button type="button" class="crm-tab" onclick="switchClientTab('tasks')" id="tab-tasks">✅ Tasks</button>
                 </div>
             </div>
             
@@ -1696,7 +1577,6 @@ if ($invoices_result) {
                             <strong>Phone:</strong><br>
                             <span id="clientPhone"></span>
                         </div>
-
                     </div>
                 </div>
 
@@ -1795,10 +1675,47 @@ if ($invoices_result) {
                     </div>
                 </div>
             </form>
-
-
+            </div>
             
-
+            <!-- Tab: Activity Timeline -->
+            <div id="client-tab-activities" class="client-tab-content" style="display: none;">
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="openLogActivityModal()">+ Log Activity</button>
+                    <button class="btn btn-secondary" onclick="composeEmail()">✉️ Email Client</button>
+                </div>
+                <div id="client-activities-list">
+                    <div class="empty-state">
+                        <h3>No Activities Yet</h3>
+                        <p>Log your first interaction with this client.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab: Notes -->
+            <div id="client-tab-notes" class="client-tab-content" style="display: none;">
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="openAddNoteModal()">+ Add Note</button>
+                </div>
+                <div id="client-notes-list">
+                    <div class="empty-state">
+                        <h3>No Notes Yet</h3>
+                        <p>Add notes to keep track of important information about this client.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab: Tasks -->
+            <div id="client-tab-tasks" class="client-tab-content" style="display: none;">
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="openAddClientTaskModal()">+ Add Task</button>
+                </div>
+                <div id="client-tasks-list">
+                    <div class="empty-state">
+                        <h3>No Tasks Yet</h3>
+                        <p>Create tasks related to this client.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -1831,7 +1748,6 @@ if ($invoices_result) {
                         <label for="newClientPhone">Phone</label>
                         <input type="text" id="newClientPhone" name="phone" class="form-control" placeholder="+44 123 456 7890">
                     </div>
-
                     <div class="form-group" style="grid-column: 1 / -1;">
                         <label for="newClientAddressStreet">Address Street</label>
                         <input type="text" id="newClientAddressStreet" name="address_street" class="form-control" placeholder="123 Main Street">
@@ -2318,44 +2234,6 @@ if ($invoices_result) {
         window.addEventListener('error', function(e) {
             console.error('%c JavaScript Error:', 'color: red; font-weight: bold;', e.message, 'at', e.filename + ':' + e.lineno);
         });
-
-        // Canvas scaling helper for crisp charts on high-DPR displays
-        function scaleCanvasForRetina(canvas, desiredHeight = 320) {
-            if (!canvas) return;
-            const dpr = window.devicePixelRatio || 1;
-            // ensure CSS height is set so layout doesn't jump
-            canvas.style.height = desiredHeight + 'px';
-            // set backing store size to CSS size * dpr
-            const displayWidth = Math.max(0, canvas.clientWidth);
-            const backingWidth = Math.max(1, Math.floor(displayWidth * dpr));
-            const backingHeight = Math.max(1, Math.floor(desiredHeight * dpr));
-            if (canvas.width !== backingWidth || canvas.height !== backingHeight) {
-                canvas.width = backingWidth;
-                canvas.height = backingHeight;
-                const ctx = canvas.getContext('2d');
-                if (ctx && typeof ctx.setTransform === 'function') ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-            }
-        }
-
-        // Rescale known dashboard charts and trigger Chart.js resize where available
-        function refreshAllDashboardCharts() {
-            ['chart-status-breakdown','chart-lead-sources','chart-revenue-trend'].forEach(id => {
-                const c = document.getElementById(id);
-                if (!c) return;
-                // choose height by type (revenue slightly taller)
-                const h = (id === 'chart-revenue-trend') ? 320 : 320;
-                scaleCanvasForRetina(c, h);
-                try {
-                    const chart = window[id.replace(/-/g,'') + 'Chart'] || (id === 'chart-revenue-trend' ? window.revenueTrendChart : null);
-                    if (chart && typeof chart.resize === 'function') chart.resize();
-                    if (chart && typeof chart.update === 'function') chart.update();
-                } catch (e) { /* ignore */ }
-            });
-        }
-
-        // debounce resize handling for charts
-        let _chartResizeTimer = null;
-        window.addEventListener('resize', () => { clearTimeout(_chartResizeTimer); _chartResizeTimer = setTimeout(refreshAllDashboardCharts, 120); });
         
         function toggleSubmenu(event, submenuId) {
             event.preventDefault();
@@ -2486,15 +2364,6 @@ if ($invoices_result) {
                 
                 targetSection.style.display = 'block';
                 console.log('✓ Section displayed:', sectionName);
-
-                // Ensure CRM summary is only visible when the dashboard section is active
-                const crmEl = document.getElementById('crm-summary');
-                if (crmEl) {
-                    const show = sectionName === 'dashboard';
-                    crmEl.style.display = show ? '' : 'none';
-                    crmEl.hidden = !show;                    // also set aria for accessibility
-                    crmEl.setAttribute('aria-hidden', (!show).toString());
-                }
                 
                 const navElement = document.getElementById('nav-' + sectionName);
                 if (navElement) {
@@ -2512,56 +2381,53 @@ if ($invoices_result) {
                         submenu.classList.add('open');
                         parent.classList.add('open');
                     }
+                    if (sectionName === 'clients') {
+                        loadQuotes();
+                    } else if (sectionName === 'existing-clients') {
+                        loadExistingClients();
+                    }
                 }
-
-                // Load section-specific data when the section is shown
+                
+                // Load HTML files if switching to that section
                 if (sectionName === 'html-files') {
                     loadHtmlFiles();
                 }
+                
+                // Load tasks if switching to tasks section
                 if (sectionName === 'tasks') {
                     loadTasks();
                 }
+                
+                // Load invoice stats if switching to invoices section
                 if (sectionName === 'invoices') {
                     loadInvoiceStats();
                 }
+                
+                // Load users if switching to users section
                 if (sectionName === 'users-list') {
                     loadUsers();
                 }
-
-                // Email-related sections
-                if (sectionName === 'email-inbox') loadInboxEmails();
-                if (sectionName === 'email-draft') loadDraftEmails();
-                if (sectionName === 'email-sent') loadSentEmails();
-                if (sectionName === 'email-trash') loadTrashEmails();
-                if (sectionName === 'email-settings') loadEmailSettings();
-            } catch (e) {
-                console.error('Error switching section:', e);
+                
+                // Load email sections
+                if (sectionName === 'email-inbox') {
+                    loadInboxEmails();
+                }
+                if (sectionName === 'email-draft') {
+                    loadDraftEmails();
+                }
+                if (sectionName === 'email-sent') {
+                    loadSentEmails();
+                }
+                if (sectionName === 'email-trash') {
+                    loadTrashEmails();
+                }
+                if (sectionName === 'email-settings') {
+                    loadEmailSettings();
+                }
+            } catch (error) {
+                console.error('Error in showSection:', error);
             }
         }
-
-        // Scroll to CRM summary (ensures dashboard is visible first)
-        function scrollToCRM() {
-            try {
-                // Make sure dashboard section is visible
-                showSection('dashboard');
-
-                const el = document.getElementById('crm-summary');
-                if (!el) return;
-
-                el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-
-                // briefly highlight the CRM tile
-                el.style.transition = 'box-shadow 0.3s, transform 0.3s';
-                el.style.boxShadow = '0 6px 20px rgba(0,0,0,0.12)';
-                el.style.transform = 'translateY(-3px)';
-                setTimeout(() => {
-                    el.style.boxShadow = '';
-                    el.style.transform = '';
-                }, 900);
-            } catch (e) { console.error(e); }
-        }
-
-
 
         // Load HTML files
         function loadHtmlFiles() {
@@ -3287,10 +3153,6 @@ if ($invoices_result) {
             document.getElementById('clientAddressCountry').value = client.address_country || 'United Kingdom';
             
             document.getElementById('totalPaid').value = client.total_paid || 0.00;
-
-            // CRM-specific fields
-
-
             
             // Load services
             const services = client.services || [];
@@ -3314,15 +3176,14 @@ if ($invoices_result) {
                 tab.classList.remove('active');
                 tab.style.display = 'none';
             });
-            document.querySelectorAll('.tab').forEach(btn => {
+            document.querySelectorAll('.crm-tab').forEach(btn => {
                 btn.classList.remove('active');
             });
             
             // Show Details tab by default
             document.getElementById('client-tab-details').style.display = 'block';
             document.getElementById('client-tab-details').classList.add('active');
-            const detailsTabBtn = document.querySelector('.tab[onclick*="details"]');
-            if (detailsTabBtn) detailsTabBtn.classList.add('active');
+            document.querySelector('.crm-tab[onclick*="details"]').classList.add('active');
             
             // Load payment history
             loadClientPayments(currentClientId);
@@ -3501,9 +3362,7 @@ if ($invoices_result) {
                 address_country: addressCountry,
                 services: services,
                 total_cost: totalCost,
-                total_paid: totalPaid,
-                // CRM fields
-
+                total_paid: totalPaid
             };
             
             fetch('api/update_client.php', {
@@ -4053,136 +3912,12 @@ if ($invoices_result) {
 
         // Add New Client modal functions
         function openAddClientModal() {
-            try {
-                console.log('openAddClientModal invoked');
-                const form = document.getElementById('addClientForm');
-                const modal = document.getElementById('addClientModal');
-                if (form) form.reset();
-                if (!modal) { console.warn('addClientModal not found'); return; }
-
-                // Diagnostic: log class list & computed style before change
-                console.debug('addClientModal before:', { className: modal.className, display: window.getComputedStyle(modal).display, zIndex: window.getComputedStyle(modal).zIndex, visibility: window.getComputedStyle(modal).visibility });
-
-                modal.classList.add('show');
-
-                // Defensive layout fix: ensure modal is a direct child of <body> and has measurable viewport size
-                // (covers cases where an ancestor or stylesheet collapses the modal unexpectedly)
-                try {
-                    if (modal.parentElement !== document.body) {
-                        document.body.appendChild(modal); // move to body to escape hidden/collapsed ancestors
-                        console.debug('addClientModal moved to document.body to avoid collapsed ancestor');
-                    }
-                    // force usable sizing when computed size is zero (temporary inline override)
-                    const rect = modal.getBoundingClientRect();
-                    if (rect.width === 0 || rect.height === 0) {
-                        modal.style.display = 'flex';
-                        modal.style.width = '100vw';
-                        modal.style.height = '100vh';
-                        modal.style.zIndex = String(Math.max(10000, (parseInt(window.getComputedStyle(modal).zIndex, 10) || 1000)));
-                        const mc = modal.querySelector('.modal-content');
-                        if (mc) mc.style.minWidth = mc.style.minWidth || '320px';
-                        console.debug('addClientModal inline sizing applied to work around collapsed layout', { width: modal.style.width, height: modal.style.height });
-                    }
-                } catch (err) { console.debug('addClientModal defensive layout error', err); }
-
-                // Diagnostic: log after adding .show
-                console.debug('addClientModal after add show:', { className: modal.className, display: window.getComputedStyle(modal).display, zIndex: window.getComputedStyle(modal).zIndex, visibility: window.getComputedStyle(modal).visibility });
-
-                // Robust focus sequence for the first input:
-                // 1) wait for next paint, 2) blur previous active element, 3) focus target, 4) retry once if not focused
-                const first = document.getElementById('newClientFirstName');
-                if (first) {
-                    requestAnimationFrame(() => {
-                        try {
-                            const prev = document.activeElement;
-                            if (prev && prev !== first) {
-                                try { prev.blur(); } catch (e) { /* ignore */ }
-                            }
-                            first.focus({ preventScroll: true });
-                            console.debug('addClientModal focus attempt 1 ->', document.activeElement && document.activeElement.id);
-                            setTimeout(() => {
-                                if (document.activeElement !== first) {
-                                    try { first.focus(); } catch (e) { /* ignore */ }
-                                    console.debug('addClientModal focus attempt 2 ->', document.activeElement && document.activeElement.id);
-                                }
-
-                                // Additional diagnostics: show activeElement details and target visibility
-                                try {
-                                    const active = document.activeElement || null;
-                                    const details = active ? { tag: active.tagName, id: active.id || null, class: active.className || null } : null;
-                                    const targetState = {
-                                        disabled: !!first.disabled,
-                                        tabIndex: first.tabIndex,
-                                        offsetWidth: first.offsetWidth,
-                                        offsetHeight: first.offsetHeight,
-                                        offsetParent: !!first.offsetParent,
-                                        visible: (window.getComputedStyle(first).visibility !== 'hidden' && window.getComputedStyle(first).display !== 'none')
-                                    };
-                                    console.debug('addClientModal diagnostics -> activeElement:', details, 'targetState:', targetState);
-
-                                    // Walk ancestor chain and log computed display/visibility to find hidden ancestor
-                                    try {
-                                        const chain = [];
-                                        let el = first;
-                                        while (el) {
-                                            const cs = window.getComputedStyle(el);
-                                            chain.push({ tag: el.tagName, id: el.id || null, class: el.className || null, display: cs.display, visibility: cs.visibility, width: el.offsetWidth, height: el.offsetHeight });
-                                            el = el.parentElement;
-                                        }
-                                        console.debug('addClientModal ancestor chain (from target up):', chain);
-                                    } catch (err) { console.debug('ancestor chain error', err); }
-                                } catch (err) { console.debug('addClientModal diagnostics error', err); }
-                            }, 80);
-                        } catch (e) {
-                            console.debug('addClientModal focus error', e);
-                        }
-                    });
-                } else {
-                    console.debug('addClientModal: first input not found');
-                }
-            } catch (e) { console.error('openAddClientModal error', e); }
+            document.getElementById('addClientForm').reset();
+            document.getElementById('addClientModal').classList.add('show');
         }
         
-        // Attach fallback click handler in case inline onclick is blocked
-        document.addEventListener('DOMContentLoaded', function() {
-            const navAdd = document.getElementById('nav-add-client');
-            if (navAdd && !navAdd._boundAddClient) {
-                navAdd.addEventListener('click', function(ev) {
-                    ev.preventDefault();
-                    openAddClientModal();
-                });
-                navAdd._boundAddClient = true;
-            }
-
-            // Ensure the visible "Add New Client" button always opens the modal (defensive attach)
-            const btnAdd = document.getElementById('btn-add-client');
-            if (btnAdd && !btnAdd._bound) {
-                btnAdd.addEventListener('click', function(ev) {
-                    ev.preventDefault();
-                    openAddClientModal();
-                });
-                btnAdd._bound = true;
-                // Ensure keyboard focusability for accessibility
-                btnAdd.setAttribute('tabindex', '0');
-                btnAdd.setAttribute('role', 'button');
-            }
-
-            // Extra delegation: catch clicks that may not reach the element directly
-            if (!document._boundAddClientDelegation) {
-                document.addEventListener('click', function(ev) {
-                    const btn = ev.target.closest && ev.target.closest('#btn-add-client');
-                    if (btn) {
-                        ev.preventDefault();
-                        openAddClientModal();
-                    }
-                }, true);
-                document._boundAddClientDelegation = true;
-            }
-        });
-        
         function closeAddClientModal() {
-            const modal = document.getElementById('addClientModal');
-            if (modal) modal.classList.remove('show');
+            document.getElementById('addClientModal').classList.remove('show');
         }
         
         function saveNewClient(event) {
@@ -4203,9 +3938,7 @@ if ($invoices_result) {
                 message: document.getElementById('newClientMessage').value,
                 service: document.getElementById('newClientService').value,
                 status: document.getElementById('newClientStatus').value,
-                notes: document.getElementById('newClientNotes').value,
-                // CRM fields
-
+                notes: document.getElementById('newClientNotes').value
             };
             
             fetch('api/add_client.php', {
@@ -4348,6 +4081,7 @@ invoices.forEach(invoice => {
             // Check if required elements exist
             const requiredElements = [
                 'section-dashboard',
+                'html-count',
                 'quotes-count',
                 'nav-dashboard'
             ];
@@ -4389,14 +4123,6 @@ invoices.forEach(invoice => {
                 
                 console.log('Loading dashboard stats...');
                 loadDashboardStats();
-
-                // Ensure existing client stats/cards are populated on initial load
-                try {
-                    console.log('Loading existing clients...');
-                    loadExistingClients();
-                } catch (e) { console.warn('loadExistingClients failed on init', e); }
-
-
                 
                 console.log('%c All data loading functions called successfully', 'background: #667eea; color: white; padding: 2px 8px; border-radius: 3px;');
             } catch (error) {
@@ -4467,403 +4193,7 @@ invoices.forEach(invoice => {
                     }
                 })
                 .catch(err => console.error('Error loading quote stats:', err));
-
-                // Load CRM dashboard stats (KPIs + charts)
-                fetch('api/crm_dashboard.php')
-                    .then(res => res.json())
-                    .then(data => {
-                        if (!data.success || !data.stats) return;
-                        const s = data.stats;
-
-                                // helper: map lead source to chip color (prefers configured map)
-                        function getLeadColor(source) {
-                            if (!source) return '#e2e8f0';
-                            const map = window.crmLeadColorMap || {};
-                            const key = (source || '').toLowerCase();
-
-                            // exact match first
-                            if (map[source]) return map[source];
-
-                            // case-insensitive lookup
-                            for (const k in map) {
-                                if (k.toLowerCase() === key) return map[k];
-                            }
-
-                            // heuristic fallbacks
-                            if (key.includes('referr')) return '#f6d365';
-                            if (key.includes('web') || key.includes('site') || key.includes('website')) return '#7dd3fc';
-                            if (key.includes('ad')) return '#fca5a5';
-                            if (key.includes('email')) return '#c7f9d2';
-                            if (key.includes('social')) return '#fbcfe8';
-                            return '#d1fae5';
-                        }
-
-
-                        // KPIs (with small client-side deltas)
-                        const kpis = {
-                            total_revenue: parseFloat(s.total_revenue) || 0,
-                            pipeline_value: parseFloat(s.pipeline_value) || 0,
-                            new_leads: (s.status_breakdown && s.status_breakdown.new) ? s.status_breakdown.new : 0,
-                            conversion_rate: s.total_clients ? ((s.won_deals / s.total_clients) * 100) : 0
-                        };
-
-                        // show values
-                        document.getElementById('dash-total-revenue').firstChild.nodeValue = '£' + kpis.total_revenue.toFixed(2) + ' ';
-                        document.getElementById('dash-pipeline-value').firstChild.nodeValue = '£' + kpis.pipeline_value.toFixed(2) + ' ';
-                        document.getElementById('dash-new-leads').firstChild.nodeValue = String(kpis.new_leads) + ' ';
-                        document.getElementById('dash-conversion-rate').firstChild.nodeValue = kpis.conversion_rate.toFixed(1) + '% ';
-
-                        // compute & render deltas using persisted previous values
-                        window.prevKpis = window.prevKpis || {};
-                        Object.keys(kpis).forEach(key => {
-                            const prev = window.prevKpis[key] || 0;
-                            const cur = kpis[key];
-                            const delta = cur - prev;
-                            const deltaEl = document.getElementById('delta-' + key.replace('_','-')) || document.getElementById('delta-' + key);
-                            if (deltaEl) {
-                                if (Math.abs(delta) < 0.0001) { deltaEl.textContent = ''; deltaEl.className = 'kpi-delta'; }
-                                else {
-                                    const sign = delta > 0 ? '▲' : '▼';
-                                    const pct = prev ? ((delta / Math.abs(prev)) * 100).toFixed(0) + '%' : (Math.abs(delta) > 0 ? Math.abs(delta).toFixed(0) + (key === 'conversion_rate' ? '%' : '') : '');
-                                    deltaEl.textContent = `${sign} ${pct}`;
-                                    deltaEl.className = 'kpi-delta ' + (delta > 0 ? 'positive' : 'negative');
-                                }
-                            }
-                            window.prevKpis[key] = cur;
-                        });
-
-                        // Recent activities (render lead-source chips and activity badges) — only run if container exists
-                        const raEl = document.getElementById('dash-recent-activities');
-                        if (raEl) {
-                            raEl.innerHTML = '';
-                            if (s.recent_activities && s.recent_activities.length) {
-                                s.recent_activities.forEach(a => {
-                                    const li = document.createElement('li');
-
-                                    const left = document.createElement('div');
-                                    left.style.flex = '1';
-
-                                    const topRow = document.createElement('div');
-                                    topRow.style.display = 'flex';
-                                    topRow.style.alignItems = 'center';
-                                    topRow.style.gap = '8px';
-
-                                    // activity type badge
-                                    const at = document.createElement('span');
-                                    at.className = 'activity-badge';
-                                    at.textContent = a.activity_type || 'activity';
-                                    at.style.backgroundColor = (function(t){
-                                        if (!t) return 'rgba(255,255,255,0.04)';
-                                        const k = t.toLowerCase();
-                                        if (k.includes('call')) return '#e6f7ff';
-                                        if (k.includes('email')) return '#f0fdf4';
-                                        if (k.includes('meeting')) return '#fff7ed';
-                                        return 'rgba(255,255,255,0.04)';
-                                    })(a.activity_type);
-                                    at.style.color = '#0b0b0b';
-                                    topRow.appendChild(at);
-
-                                    const title = document.createElement('strong');
-                                    title.textContent = `${a.client_name || 'General'}`;
-                                    topRow.appendChild(title);
-
-                                    left.appendChild(topRow);
-
-                                    if (a.note) {
-                                        const note = document.createElement('div');
-                                        note.style.opacity = '0.9';
-                                        note.style.fontSize = '12px';
-                                        note.style.marginTop = '6px';
-                                        note.textContent = a.note;
-                                        left.appendChild(note);
-                                    }
-
-                                    // right-side meta (date + lead chip)
-                                    const meta = document.createElement('div');
-                                    meta.className = 'activity-meta';
-                                    const date = document.createElement('div');
-                                    date.textContent = a.activity_date;
-                                    date.style.opacity = '0.7';
-                                    date.style.fontSize = '12px';
-                                    meta.appendChild(date);
-
-                                    if (a.lead_source) {
-                                        const chip = document.createElement('span');
-                                        chip.className = 'lead-chip';
-                                        chip.textContent = a.lead_source;
-                                        chip.style.backgroundColor = getLeadColor(a.lead_source);
-                                        chip.style.color = '#0b0b0b';
-                                        meta.appendChild(chip);
-                                    }
-
-                                    li.appendChild(left);
-                                    li.appendChild(meta);
-                                    raEl.appendChild(li);
-                                });
-                            } else {
-                                raEl.innerHTML = '<li>No recent activity</li>';
-                            }
-                        }
-
-                        // Upcoming tasks (priority & status badges) — only render if the short list container exists
-                        const utEl = document.getElementById('dash-upcoming-tasks');
-                        if (utEl) {
-                            utEl.innerHTML = '';
-                            if (s.upcoming_tasks && s.upcoming_tasks.length) {
-                                s.upcoming_tasks.forEach(t => {
-                                    const li = document.createElement('li');
-
-                                    const left = document.createElement('div');
-                                    left.style.flex = '1';
-                                    left.textContent = `${t.due_date} — ${t.title}`;
-
-                                    const meta = document.createElement('div');
-                                    meta.className = 'activity-meta';
-
-                                    // priority badge
-                                    const p = document.createElement('span');
-                                    p.className = 'priority-badge ' + ((t.priority || '').toLowerCase() || 'medium');
-                                    p.textContent = (t.priority || 'medium').toUpperCase();
-                                    meta.appendChild(p);
-
-                                    // status badge
-                                    const st = document.createElement('span');
-                                    st.className = 'status-badge ' + ((t.status || '').toLowerCase() || 'pending');
-                                    st.textContent = (t.status || 'pending').replace('_',' ');
-                                    meta.appendChild(st);
-
-                                    // client name small
-                                    const client = document.createElement('div');
-                                    client.style.opacity = '0.8';
-                                    client.style.fontSize = '12px';
-                                    client.textContent = t.client_name || 'General';
-                                    meta.appendChild(client);
-
-                                    li.appendChild(left);
-                                    li.appendChild(meta);
-                                    utEl.appendChild(li);
-                                });
-                            } else {
-                                utEl.innerHTML = '<li>No upcoming tasks</li>';
-                            }
-                        }
-
-                        // Ensure dashboard copy of full Tasks list (if present) is refreshed from tasks API
-                        // loadTasks() will populate `#tasks-list`; renderTasksList will mirror into `#dash-tasks-list` if present.
-
-                        // Ensure dashboard copy of full Tasks list (if present) is refreshed from tasks API
-                        // loadTasks() will populate `#tasks-list`; renderTasksList will mirror into `#dash-tasks-list` if present.
-
-                        // Charts (create or update) + subtle load animation
-                        try {
-                            // ensure high-DPI rendering
-                            if (window.Chart && window.Chart.defaults) {
-                                window.Chart.defaults.devicePixelRatio = window.devicePixelRatio || 1;
-                            }
-
-                            const statusLabels = Object.keys(s.status_breakdown || {});
-                            const statusData = statusLabels.map(k => s.status_breakdown[k] || 0);
-
-                            const statusCanvas = document.getElementById('chart-status-breakdown');
-                            // enforce crisp retina backing-store and larger visual size
-                            scaleCanvasForRetina(statusCanvas, 320);
-                            statusCanvas.style.opacity = 0; statusCanvas.style.transform = 'scale(0.995)';
-
-                            if (!window.crmStatusChart) {
-                                const ctx = statusCanvas.getContext('2d');
-                                window.crmStatusChart = new Chart(ctx, {
-                                    type: 'doughnut',
-                                    data: { labels: statusLabels, datasets: [{ data: statusData, backgroundColor: ['#007bff','#17a2b8','#ffc107','#28a745','#dc3545'] }] },
-                                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-                                });
-                            } else {
-                                window.crmStatusChart.data.labels = statusLabels;
-                                window.crmStatusChart.data.datasets[0].data = statusData;
-                                window.crmStatusChart.update();
-                                window.crmStatusChart.resize();
-                            }
-
-                            // fade-in then ensure proper pixel-size render
-                            setTimeout(() => {
-                                statusCanvas.style.transition = 'opacity 420ms ease';
-                                statusCanvas.style.opacity = 1;
-                                statusCanvas.style.transform = 'none';
-                                try { window.crmStatusChart && window.crmStatusChart.resize(); window.crmStatusChart && window.crmStatusChart.update(); } catch(e){}
-                            }, 60);
-
-                            const leadLabels = (s.lead_sources || []).map(r => r.lead_source || 'Unknown');
-                            const leadData = (s.lead_sources || []).map(r => parseInt(r.count || 0));
-
-                            const leadCanvas = document.getElementById('chart-lead-sources');
-                            // enforce crisp retina backing-store and larger visual size
-                            scaleCanvasForRetina(leadCanvas, 320);
-                            leadCanvas.style.opacity = 0; leadCanvas.style.transform = 'scale(0.995)';
-
-                            if (!window.crmLeadChart) {
-                                const ctx2 = leadCanvas.getContext('2d');
-                                window.crmLeadChart = new Chart(ctx2, {
-                                    type: 'pie',
-                                    data: { labels: leadLabels, datasets: [{ data: leadData, backgroundColor: ['#667eea','#34d399','#f6ad55','#f472b6','#60a5fa'] }] },
-                                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-                                });
-                            } else {
-                                window.crmLeadChart.data.labels = leadLabels;
-                                window.crmLeadChart.data.datasets[0].data = leadData;
-                                window.crmLeadChart.update();
-                                window.crmLeadChart.resize();
-                            }
-
-                            setTimeout(() => {
-                                leadCanvas.style.transition = 'opacity 420ms ease';
-                                leadCanvas.style.opacity = 1;
-                                leadCanvas.style.transform = 'none';
-                                try { window.crmLeadChart && window.crmLeadChart.resize(); window.crmLeadChart && window.crmLeadChart.update(); } catch(e){}
-                            }, 120);
-                        } catch (e) { console.error('Error rendering CRM charts', e); }
-
-                        // Adjust CRM layout to try to fit the summary onto a single screen
-                        function adjustCrmLayout() {
-                            try {
-                                const el = document.getElementById('crm-summary');
-                                if (!el) return;
-                                // available vertical space from the top of the CRM section to bottom of viewport
-                                const available = window.innerHeight - el.getBoundingClientRect().top - 60;
-                                // natural required height
-                                const required = el.scrollHeight;
-                                if (required > available) {
-                                    el.classList.add('compact');
-                                } else {
-                                    el.classList.remove('compact');
-                                }
-                            } catch (err) { /* ignore */ }
-                        }
-
-                        // run once after charts rendered and again on resize
-                        setTimeout(adjustCrmLayout, 100);
-                        window.removeEventListener('resize', adjustCrmLayout);
-                        window.addEventListener('resize', () => { clearTimeout(window._crmLayoutTimer); window._crmLayoutTimer = setTimeout(adjustCrmLayout, 120); });
-                    })
-                    .catch(err => console.error('Error loading CRM dashboard:', err));
-
-                // Load revenue trends (last 12 months)
-                                function loadRevenueTrend() {
-                                    const metric = document.getElementById('revenueMetric').value;
-                                    const range = document.getElementById('revenueRange').value;
-                
-                                    fetch(`api/invoice_trends.php?metric=${encodeURIComponent(metric)}&range=${encodeURIComponent(range)}`)
-                                        .then(res => res.json())
-                                        .then(r => {
-                                            if (!r.success) return;
-                
-                                            // normalize data into labels/values and a display label
-                                            let labels = [];
-                                            let values = [];
-                                            const labelText = (metric === 'invoiced') ? 'Revenue (invoiced)' : 'Revenue (collected)';
-                
-                                            if (r.range === 'yearly' && r.years) {
-                                                labels = Object.keys(r.years || {});
-                                                values = labels.map(k => parseFloat(r.years[k]) || 0);
-                                            } else if (r.months) {
-                                                labels = Object.keys(r.months || {});
-                                                values = labels.map(m => parseFloat(r.months[m]) || 0);
-                                            }
-                
-                                            // create or update chart safely
-                                            try {
-                                                const canvas = document.getElementById('chart-revenue-trend');
-                                                if (!canvas) return;
-                                                // ensure revenue canvas is retina-scaled and visually larger
-                                                scaleCanvasForRetina(canvas, 320);
-                
-                                                if (!window.revenueTrendChart) {
-                                                    const ctx = canvas.getContext('2d');
-                                                    window.revenueTrendChart = new Chart(ctx, {
-                                                        type: 'line',
-                                                        data: {
-                                                            labels: labels,
-                                                            datasets: [{
-                                                                label: labelText,
-                                                                data: values,
-                                                                borderColor: '#28a745',
-                                                                backgroundColor: 'rgba(40,167,69,0.08)',
-                                                                tension: 0.25,
-                                                                fill: true
-                                                            }]
-                                                        },
-                                                        options: {
-                                                            responsive: true,
-                                                            maintainAspectRatio: false,
-                                                            scales: { y: { ticks: { callback: v => '£' + Number(v).toFixed(0) } } },
-                                                            plugins: { legend: { display: false } }
-                                                        }
-                                                    });
-                                                } else {
-                                                    window.revenueTrendChart.data.labels = labels;
-                                                    window.revenueTrendChart.data.datasets[0].label = labelText;
-                                                    window.revenueTrendChart.data.datasets[0].data = values;
-                                                    window.revenueTrendChart.update();
-                                                    try { window.revenueTrendChart.resize(); } catch (e) { /* ignore */ }
-                                                }
-                                            } catch (err) {
-                                                console.error('Error rendering revenue trend chart:', err);
-                                            }
-                                        })
-                                        .catch(err => console.error('Error loading revenue trends:', err));
-                                }
-
-                // Safely attach revenue chart controls (guard elements may not exist when script runs)
-                function attachRevenueControls() {
-                    const rm = document.getElementById('revenueMetric');
-                    const rr = document.getElementById('revenueRange');
-                    const rt = document.getElementById('revenueChartType');
-                    const dl = document.getElementById('downloadRevenueCsv');
-                    const canvas = document.getElementById('chart-revenue-trend');
-                    if (!rm || !rr || !rt || !dl || !canvas) return false;
-
-                    rm.addEventListener('change', () => { loadRevenueTrend(); });
-                    rr.addEventListener('change', () => { loadRevenueTrend(); });
-                    rt.addEventListener('change', function () {
-                        const type = this.value;
-                        canvas.dataset.mode = type;
-                        loadRevenueTrend();
-                    });
-
-                    dl.addEventListener('click', function () {
-                        const metric = rm.value;
-                        const range = rr.value;
-                        fetch(`api/invoice_trends.php?metric=${encodeURIComponent(metric)}&range=${encodeURIComponent(range)}`)
-                            .then(r => r.json())
-                            .then(data => {
-                                if (!data.success) return alert('No data available');
-                                let csv = '';
-                                if (data.range === 'yearly' && data.years) {
-                                    csv += 'year,' + data.metric + '\n';
-                                    for (const y in data.years) csv += `${y},${(data.years[y]||0).toFixed(2)}\n`;
-                                } else if (data.months) {
-                                    csv += 'month,' + data.metric + '\n';
-                                    for (const m in data.months) csv += `${m},${(data.months[m]||0).toFixed(2)}\n`;
-                                }
-                                const blob = new Blob([csv], { type: 'text/csv' });
-                                const a = document.createElement('a');
-                                a.href = URL.createObjectURL(blob);
-                                a.download = `invoice_trends_${metric}_${range}.csv`;
-                                document.body.appendChild(a);
-                                a.click();
-                                a.remove();
-                            })
-                            .catch(() => alert('Failed to download CSV'));
-                    });
-
-                    // initial load
-                    loadRevenueTrend();
-                    return true;
-                }
-
-                // Try to attach immediately, otherwise defer until DOMContentLoaded
-                if (!attachRevenueControls() && document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', attachRevenueControls);
-                }
-
+            
             // Load email stats (placeholder until email storage is implemented)
             // For now, showing 0 - can be connected to actual email data later
             document.getElementById('dash-emails-unread').textContent = 0;
@@ -4884,7 +4214,7 @@ invoices.forEach(invoice => {
             });
             
             // Remove active class from all buttons
-            document.querySelectorAll('.tab').forEach(btn => {
+            document.querySelectorAll('.crm-tab').forEach(btn => {
                 btn.classList.remove('active');
             });
             
@@ -5399,9 +4729,8 @@ invoices.forEach(invoice => {
         let currentEditTaskId = null;
         
         function loadTasks() {
-            // Prefer dashboard filter if present, otherwise fall back to page filter
-            const dashFilter = document.getElementById('dashTaskStatusFilter');
-            const filterSelect = dashFilter || document.getElementById('taskStatusFilter');
+            // Get filter value from dropdown if it exists
+            const filterSelect = document.getElementById('taskStatusFilter');
             if (filterSelect) {
                 currentTaskFilter = filterSelect.value || 'all';
             }
@@ -5419,14 +4748,11 @@ invoices.forEach(invoice => {
                         const overdue = data.tasks.filter(t => t.due_date && t.due_date < today && t.status !== 'completed' && t.status !== 'cancelled').length;
                         const urgent = data.tasks.filter(t => t.priority === 'urgent' && t.status !== 'completed' && t.status !== 'cancelled').length;
                         
-                        const statPending = document.getElementById('stat-tasks-pending');
-                        const statOverdue = document.getElementById('stat-tasks-overdue');
-                        const statUrgent = document.getElementById('stat-tasks-urgent');
-                        if (statPending) statPending.textContent = pending;
-                        if (statOverdue) statOverdue.textContent = overdue;
-                        if (statUrgent) statUrgent.textContent = urgent;
+                        document.getElementById('stat-tasks-pending').textContent = pending;
+                        document.getElementById('stat-tasks-overdue').textContent = overdue;
+                        document.getElementById('stat-tasks-urgent').textContent = urgent;
                         
-                        // Render tasks list (main page) and mirror to dashboard copy
+                        // Render tasks list
                         renderTasksList(data.tasks);
                     }
                     return data;
@@ -5439,12 +4765,9 @@ invoices.forEach(invoice => {
         
         function renderTasksList(tasks) {
             const container = document.getElementById('tasks-list');
-            const dashContainer = document.getElementById('dash-tasks-list');
             
-            if (!tasks || tasks.length === 0) {
-                const emptyHtml = '<div class="empty-state"><h3>No Tasks Found</h3><p>Create your first task to get started.</p></div>';
-                if (container) container.innerHTML = emptyHtml;
-                if (dashContainer) dashContainer.innerHTML = emptyHtml;
+            if (tasks.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>No Tasks Found</h3><p>Create your first task to get started.</p></div>';
                 return;
             }
             
@@ -5462,7 +4785,7 @@ invoices.forEach(invoice => {
                 cancelled: '❌ Cancelled'
             };
             
-            const fullHtml = tasks.map(task => {
+            container.innerHTML = tasks.map(task => {
                 const priorityColor = priorityColors[task.priority] || '#666';
                 return `
                 <div class="task-item ${task.status === 'completed' || task.status === 'cancelled' ? 'completed' : ''}" data-status="${task.status}" data-priority="${task.priority}" data-due-date="${task.due_date || ''}">
@@ -5485,9 +4808,6 @@ invoices.forEach(invoice => {
                 </div>
                 `;
             }).join('');
-
-            if (container) container.innerHTML = fullHtml;
-            if (dashContainer) dashContainer.innerHTML = fullHtml; // mirror exact same list into dashboard column
         }
         
         function filterTasks(status) {
@@ -6122,9 +5442,6 @@ invoices.forEach(invoice => {
                     if (s.smtp_encryption) document.getElementById('smtpEncryption').value = s.smtp_encryption;
                     if (s.smtp_from_email) document.getElementById('smtpFromEmail').value = s.smtp_from_email;
                     if (s.smtp_from_name) document.getElementById('smtpFromName').value = s.smtp_from_name;
-
-                    // load CRM settings too
-                    loadCrmSettings();
                     
                     document.getElementById('enableEmailNotifications').checked = s.enable_notifications == 1;
                     document.getElementById('enableAutoReply').checked = s.enable_auto_reply == 1;
@@ -6138,68 +5455,10 @@ invoices.forEach(invoice => {
             });
         }
         
-        // CRM settings UI helpers
-        function addCrmColorRow(source = '', color = '#f6d365') {
-            const tpl = document.getElementById('crmColorRowTpl');
-            const frag = tpl.content.cloneNode(true);
-            const wrapper = frag.querySelector('div');
-            const srcInput = frag.querySelector('.crm-source');
-            const colorInput = frag.querySelector('.crm-color');
-            const removeBtn = frag.querySelector('.crm-remove');
-            srcInput.value = source;
-            colorInput.value = color;
-            removeBtn.addEventListener('click', () => wrapper.remove());
-            document.getElementById('crmColorsList').appendChild(wrapper);
-        }
-
-        function loadCrmSettings() {
-            fetch('api/get_crm_settings.php')
-                .then(r => r.json())
-                .then(json => {
-                    if (!json.success) return;
-                    const colors = json.settings && json.settings.lead_source_colors ? json.settings.lead_source_colors : {};
-                    const list = document.getElementById('crmColorsList');
-                    list.innerHTML = '';
-                    for (const src in colors) {
-                        addCrmColorRow(src, colors[src]);
-                    }
-                    window.crmLeadColorMap = colors || {};
-                })
-                .catch(err => console.error('Error loading CRM settings:', err));
-        }
-
-        function saveCrmSettings() {
-            const list = document.getElementById('crmColorsList');
-            const rows = list.querySelectorAll('div');
-            const colors = {};
-            rows.forEach(row => {
-                const src = row.querySelector('.crm-source').value.trim();
-                const color = row.querySelector('.crm-color').value || '#d1fae5';
-                if (src) colors[src] = color;
-            });
-
-            fetch('api/save_crm_settings.php', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ lead_source_colors: colors }) })
-                .then(r => r.json())
-                .then(json => {
-                    if (json.success) {
-                        window.crmLeadColorMap = colors;
-                        // refresh dashboard stats so UI reflects updated colors immediately
-                        loadDashboardStats();
-                        // warm crm cache
-                        fetch('api/crm_dashboard.php').catch(()=>{});
-                        alert('CRM settings saved');
-                    } else {
-                        alert('Failed to save CRM settings: ' + (json.message || 'unknown'));
-                    }
-                })
-                .catch(err => { console.error(err); alert('Error saving CRM settings'); });
-        }
-
         // ==================== Menu Customization ====================
         
         const defaultMenuOrder = [
             {id: 'nav-dashboard', label: '📋 Dashboard', section: 'dashboard', type: 'link'},
-            {id: 'nav-crm', label: '📈 CRM Summary', section: 'crm', type: 'link'},
             {id: 'nav-clients', label: '📝 Quote Requests', section: 'clients', type: 'link'},
             {id: 'clients-submenu', label: '👥 Clients', type: 'parent', children: [
                 {id: 'nav-existing-clients', label: '👤 Existing Clients', section: 'existing-clients'},
@@ -6446,27 +5705,7 @@ invoices.forEach(invoice => {
                     const nameText = dg.childNodes[0] ? dg.childNodes[0].textContent.trim() : '';
                     dg.innerHTML = `${part}, ${nameText}${roleHtml}`;
                 }
-
-                // Auto-scroll to CRM if URL indicates it (supports ?view=crm and #crm)
-                try {
-                    const params = new URLSearchParams(window.location.search);
-                    const wantCRM = (params.get('view') || '').toLowerCase() === 'crm' || window.location.hash === '#crm';
-                    if (wantCRM) {
-                        // Give the page a moment to render then scroll
-                        setTimeout(() => { if (typeof scrollToCRM === 'function') scrollToCRM(); }, 250);
-                    }
-                } catch (err) { /* ignore */ }
             } catch (e) { /* ignore */ }
-
-            // Expose common functions as globals so inline `onclick` attributes work reliably
-            try {
-                const expose = ['showSection','toggleSubmenu','scrollToCRM','openAddClientModal','closeAddClientModal','saveNewClient','loadExistingClients'];
-                expose.forEach(name => {
-                    if (typeof window[name] === 'undefined' && typeof eval(name) === 'function') {
-                        window[name] = eval(name);
-                    }
-                });
-            } catch (err) { /* ignore - best-effort exposure */ }
         });
     </script>
 </body>

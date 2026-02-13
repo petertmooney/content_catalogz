@@ -162,14 +162,14 @@
         <div class="panel">
             <h3>Quick Queries</h3>
             <div class="quick-queries">
-                <button class="quick-btn" data-action="runQuickQuery" data-params="SHOW TABLES">📋 Show All Tables</button>
-                <button class="quick-btn" data-action="runQuickQuery" data-params="SELECT * FROM quotes LIMIT 10">📝 View Quotes</button>
-                <button class="quick-btn" data-action="runQuickQuery" data-params="SELECT * FROM activities ORDER BY activity_date DESC LIMIT 20">📅 Recent Activities</button>
-                <button class="quick-btn" data-action="runQuickQuery" data-params="SELECT * FROM tasks ORDER BY created_at DESC LIMIT 20">✅ Recent Tasks</button>
-                <button class="quick-btn" data-action="runQuickQuery" data-params="SELECT * FROM client_notes ORDER BY created_at DESC LIMIT 20">📝 Recent Notes</button>
-                <button class="quick-btn" data-action="runQuickQuery" data-params="SELECT status, COUNT(*) as count FROM quotes GROUP BY status">📊 Quotes by Status</button>
-                <button class="quick-btn" data-action="runQuickQuery" data-params="SELECT activity_type, COUNT(*) as count FROM activities GROUP BY activity_type">📊 Activities by Type</button>
-                <button class="quick-btn" data-action="runQuickQuery" data-params="SELECT priority, status, COUNT(*) as count FROM tasks GROUP BY priority, status">📊 Tasks by Priority</button>
+                <button class="quick-btn" onclick="runQuickQuery('SHOW TABLES')">📋 Show All Tables</button>
+                <button class="quick-btn" onclick="runQuickQuery('SELECT * FROM quotes LIMIT 10')">📝 View Quotes</button>
+                <button class="quick-btn" onclick="runQuickQuery('SELECT * FROM activities ORDER BY activity_date DESC LIMIT 20')">📅 Recent Activities</button>
+                <button class="quick-btn" onclick="runQuickQuery('SELECT * FROM tasks ORDER BY created_at DESC LIMIT 20')">✅ Recent Tasks</button>
+                <button class="quick-btn" onclick="runQuickQuery('SELECT * FROM client_notes ORDER BY created_at DESC LIMIT 20')">📝 Recent Notes</button>
+                <button class="quick-btn" onclick="runQuickQuery('SELECT status, COUNT(*) as count FROM quotes GROUP BY status')">📊 Quotes by Status</button>
+                <button class="quick-btn" onclick="runQuickQuery('SELECT activity_type, COUNT(*) as count FROM activities GROUP BY activity_type')">📊 Activities by Type</button>
+                <button class="quick-btn" onclick="runQuickQuery('SELECT priority, status, COUNT(*) as count FROM tasks GROUP BY priority, status')">📊 Tasks by Priority</button>
             </div>
         </div>
 
@@ -177,8 +177,8 @@
             <h3>SQL Query</h3>
             <textarea id="sql-query" class="query-box" placeholder="Enter your SQL query here...
 Example: SELECT * FROM quotes WHERE status = 'in_progress'"></textarea>
-            <button class="btn" data-action="executeQuery">▶ Execute Query</button>
-            <button class="btn btn-danger" data-action="clearQuery">🗑️ Clear</button>
+            <button class="btn" onclick="executeQuery()">▶ Execute Query</button>
+            <button class="btn btn-danger" onclick="clearQuery()">🗑️ Clear</button>
         </div>
 
         <div id="result-container"></div>
@@ -204,7 +204,7 @@ Example: SELECT * FROM quotes WHERE status = 'in_progress'"></textarea>
         function displayTables(tables) {
             const container = document.getElementById('tables-list');
             container.innerHTML = tables.map(table => `
-                <div class="table-item" data-action="describeTable" data-params="${table}">
+                <div class="table-item" onclick="describeTable('${table}')">
                     📁 ${table}
                 </div>
             `).join('');

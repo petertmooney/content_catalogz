@@ -36,12 +36,8 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-// Optional CRM fields from the public form
-$lead_source = isset($_POST['lead_source']) ? trim($_POST['lead_source']) : null;
-$expected_value = isset($_POST['expected_value']) ? floatval($_POST['expected_value']) : null;
-
 // Insert quote into database
-$sql = "INSERT INTO quotes (name, email, company, phone, service, message, status, lead_source, expected_value) VALUES (?, ?, ?, ?, ?, ?, 'new', ?, ?)";
+$sql = "INSERT INTO quotes (name, email, company, phone, service, message, status) VALUES (?, ?, ?, ?, ?, ?, 'new')";
 $stmt = $conn->prepare($sql);
 
 if (!$stmt) {
@@ -52,16 +48,14 @@ if (!$stmt) {
     exit;
 }
 
-// bind expected_value as double (use 0.0 if null)
-$stmt->bind_param("sssssssd", $name, $email, $company, $phone, $service, $message, $lead_source, $expected_value);
+$stmt->bind_param("ssssss", $name, $email, $company, $phone, $service, $message);
 
 if ($stmt->execute()) {
     $quote_id = $stmt->insert_id;
     
-        // Invalidate cached CRM dashboard so admin UI sees this lead immediately
-        require_once __DIR__ . '/../admin/config/cache.php';
-        invalidate_crm_cache();
-        
+    // You could send an email notification here
+    // mail('admin@contentcatalogz.com', 'New Quote Request', ...);
+    
     echo json_encode([
         'success' => true,
         'message' => 'Thank you for your quote request! We will contact you within 24 hours.',

@@ -394,7 +394,7 @@ if (file_exists($exportDir)) {
                 </div>
             </div>
             
-            <button id="exportBtn" class="btn" data-action="startExport">
+            <button id="exportBtn" class="btn" onclick="startExport()">
                 📦 Create Export Package
             </button>
             
@@ -420,7 +420,7 @@ if (file_exists($exportDir)) {
                     <a href="../exports/<?php echo urlencode($export['name']); ?>" class="btn btn-sm btn-secondary" download>
                         ⬇️ Download
                     </a>
-                    <button class="btn btn-sm btn-danger" data-action="deleteExport" data-params="<?php echo htmlspecialchars($export['name']); ?>">
+                    <button class="btn btn-sm btn-danger" onclick="deleteExport('<?php echo htmlspecialchars($export['name']); ?>')">
                         🗑️ Delete
                     </button>
                 </div>
