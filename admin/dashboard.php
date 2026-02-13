@@ -842,7 +842,7 @@ if ($invoices_result) {
             color: white;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js?v=<?php echo time(); ?>"></script>
 </head>
 <body>
     
@@ -4113,27 +4113,28 @@ if ($invoices_result) {
         }
 
         async function printInvoice() {
-            // Check if we're in the client details modal
-            const clientIdEl = document.getElementById('clientId');
-            if (!clientIdEl) {
-                alert('Please open a client details modal first.');
-                return;
-            }
+            try {
+                // Check if we're in the client details modal
+                const clientIdEl = document.getElementById('clientId');
+                if (!clientIdEl) {
+                    alert('Please open a client details modal first.');
+                    return;
+                }
 
-            // Get current client data from the form
-            const clientId = clientIdEl.value;
-            const clientName = (document.getElementById('clientName') || {}).textContent || '';
-            const clientCompany = (document.getElementById('clientCompany') || {}).textContent || '';
-            const clientEmail = (document.getElementById('clientEmail') || {}).textContent || '';
-            const clientPhone = (document.getElementById('clientPhone') || {}).textContent || '';
-            
-            // Get structured address
-            const addressStreet = (document.getElementById('clientAddressStreet') || {}).value || '';
-            const addressLine2 = (document.getElementById('clientAddressLine2') || {}).value || '';
-            const addressCity = (document.getElementById('clientAddressCity') || {}).value || '';
-            const addressCounty = (document.getElementById('clientAddressCounty') || {}).value || '';
-            const addressPostcode = (document.getElementById('clientAddressPostcode') || {}).value || '';
-            const addressCountry = (document.getElementById('clientAddressCountry') || {}).value || 'United Kingdom';
+                // Get current client data from the form
+                const clientId = (clientIdEl.value || '').trim();
+                const clientName = ((document.getElementById('clientName') || {}).textContent || '').trim();
+                const clientCompany = ((document.getElementById('clientCompany') || {}).textContent || '').trim();
+                const clientEmail = ((document.getElementById('clientEmail') || {}).textContent || '').trim();
+                const clientPhone = ((document.getElementById('clientPhone') || {}).textContent || '').trim();
+
+                // Get structured address
+                const addressStreet = ((document.getElementById('clientAddressStreet') || {}).value || '').trim();
+                const addressLine2 = ((document.getElementById('clientAddressLine2') || {}).value || '').trim();
+                const addressCity = ((document.getElementById('clientAddressCity') || {}).value || '').trim();
+                const addressCounty = ((document.getElementById('clientAddressCounty') || {}).value || '').trim();
+                const addressPostcode = ((document.getElementById('clientAddressPostcode') || {}).value || '').trim();
+                const addressCountry = ((document.getElementById('clientAddressCountry') || {}).value || 'United Kingdom').trim();
             
             // Fetch payment history
             let paymentsHTML = '';
@@ -4500,25 +4501,26 @@ if ($invoices_result) {
 
         // Print client details
         function printClientDetails() {
-            // Check if we're in the client details modal
-            const clientNameEl = document.getElementById('clientName');
-            if (!clientNameEl) {
-                alert('Please open a client details modal first.');
-                return;
-            }
+            try {
+                // Check if we're in the client details modal
+                const clientNameEl = document.getElementById('clientName');
+                if (!clientNameEl) {
+                    alert('Please open a client details modal first.');
+                    return;
+                }
 
-            const clientName = clientNameEl.textContent;
-            const clientCompany = (document.getElementById('clientCompany') || {}).textContent || '';
-            const clientEmail = (document.getElementById('clientEmail') || {}).textContent || '';
-            const clientPhone = (document.getElementById('clientPhone') || {}).textContent || '';
-            
-            // Get address information
-            const addressStreet = (document.getElementById('clientAddressStreet') || {}).value || '';
-            const addressLine2 = (document.getElementById('clientAddressLine2') || {}).value || '';
-            const addressCity = (document.getElementById('clientAddressCity') || {}).value || '';
-            const addressCounty = (document.getElementById('clientAddressCounty') || {}).value || '';
-            const addressPostcode = (document.getElementById('clientAddressPostcode') || {}).value || '';
-            const addressCountry = (document.getElementById('clientAddressCountry') || {}).value || 'United Kingdom';
+                const clientName = (clientNameEl.textContent || '').trim();
+                const clientCompany = ((document.getElementById('clientCompany') || {}).textContent || '').trim();
+                const clientEmail = ((document.getElementById('clientEmail') || {}).textContent || '').trim();
+                const clientPhone = ((document.getElementById('clientPhone') || {}).textContent || '').trim();
+
+                // Get address information with safe access
+                const addressStreet = ((document.getElementById('clientAddressStreet') || {}).value || '').trim();
+                const addressLine2 = ((document.getElementById('clientAddressLine2') || {}).value || '').trim();
+                const addressCity = ((document.getElementById('clientAddressCity') || {}).value || '').trim();
+                const addressCounty = ((document.getElementById('clientAddressCounty') || {}).value || '').trim();
+                const addressPostcode = ((document.getElementById('clientAddressPostcode') || {}).value || '').trim();
+                const addressCountry = ((document.getElementById('clientAddressCountry') || {}).value || 'United Kingdom').trim();
             
             // Format address
             let formattedAddress = '';
@@ -5786,9 +5788,19 @@ invoices.forEach(invoice => {
             const chartIds = ['statusChart', 'leadChart', 'revenueChart', 'taskChart'];
             chartIds.forEach(id => {
                 const canvas = document.getElementById(id);
-                if (canvas && canvas.chart) {
-                    canvas.chart.destroy();
-                    canvas.chart = null;
+                if (canvas) {
+                    // Destroy any existing chart
+                    if (canvas.chart) {
+                        try {
+                            canvas.chart.destroy();
+                        } catch (e) {
+                            console.warn('Error destroying chart:', e);
+                        }
+                        canvas.chart = null;
+                    }
+                    // Clear the canvas
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
                 }
             });
 
@@ -5802,8 +5814,9 @@ invoices.forEach(invoice => {
                         // Status breakdown pie chart
                         const statusCanvas = document.getElementById('statusChart');
                         if (statusCanvas) {
-                            const statusCtx = statusCanvas.getContext('2d');
-                            const statusChart = new Chart(statusCtx, {
+                            try {
+                                const statusCtx = statusCanvas.getContext('2d');
+                                const statusChart = new Chart(statusCtx, {
                                 type: 'doughnut',
                                 data: {
                                     labels: ['New', 'Contacted', 'In Progress', 'Completed', 'Declined'],
@@ -5875,6 +5888,9 @@ invoices.forEach(invoice => {
                                 const y = event.clientY - rect.top;
                                 statusChart._handleClick(event, statusChart, x, y);
                             };
+                            } catch (error) {
+                                console.error('Error creating status chart:', error);
+                            }
                         }
 
                         // Lead sources bar chart
