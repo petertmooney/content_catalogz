@@ -95,6 +95,16 @@ if ($stmt->execute()) {
     $activityStmt->execute();
     $activityStmt->close();
     
+    // invalidate CRM cache so dashboard updates immediately
+    try {
+        @unlink(__DIR__ . '/../cache/crm_dashboard.json');
+        if (class_exists('Redis')) {
+            $r = new Redis();
+            @$r->connect('127.0.0.1', 6379, 1);
+            @$r->del('crm_dashboard_v1');
+        }
+    } catch (Exception $e) { /* ignore */ }
+
     echo json_encode([
         'success' => true, 
         'message' => 'Client added successfully',

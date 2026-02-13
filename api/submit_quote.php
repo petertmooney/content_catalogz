@@ -53,9 +53,20 @@ $stmt->bind_param("ssssss", $name, $email, $company, $phone, $service, $message)
 if ($stmt->execute()) {
     $quote_id = $stmt->insert_id;
     
-    // You could send an email notification here
-    // mail('admin@contentcatalogz.com', 'New Quote Request', ...);
-    
+        // Invalidate cached CRM dashboard so admin UI sees this lead immediately
+        try {
+            // file cache
+            @unlink(__DIR__ . '/../admin/cache/crm_dashboard.json');
+            // Redis cache (if present)
+            if (class_exists('Redis')) {
+                $r = new Redis();
+                @$r->connect('127.0.0.1', 6379, 1);
+                @$r->del('crm_dashboard_v1');
+            }
+        } catch (Exception $e) {
+            // ignore
+        }
+        
     echo json_encode([
         'success' => true,
         'message' => 'Thank you for your quote request! We will contact you within 24 hours.',
