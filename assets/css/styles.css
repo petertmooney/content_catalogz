@@ -461,6 +461,12 @@ footer p {
     color: var(--text-light);
 }
 
+/* Scope CRM: hide everywhere except the main dashboard section to ensure the
+   CRM summary only appears on the dashboard page. This prevents accidental
+   duplication on other pages without changing markup. */
+.crm-summary { display: none; }
+#section-dashboard .crm-summary { display: block; }
+
 /* CRM - polished, professional look */
 .crm-summary {
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
