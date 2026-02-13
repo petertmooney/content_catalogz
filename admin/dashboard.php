@@ -2305,15 +2305,119 @@ if ($invoices_result) {
 
     <!-- Invoice Modal -->
     <div id="invoiceModal" class="modal">
-      <div class="modal-content" style="max-width: 600px;">
-        <div class="modal-header">
-          <h3>Invoice Details</h3>
-          <button class="close-btn" onclick="closeInvoiceModal()">&times;</button>
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3>Invoice Details</h3>
+                <button class="close-btn" onclick="closeInvoiceModal()">&times;</button>
+            </div>
+
+            <!-- Client Information -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+                <h4 style="margin-top: 0; margin-bottom: 15px; color: #333;">Client Information</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <strong>Name:</strong><br>
+                        <span id="clientName"></span>
+                    </div>
+                    <div>
+                        <strong>Company:</strong><br>
+                        <span id="clientCompany"></span>
+                    </div>
+                    <div>
+                        <strong>Email:</strong><br>
+                        <span id="clientEmail"></span>
+                    </div>
+                    <div>
+                        <strong>Phone:</strong><br>
+                        <span id="clientPhone"></span>
+                    </div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <strong>Address:</strong><br>
+                    <div style="margin-top: 8px; line-height: 1.6; color: #333;">
+                        <input type="text" id="clientAddressStreet" class="form-control" placeholder="Street Address" style="margin-bottom: 5px;" autocomplete="address-line1">
+                        <input type="text" id="clientAddressLine2" class="form-control" placeholder="Address Line 2" style="margin-bottom: 5px;" autocomplete="address-line2">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 5px;">
+                            <input type="text" id="clientAddressCity" class="form-control" placeholder="City" autocomplete="address-level2">
+                            <input type="text" id="clientAddressCounty" class="form-control" placeholder="County/State" autocomplete="address-level1">
+                            <input type="text" id="clientAddressPostcode" class="form-control" placeholder="Postcode" autocomplete="postal-code">
+                        </div>
+                        <input type="text" id="clientAddressCountry" class="form-control" placeholder="Country" style="margin-top: 5px;" autocomplete="country">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice Details -->
+            <div style="background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px;">
+                <h4 style="margin-top: 0; margin-bottom: 15px; color: #333;">Invoice Information</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="invoiceNumber">Invoice Number</label>
+                        <input type="text" id="invoiceNumber" class="form-control" readonly style="background: #f8f9fa;">
+                    </div>
+                    <div class="form-group">
+                        <label for="invoiceDate">Invoice Date</label>
+                        <input type="date" id="invoiceDate" class="form-control" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="totalPaid">Total Paid (£)</label>
+                        <input type="number" id="totalPaid" class="form-control" step="0.01" min="0" oninput="calculateInvoiceTotalCost()" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Services and Costs Section -->
+            <div style="background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h4 style="margin: 0; color: #333;">Services & Costs (GBP)</h4>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="addInvoiceServiceRow()">+ Add Service</button>
+                </div>
+
+                <div id="invoiceServicesContainer">
+                    <!-- Services will be added here dynamically -->
+                </div>
+
+                <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #ddd;">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                        <div class="form-group">
+                            <label for="totalCost">Total Cost (£)</label>
+                            <div style="position: relative;">
+                                <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 16px; color: #333;">£</span>
+                                <input type="number" id="totalCost" name="total_cost" class="form-control" step="0.01" min="0" readonly style="background:#f8f9fa; font-weight: bold; font-size: 16px; padding-left: 28px;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="totalPaidDisplay">Total Paid (£)</label>
+                            <div style="position: relative;">
+                                <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 16px; color: #28a745;">£</span>
+                                <input type="number" id="totalPaidDisplay" class="form-control" readonly style="background:#f8f9fa; font-weight: bold; font-size: 16px; padding-left: 28px; color: #28a745;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="totalRemaining">Balance Due (£)</label>
+                            <div style="position: relative;">
+                                <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 16px; color: #dc3545;">£</span>
+                                <input type="number" id="totalRemaining" class="form-control" readonly style="background:#f8f9fa; font-weight: bold; font-size: 16px; padding-left: 28px; color: #dc3545;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form id="invoiceForm" onsubmit="updateInvoice(event)">
+                <input type="hidden" id="clientId" name="client_id">
+                <input type="hidden" id="invoiceId" name="id">
+                <div style="display: flex; gap: 10px; justify-content: space-between; margin-top: 15px;">
+                    <button type="button" class="btn btn-danger" onclick="confirmDeleteInvoice()" title="Delete this invoice">🗑️ Delete Invoice</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeInvoiceModal()">Close</button>
+                        <button type="button" class="btn btn-info" onclick="printInvoice()">🖨️ Print Invoice</button>
+                        <button type="button" class="btn btn-warning" onclick="emailInvoice()">📧 Email Invoice</button>
+                        <button type="submit" class="btn btn-primary">Update Invoice</button>
+                    </div>
+                </div>
+            </form>
         </div>
-        <div id="invoiceModalBody">
-          <!-- Invoice details will be loaded here -->
-        </div>
-      </div>
     </div>
 
     <script>
