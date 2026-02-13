@@ -4085,6 +4085,21 @@ if ($invoices_result) {
                                     try { first.focus(); } catch (e) { /* ignore */ }
                                     console.debug('addClientModal focus attempt 2 ->', document.activeElement && document.activeElement.id);
                                 }
+
+                                // Additional diagnostics: show activeElement details and target visibility
+                                try {
+                                    const active = document.activeElement || null;
+                                    const details = active ? { tag: active.tagName, id: active.id || null, class: active.className || null } : null;
+                                    const targetState = {
+                                        disabled: !!first.disabled,
+                                        tabIndex: first.tabIndex,
+                                        offsetWidth: first.offsetWidth,
+                                        offsetHeight: first.offsetHeight,
+                                        offsetParent: !!first.offsetParent,
+                                        visible: (window.getComputedStyle(first).visibility !== 'hidden' && window.getComputedStyle(first).display !== 'none')
+                                    };
+                                    console.debug('addClientModal diagnostics -> activeElement:', details, 'targetState:', targetState);
+                                } catch (err) { console.debug('addClientModal diagnostics error', err); }
                             }, 80);
                         } catch (e) {
                             console.debug('addClientModal focus error', e);
