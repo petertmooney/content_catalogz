@@ -510,23 +510,20 @@ footer p {
 .crm-summary .crm-flex { display:flex; gap:12px; align-items:flex-start; flex-wrap:nowrap; }
 .crm-summary .crm-flex > div { min-width: 0; }
 
-/* Ensure Recent Activities is the main (left) column and Upcoming Tasks is the
-   fixed-width column on the right. Explicit ordering prevents accidental
-   reflow or visual inversion in different browsers/layouts. */
-.crm-summary .crm-flex > div:first-child { flex: 1 1 auto; order: 1; }
-.crm-summary .crm-flex > .small-column { width:220px; flex-shrink:0; order: 2; }
+/* Desktop-first enforcement: always render as a row at wider viewports and
+   explicitly order the two columns so Upcoming Tasks appears on the right. */
+@media (min-width: 781px) {
+    .crm-summary .crm-flex { flex-direction: row; }
+    .crm-summary .crm-flex > div:first-child { flex: 1 1 auto; order: 1 !important; }
+    .crm-summary .crm-flex > .small-column { width:220px; flex-shrink:0; order: 2 !important; }
+}
 
 /* When the viewport stacks the columns (mobile), preserve source order so
    Recent Activities still appears above Upcoming Tasks. */
 @media (max-width: 780px) {
+    .crm-summary .crm-flex { flex-direction: column; gap:10px; }
     .crm-summary .crm-flex > div:first-child { order: 1; }
     .crm-summary .crm-flex > .small-column { order: 2; width: 100%; }
-}
-
-/* Stack when viewport is narrow */
-@media (max-width: 780px) {
-    .crm-summary .crm-flex { flex-direction: column; gap:10px; }
-    .crm-summary .small-column { width:100%; }
 }
 
 .crm-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
