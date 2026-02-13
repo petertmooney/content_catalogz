@@ -922,6 +922,15 @@ if ($invoices_result) {
                     </div>
                 </div>
 
+                <!-- HTML Files Stats -->
+                <h3 id="html-stats-header" style="color: #333; margin-bottom: 15px;">📄 HTML Pages</h3>
+                <div id="html-stats-section" class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                    <div class="stat-card" onclick="showSection('html-files')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
+                        <h4 style="color: #17a2b8; font-size: 14px; margin-bottom: 5px;">Total Pages</h4>
+                        <p class="stat-number" id="html-count" style="font-size: 28px; font-weight: bold; color: #17a2b8;">0</p>
+                    </div>
+                </div>
+
                 <!-- Invoice Stats -->
                 <h3 id="invoice-stats-header" style="color: #333; margin-bottom: 15px;">📄 Invoices</h3>
                 <div id="invoice-stats-section" class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
