@@ -827,6 +827,7 @@ if ($invoices_result) {
             <div class="submenu" id="settings-submenu">
                 <a href="export.php" id="nav-export">📦 Export Website</a>
                 <a href="#" onclick="openMenuCustomizationModal(); return false;" id="nav-customize-menu">⚙️ Customize Menu</a>
+                <a href="#" onclick="openDashboardCustomizationModal(); return false;" id="nav-customize-dashboard">📊 Customize Dashboard</a>
             </div>
 
             <a href="/" target="_blank" id="nav-view-site">🌐 View Site</a>
@@ -850,8 +851,8 @@ if ($invoices_result) {
                 </div>
 
                 <!-- Email Stats -->
-                <h3 style="color: #333; margin-bottom: 15px;">📧 Email</h3>
-                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                <h3 id="email-stats-header" style="color: #333; margin-bottom: 15px;">📧 Email</h3>
+                <div id="email-stats-section" class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
                     <div class="stat-card" onclick="showSection('email-inbox')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #007bff; font-size: 14px; margin-bottom: 5px;">Unread Emails</h4>
                         <p class="stat-number" id="dash-emails-unread" style="font-size: 28px; font-weight: bold; color: #007bff;">0</p>
@@ -867,8 +868,8 @@ if ($invoices_result) {
                 </div>
 
                 <!-- Client & Quotes Stats -->
-                <h3 style="color: #333; margin-bottom: 15px;">📊 Clients & Quotes</h3>
-                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                <h3 id="client-stats-header" style="color: #333; margin-bottom: 15px;">📊 Clients & Quotes</h3>
+                <div id="client-stats-section" class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
                     <div class="stat-card" onclick="showSection('clients')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Total Quotes</h4>
                         <p class="stat-number" id="quotes-count" style="font-size: 28px; font-weight: bold; color: #28a745;">0</p>
@@ -884,8 +885,8 @@ if ($invoices_result) {
                 </div>
 
                 <!-- Tasks Stats -->
-                <h3 style="color: #333; margin-bottom: 15px;">✅ Tasks & To-Do</h3>
-                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                <h3 id="task-stats-header" style="color: #333; margin-bottom: 15px;">✅ Tasks & To-Do</h3>
+                <div id="task-stats-section" class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
                     <div class="stat-card" onclick="showSection('tasks')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Pending Tasks</h4>
                         <p class="stat-number" id="dash-tasks-pending" style="font-size: 28px; font-weight: bold; color: #ffc107;">0</p>
@@ -901,8 +902,8 @@ if ($invoices_result) {
                 </div>
 
                 <!-- Invoice Stats -->
-                <h3 style="color: #333; margin-bottom: 15px;">📄 Invoices</h3>
-                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                <h3 id="invoice-stats-header" style="color: #333; margin-bottom: 15px;">📄 Invoices</h3>
+                <div id="invoice-stats-section" class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
                     <div class="stat-card" onclick="showFilteredInvoices('outstanding')" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">Outstanding</h4>
                         <p class="stat-number" id="dash-invoices-outstanding" style="font-size: 28px; font-weight: bold; color: #ffc107;">0</p>
@@ -926,8 +927,8 @@ if ($invoices_result) {
                 </div>
 
                 <!-- CRM Charts -->
-                <h3 style="color: #333; margin-bottom: 15px; margin-top: 40px;">📊 CRM Analytics</h3>
-                <div class="charts-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 30px;">
+                <h3 id="crm-charts-header" style="color: #333; margin-bottom: 15px; margin-top: 40px;">📊 CRM Analytics</h3>
+                <div id="crm-charts-section" class="charts-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 30px;">
                     <div class="chart-card" style="background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #333; font-size: 12px; margin-bottom: 4px;">Quote Status Breakdown</h4>
                         <canvas id="statusChart" width="100" height="60"></canvas>
@@ -2179,6 +2180,26 @@ if ($invoices_result) {
             <div style="padding: 20px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end; gap: 10px;">
                 <button type="button" class="btn btn-secondary" onclick="resetMenuOrder()">Reset to Default</button>
                 <button type="button" class="btn btn-primary" onclick="closeMenuCustomizationModal()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Customization Modal -->
+    <div id="dashboardCustomizationModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>📊 Customize Dashboard Layout</h3>
+                <button class="close-btn" onclick="closeDashboardCustomizationModal()">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <p style="color: #666; margin-bottom: 20px;">Show/hide dashboard sections and reorder them. Changes save automatically.</p>
+                <div id="dashboard-sections-list" style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+                    <!-- Dashboard sections will be loaded here -->
+                </div>
+            </div>
+            <div style="padding: 20px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="resetDashboardLayout()">Reset to Default</button>
+                <button type="button" class="btn btn-primary" onclick="closeDashboardCustomizationModal()">Done</button>
             </div>
         </div>
     </div>
@@ -6151,9 +6172,175 @@ invoices.forEach(invoice => {
                 });
         }
         
+        // Dashboard customization functions
+        const defaultDashboardSections = [
+            {id: 'email-stats', label: '📧 Email Statistics', visible: true},
+            {id: 'client-stats', label: '📊 Clients & Quotes', visible: true},
+            {id: 'task-stats', label: '✅ Tasks & To-Do', visible: true},
+            {id: 'invoice-stats', label: '📄 Invoice Statistics', visible: true},
+            {id: 'crm-charts', label: '📊 CRM Analytics', visible: true}
+        ];
+        
+        function openDashboardCustomizationModal() {
+            loadDashboardSections();
+            document.getElementById('dashboardCustomizationModal').style.display = 'flex';
+        }
+        
+        function closeDashboardCustomizationModal() {
+            document.getElementById('dashboardCustomizationModal').style.display = 'none';
+        }
+        
+        function loadDashboardSections() {
+            fetch('api/get_dashboard_layout.php')
+                .then(res => res.json())
+                .then(data => {
+                    const sections = data.success && data.sections ? data.sections : defaultDashboardSections;
+                    renderDashboardSections(sections);
+                })
+                .catch(() => {
+                    renderDashboardSections(defaultDashboardSections);
+                });
+        }
+        
+        function renderDashboardSections(sections) {
+            const container = document.getElementById('dashboard-sections-list');
+            container.innerHTML = sections.map((section, index) => `
+                <div class="dashboard-section-config" data-index="${index}" style="background: white; padding: 12px; margin-bottom: 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #ddd;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" ${section.visible ? 'checked' : ''} onchange="toggleSectionVisibility(${index})" style="margin: 0;">
+                        <span style="font-weight: 500;">${section.label}</span>
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        ${index > 0 ? `<button class="btn btn-sm btn-secondary" onclick="moveDashboardSection(${index}, -1)" style="padding: 4px 8px;">↑</button>` : ''}
+                        ${index < sections.length - 1 ? `<button class="btn btn-sm btn-secondary" onclick="moveDashboardSection(${index}, 1)" style="padding: 4px 8px;">↓</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+            
+            // Store current sections in memory
+            window.currentDashboardSections = sections;
+        }
+        
+        function toggleSectionVisibility(index) {
+            const sections = [...window.currentDashboardSections];
+            sections[index].visible = !sections[index].visible;
+            
+            window.currentDashboardSections = sections;
+            renderDashboardSections(sections);
+            saveDashboardLayout(sections);
+            applyDashboardLayout(sections);
+        }
+        
+        function moveDashboardSection(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= window.currentDashboardSections.length) return;
+            
+            const sections = [...window.currentDashboardSections];
+            [sections[index], sections[newIndex]] = [sections[newIndex], sections[index]];
+            
+            window.currentDashboardSections = sections;
+            renderDashboardSections(sections);
+            saveDashboardLayout(sections);
+            applyDashboardLayout(sections);
+        }
+        
+        function saveDashboardLayout(sections) {
+            fetch('api/save_dashboard_layout.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({sections: sections})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    console.error('Error saving dashboard layout:', data.message);
+                }
+            })
+            .catch(err => console.error('Error saving dashboard layout:', err));
+        }
+        
+        function applyDashboardLayout(sections) {
+            const dashboard = document.getElementById('section-dashboard');
+            if (!dashboard) return;
+            
+            // Define section mappings
+            const sectionMappings = {
+                'email-stats': { header: 'email-stats-header', section: 'email-stats-section' },
+                'client-stats': { header: 'client-stats-header', section: 'client-stats-section' },
+                'task-stats': { header: 'task-stats-header', section: 'task-stats-section' },
+                'invoice-stats': { header: 'invoice-stats-header', section: 'invoice-stats-section' },
+                'crm-charts': { header: 'crm-charts-header', section: 'crm-charts-section' }
+            };
+            
+            // Create a document fragment to rebuild the dashboard content
+            const fragment = document.createDocumentFragment();
+            
+            // Always keep the greeting and page header
+            const greeting = document.getElementById('dashboardGreeting');
+            const pageHeader = document.querySelector('.page-header');
+            
+            if (greeting) fragment.appendChild(greeting.cloneNode(true));
+            if (pageHeader) fragment.appendChild(pageHeader.cloneNode(true));
+            
+            // Add visible sections in the specified order
+            sections.forEach(section => {
+                if (section.visible && sectionMappings[section.id]) {
+                    const mapping = sectionMappings[section.id];
+                    
+                    // Add header
+                    const header = document.getElementById(mapping.header);
+                    if (header) {
+                        fragment.appendChild(header.cloneNode(true));
+                    }
+                    
+                    // Add section content
+                    const sectionEl = document.getElementById(mapping.section);
+                    if (sectionEl) {
+                        fragment.appendChild(sectionEl.cloneNode(true));
+                    }
+                }
+            });
+            
+            // Clear and rebuild dashboard content
+            dashboard.innerHTML = '';
+            dashboard.appendChild(fragment);
+            
+            // Re-initialize any dynamic content (charts, etc.)
+            loadDashboardData();
+        }
+        
+        function resetDashboardLayout() {
+            if (confirm('Reset dashboard to default layout?')) {
+                saveDashboardLayout(defaultDashboardSections);
+                renderDashboardSections(defaultDashboardSections);
+                applyDashboardLayout(defaultDashboardSections);
+            }
+        }
+        
+        // Function to reload dashboard data after layout changes
+        function loadDashboardData() {
+            // Reload all dashboard statistics and charts
+            loadDashboardStats();
+        }
+        
+        // Initialize dashboard layout when page loads
+        function initializeDashboardLayout() {
+            fetch('api/get_dashboard_layout.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.sections) {
+                        applyDashboardLayout(data.sections);
+                    }
+                })
+                .catch(() => {
+                    // Use default layout if no saved layout exists
+                });
+        }
+        
         // Initialize menu order when page loads
         document.addEventListener('DOMContentLoaded', () => {
             initializeMenuOrder();
+            initializeDashboardLayout();
 
             // Time-of-day greeting (Good morning/afternoon/evening)
             try {
