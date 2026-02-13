@@ -1,0 +1,12 @@
+{
+  "name": "content_catalogz",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "jest --color"
+  },
+  "devDependencies": {
+    "jest": "^29.6.0",
+    "jsdom": "^22.1.0"
+  }
+}

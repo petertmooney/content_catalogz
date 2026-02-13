@@ -747,14 +747,14 @@ if ($invoices_result) {
 
     <div class="container">
         <div class="sidebar">
-            <a href="#" onclick="showSection('dashboard'); return false;" id="nav-dashboard" class="active">📋 Dashboard</a>
+            <a href="#" data-action="showSection:dashboard" id="nav-dashboard" class="active">📋 Dashboard</a>
             
             <a href="#" onclick="showSection('clients'); return false;" id="nav-clients">📝 Quote Requests</a>
             
-            <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'clients-submenu'); return false;">👥 Clients</a>
+            <a href="#" class="menu-parent" data-action="toggleSubmenu:clients-submenu">👥 Clients</a>
             <div class="submenu" id="clients-submenu">
                 <a href="#" onclick="showSection('existing-clients'); return false;" id="nav-existing-clients">👤 Existing Clients</a>
-                <a href="#" onclick="openAddClientModal(); return false;" id="nav-add-client">➕ Add New Client</a>
+                <a href="#" data-action="openAddClientModal" id="nav-add-client">➕ Add New Client</a>
             </div>
             
             <a href="#" class="menu-parent" onclick="toggleSubmenu(event, 'email-submenu'); return false;">📧 Email</a>
