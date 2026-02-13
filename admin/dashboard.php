@@ -1098,7 +1098,7 @@ if ($invoices_result) {
                 <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <input type="text" id="searchClients" placeholder="Search by name, email, company..." style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ddd; width: 300px;" onkeyup="loadExistingClients()">
                     <button class="btn btn-secondary" onclick="loadExistingClients()">Refresh</button>
-                    <button id="btn-add-client" class="btn btn-primary" type="button" onclick="openAddClientModal()" aria-haspopup="dialog" aria-controls="addClientModal">+ Add New Client</button>
+                    <button id="btn-add-client" class="btn btn-primary" type="button" data-action="openAddClientModal" aria-haspopup="dialog" aria-controls="addClientModal">+ Add New Client</button>
                 </div>
 
                 <div id="existing-clients-list">
