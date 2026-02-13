@@ -2572,6 +2572,27 @@ if ($invoices_result) {
     <script>
         // Dashboard initialization and error handling
         console.log('%c Dashboard Script Loading...', 'background: #667eea; color: white; padding: 2px 8px; border-radius: 3px;');
+
+        // Ensure all requests to local API include session cookies (fixes missing DB content)
+        (function () {
+            const _fetch = window.fetch.bind(window);
+            window.fetch = function (resource, init) {
+                try {
+                    const url = typeof resource === 'string' ? resource : (resource && resource.url) || '';
+                    // target site-local API endpoints only
+                    if (url && (url.indexOf('/api/') !== -1 || url.indexOf('api/') === 0)) {
+                        init = init || {};
+                        if (!Object.prototype.hasOwnProperty.call(init, 'credentials')) {
+                            init.credentials = 'same-origin';
+                        }
+                    }
+                } catch (e) {
+                    // swallow — shouldn't block app
+                    console.warn('fetch-wrapper error', e);
+                }
+                return _fetch(resource, init);
+            };
+        })();
         
         // Global error handler
         window.addEventListener('error', function(e) {
