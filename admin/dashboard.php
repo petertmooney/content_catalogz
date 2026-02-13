@@ -5344,10 +5344,27 @@ invoices.forEach(invoice => {
           document.getElementById('invoiceModal').classList.remove('show');
         }
         function deleteInvoice(invoiceId) {
-          if (confirm('Are you sure you want to delete this invoice?')) {
-            // TODO: Implement AJAX delete
-            alert('Delete invoice ' + invoiceId + ' (not yet implemented)');
-          }
+            fetch('api/delete_invoice.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'invoice_id=' + encodeURIComponent(invoiceId)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Invoice deleted successfully!');
+                    closeInvoiceModal();
+                    searchInvoices(); // Refresh the invoice list
+                    loadDashboardStats(); // Refresh stats
+                } else {
+                    alert('Error deleting invoice: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                alert('Network error: ' + error.message);
+            });
         }
         
         // Load all dashboard stats
