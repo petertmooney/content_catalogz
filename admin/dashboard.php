@@ -842,7 +842,7 @@ if ($invoices_result) {
             color: white;
         }
     </style>
-    <script src="assets/js/chart.js?v=<?php echo time(); ?>"></script>
+    <script src="../assets/js/chart.js?v=<?php echo time(); ?>"></script>
 </head>
 <body>
     
