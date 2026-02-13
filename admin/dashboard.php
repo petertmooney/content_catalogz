@@ -769,6 +769,20 @@ if ($invoices_result) {
             background: linear-gradient(135deg, rgba(0, 123, 255, 0.1) 0%, rgba(0, 123, 255, 0.05) 100%);
         }
 
+        .stat-card.glow {
+            animation: glow 2s ease-in-out infinite alternate;
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.6), 0 0 40px rgba(255, 193, 7, 0.4), 0 0 60px rgba(255, 193, 7, 0.2);
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 20px rgba(255, 193, 7, 0.6), 0 0 40px rgba(255, 193, 7, 0.4), 0 0 60px rgba(255, 193, 7, 0.2);
+            }
+            to {
+                box-shadow: 0 0 30px rgba(255, 193, 7, 0.8), 0 0 60px rgba(255, 193, 7, 0.6), 0 0 90px rgba(255, 193, 7, 0.4);
+            }
+        }
+
         .btn-outline {
             background: white;
             color: #007bff;
@@ -5614,8 +5628,37 @@ invoices.forEach(invoice => {
             document.getElementById('dash-emails-total').textContent = 0;
             document.getElementById('dash-emails-drafts').textContent = 0;
 
+            // Apply glow effect to stat cards with values > 0
+            setTimeout(applyGlowEffect, 100);
+
             // Load CRM charts
             loadCRMCharts();
+        }
+
+        // Apply glow effect to stat cards with values > 0
+        function applyGlowEffect() {
+            // Define the stat cards that should glow when > 0
+            const glowCards = [
+                { id: 'dash-emails-unread', cardId: 'dash-emails-unread' },
+                { id: 'dash-quotes-new', cardId: 'dash-quotes-new' },
+                { id: 'dash-tasks-overdue', cardId: 'dash-tasks-overdue' },
+                { id: 'dash-invoices-overdue', cardId: 'dash-invoices-overdue' }
+            ];
+
+            glowCards.forEach(card => {
+                const element = document.getElementById(card.id);
+                const cardElement = element ? element.closest('.stat-card') : null;
+
+                if (element && cardElement) {
+                    const value = parseInt(element.textContent) || 0;
+
+                    if (value > 0) {
+                        cardElement.classList.add('glow');
+                    } else {
+                        cardElement.classList.remove('glow');
+                    }
+                }
+            });
         }
 
         // Load CRM Charts
