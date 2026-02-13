@@ -45,6 +45,18 @@ describe('dashboard-ui delegation & globals', () => {
     expect(window.openAddClientModal).toHaveBeenCalled();
   });
 
+  test('data-params passes single raw argument to handler', () => {
+    window.runQuickQuery = jest.fn();
+    const b = document.createElement('button');
+    b.setAttribute('data-action', 'runQuickQuery');
+    b.setAttribute('data-params', "SELECT status, COUNT(*) as count FROM quotes GROUP BY status");
+    document.body.appendChild(b);
+
+    init();
+    b.click();
+    expect(window.runQuickQuery).toHaveBeenCalledWith("SELECT status, COUNT(*) as count FROM quotes GROUP BY status");
+  });
+
   test('delegation passes argument to handler', () => {
     window.showSection = jest.fn();
     const a = document.createElement('a');

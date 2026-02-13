@@ -47,11 +47,15 @@
     const fn = window[parsed.name];
     if (typeof fn === 'function') {
       try {
+        // Prefer explicit data-params attribute when present (single raw arg)
+        const explicitParam = el.getAttribute('data-params');
+        const args = explicitParam !== null ? [explicitParam] : parsed.args;
+
         // For toggleSubmenu we intentionally pass the event as first arg
         if (parsed.name === 'toggleSubmenu') {
-          fn(ev, ...(parsed.args));
+          fn(ev, ...(args));
         } else {
-          fn(...parsed.args);
+          fn(...args);
         }
       } catch (err) {
         // swallow errors here but log for debugging
