@@ -29,6 +29,17 @@
     width: 100%;
     box-shadow: 0 8px 32px rgba(0,0,0,0.25);
     position: relative;
+    /* Safety: ensure modal content has a usable min size so inputs can be measured/focused */
+    min-width: 320px;
+    max-width: 90vw;
+}
+
+/* Ensure form controls inside the Add Client modal are visible and measurable */
+#addClientModal .form-group input,
+#addClientModal .form-group textarea,
+#addClientModal .form-group select {
+    min-width: 200px;
+    box-sizing: border-box;
 }
 
 .modal .modal-header {
