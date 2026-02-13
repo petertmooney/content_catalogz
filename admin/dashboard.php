@@ -4522,7 +4522,6 @@ if ($invoices_result) {
                         }
                     \x3c/script>
                 </body>
-                </html>
             `;
             
             // Open invoice in new window
