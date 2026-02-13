@@ -1018,29 +1018,29 @@ if ($invoices_result) {
 
             <!-- Existing Clients Section -->
             <div id="section-existing-clients" class="content-section" style="display: none;">
-                <div class="page-header">
-                    <h2>Existing Clients</h2>
-                    <p>Manage your active client relationships and ongoing projects</p>
+                <div class="page-header" style="margin-bottom: 15px;">
+                    <h2 style="font-size: 22px; margin-bottom: 5px;">Existing Clients</h2>
+                    <p style="font-size: 14px; color: #666;">Manage your active client relationships and ongoing projects</p>
                 </div>
 
-                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                    <div class="stat-card" onclick="filterExistingClients('active')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
-                        <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Active Clients</h4>
-                        <p id="active-clients-count" style="font-size: 24px; font-weight: bold; color: #28a745;">0</p>
-                        <small style="color: #666; font-size: 12px;">Click to filter active</small>
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                    <div class="stat-card" onclick="filterExistingClients('active')" style="background: white; padding: 12px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.12)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
+                        <h4 style="color: #28a745; font-size: 13px; margin-bottom: 3px;">Active Clients</h4>
+                        <p id="active-clients-count" style="font-size: 20px; font-weight: bold; color: #28a745;">0</p>
+                        <small style="color: #666; font-size: 11px;">Click to filter active</small>
                     </div>
-                    <div class="stat-card" onclick="filterExistingClients('completed')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
-                        <h4 style="color: #17a2b8; font-size: 14px; margin-bottom: 5px;">Completed Projects</h4>
-                        <p id="total-projects-count" style="font-size: 24px; font-weight: bold; color: #17a2b8;">0</p>
-                        <small style="color: #666; font-size: 12px;">Click to filter completed</small>
+                    <div class="stat-card" onclick="filterExistingClients('completed')" style="background: white; padding: 12px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.12)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
+                        <h4 style="color: #17a2b8; font-size: 13px; margin-bottom: 3px;">Completed Projects</h4>
+                        <p id="total-projects-count" style="font-size: 20px; font-weight: bold; color: #17a2b8;">0</p>
+                        <small style="color: #666; font-size: 11px;">Click to filter completed</small>
                     </div>
                 </div>
 
-                <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-                    <input type="text" id="searchClients" placeholder="Search by name, email, company..." style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ddd; width: 300px;" onkeyup="loadExistingClients()">
-                    <button class="btn btn-secondary" onclick="loadExistingClients()">Refresh</button>
-                    <button class="btn btn-outline" onclick="filterExistingClients('all')">Show All</button>
-                    <button class="btn btn-primary" onclick="openAddClientModal()">+ Add New Client</button>
+                <div style="margin-bottom: 15px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <input type="text" id="searchClients" placeholder="Search by name, email, company..." style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ddd; width: 250px; font-size: 13px;" onkeyup="loadExistingClients()">
+                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 13px;" onclick="loadExistingClients()">Refresh</button>
+                    <button class="btn btn-outline" style="padding: 6px 12px; font-size: 13px;" onclick="filterExistingClients('all')">Show All</button>
+                    <button class="btn btn-primary" style="padding: 6px 12px; font-size: 13px;" onclick="openAddClientModal()">+ Add New Client</button>
                 </div>
 
                 <div id="existing-clients-list">
@@ -1729,6 +1729,7 @@ if ($invoices_result) {
                         <button type="button" class="btn btn-secondary" onclick="closeClientModal()">Close</button>
                         <button type="button" class="btn btn-primary" onclick="generateInvoiceForClient()" title="Generate and save invoice to database">📄 Generate Invoice</button>
                         <button type="button" class="btn btn-secondary" onclick="composeEmail()">✉️ Send Email</button>
+                        <button type="button" class="btn btn-secondary" onclick="printClientDetails()" title="Print client details">🖨️ Print Details</button>
                         <button type="button" class="btn btn-secondary" onclick="printInvoice()">🖨️ Print Invoice</button>
                         <button type="button" class="btn btn-secondary" onclick="emailInvoice()">📧 Email Invoice</button>
                         <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -3210,8 +3211,8 @@ if ($invoices_result) {
                 'completed': '#28a745'
             };
             
-            let html = '<div class="table-container"><table><thead><tr>';
-            html += '<th>Name</th><th>Company</th><th>Email</th><th>Phone</th><th>Service</th><th>Status</th><th>Date</th><th>Actions</th>';
+            let html = '<div class="table-container"><table style="font-size: 14px;"><thead><tr>';
+            html += '<th style="padding: 8px 12px;">Name</th><th style="padding: 8px 12px;">Company</th><th style="padding: 8px 12px;">Email</th><th style="padding: 8px 12px;">Phone</th><th style="padding: 8px 12px;">Service</th><th style="padding: 8px 12px;">Status</th><th style="padding: 8px 12px;">Date</th><th style="padding: 8px 12px; width: 180px;">Actions</th>';
             html += '</tr></thead><tbody>';
             
             clients.forEach(client => {
@@ -3219,18 +3220,20 @@ if ($invoices_result) {
                 const statusColor = statusColors[client.status] || '#666';
                 const statusLabel = client.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
                 
-                html += `<tr>
-                    <td><strong>${escapeHtml(client.name)}</strong></td>
-                    <td>${client.company ? escapeHtml(client.company) : '<em>N/A</em>'}</td>
-                    <td><a href="mailto:${escapeHtml(client.email)}">${escapeHtml(client.email)}</a></td>
-                    <td>${client.phone ? escapeHtml(client.phone) : '<em>N/A</em>'}</td>
-                    <td>${escapeHtml(client.service)}</td>
-                    <td><span style="display: inline-block; padding: 4px 12px; border-radius: 12px; background: ${statusColor}; color: white; font-size: 12px; font-weight: 600;">${statusLabel}</span></td>
-                    <td>${clientDate}</td>
-                    <td>
-                        <button class="btn btn-primary btn-sm" onclick="viewClientDetails(${client.id})">View</button>
-                        <button class="btn btn-secondary btn-sm" onclick="viewClientDetails(${client.id})">Edit</button>
-                        <a href="mailto:${escapeHtml(client.email)}" class="btn btn-secondary btn-sm">Email</a>
+                html += `<tr style="height: 50px;">
+                    <td style="padding: 8px 12px;"><strong style="font-size: 13px;">${escapeHtml(client.name)}</strong></td>
+                    <td style="padding: 8px 12px; font-size: 13px;">${client.company ? escapeHtml(client.company) : '<em>N/A</em>'}</td>
+                    <td style="padding: 8px 12px; font-size: 13px;"><a href="mailto:${escapeHtml(client.email)}" style="color: #007bff; text-decoration: none;">${escapeHtml(client.email)}</a></td>
+                    <td style="padding: 8px 12px; font-size: 13px;">${client.phone ? escapeHtml(client.phone) : '<em>N/A</em>'}</td>
+                    <td style="padding: 8px 12px; font-size: 13px;">${escapeHtml(client.service)}</td>
+                    <td style="padding: 8px 12px;"><span style="display: inline-block; padding: 3px 8px; border-radius: 10px; background: ${statusColor}; color: white; font-size: 11px; font-weight: 600;">${statusLabel}</span></td>
+                    <td style="padding: 8px 12px; font-size: 13px;">${clientDate}</td>
+                    <td style="padding: 8px 12px;">
+                        <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                            <button class="btn btn-primary btn-sm" onclick="viewClientDetails(${client.id})" style="padding: 4px 8px; font-size: 11px;" title="View Details">👁️ View</button>
+                            <button class="btn btn-secondary btn-sm" onclick="viewClientDetails(${client.id})" style="padding: 4px 8px; font-size: 11px;" title="Edit Client">✏️ Edit</button>
+                            <a href="mailto:${escapeHtml(client.email)}" class="btn btn-secondary btn-sm" style="padding: 4px 8px; font-size: 11px; text-decoration: none; display: inline-block;" title="Send Email">📧 Email</a>
+                        </div>
                     </td>
                 </tr>`;
             });
@@ -3958,6 +3961,275 @@ if ($invoices_result) {
             const invoiceWindow = window.open('', '_blank');
             invoiceWindow.document.write(invoiceHTML);
             invoiceWindow.document.close();
+        }
+
+        // Print client details
+        function printClientDetails() {
+            const clientName = document.getElementById('clientName').textContent;
+            const clientCompany = document.getElementById('clientCompany').textContent;
+            const clientEmail = document.getElementById('clientEmail').textContent;
+            const clientPhone = document.getElementById('clientPhone').textContent;
+            
+            // Get address information
+            const addressStreet = document.getElementById('clientAddressStreet').value || '';
+            const addressLine2 = document.getElementById('clientAddressLine2').value || '';
+            const addressCity = document.getElementById('clientAddressCity').value || '';
+            const addressCounty = document.getElementById('clientAddressCounty').value || '';
+            const addressPostcode = document.getElementById('clientAddressPostcode').value || '';
+            const addressCountry = document.getElementById('clientAddressCountry').value || 'United Kingdom';
+            
+            // Format address
+            let formattedAddress = '';
+            if (addressStreet) formattedAddress += addressStreet + '<br>';
+            if (addressLine2) formattedAddress += addressLine2 + '<br>';
+            if (addressCity || addressCounty || addressPostcode) {
+                let cityLine = '';
+                if (addressCity) cityLine += addressCity;
+                if (addressCounty) cityLine += (cityLine ? ', ' : '') + addressCounty;
+                if (addressPostcode) cityLine += (cityLine ? ', ' : '') + addressPostcode;
+                formattedAddress += cityLine + '<br>';
+            }
+            if (addressCountry) formattedAddress += addressCountry;
+            if (!formattedAddress) formattedAddress = 'N/A';
+            
+            // Get financial information
+            const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
+            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            const totalRemaining = parseFloat(document.getElementById('totalRemaining').value) || 0;
+            
+            // Collect services
+            const services = [];
+            const serviceRows = document.querySelectorAll('.service-row');
+            serviceRows.forEach(row => {
+                const name = row.querySelector('.service-name').value.trim();
+                const cost = parseFloat(row.querySelector('.service-cost').value) || 0;
+                if (name) {
+                    services.push({ name, cost });
+                }
+            });
+            
+            let servicesHTML = '';
+            if (services.length > 0) {
+                services.forEach(service => {
+                    servicesHTML += `
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${escapeHtml(service.name)}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">£${service.cost.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                servicesHTML = '<tr><td colspan="2" style="padding: 8px; text-align: center; color: #666;">No services recorded</td></tr>';
+            }
+            
+            const printDate = new Date().toLocaleDateString('en-GB');
+            
+            const clientDetailsHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Client Details - ${clientName}</title>
+                    <style>
+                        @media print {
+                            body { margin: 0; }
+                            .no-print { display: none; }
+                        }
+                        body {
+                            font-family: Arial, sans-serif;
+                            max-width: 800px;
+                            margin: 20px auto;
+                            padding: 20px;
+                            color: #333;
+                            line-height: 1.6;
+                        }
+                        .header {
+                            text-align: center;
+                            margin-bottom: 30px;
+                            padding-bottom: 20px;
+                            border-bottom: 3px solid #ff69b4;
+                        }
+                        .header h1 {
+                            margin: 0;
+                            color: #ff69b4;
+                            font-size: 28px;
+                        }
+                        .header p {
+                            margin: 5px 0;
+                            color: #666;
+                        }
+                        .section {
+                            margin-bottom: 25px;
+                            background: #f8f9fa;
+                            padding: 20px;
+                            border-radius: 8px;
+                        }
+                        .section h3 {
+                            margin-top: 0;
+                            color: #333;
+                            border-bottom: 2px solid #ff69b4;
+                            padding-bottom: 8px;
+                        }
+                        .info-grid {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 15px;
+                            margin-bottom: 15px;
+                        }
+                        .info-item {
+                            background: white;
+                            padding: 12px;
+                            border-radius: 4px;
+                            border: 1px solid #ddd;
+                        }
+                        .info-item strong {
+                            display: block;
+                            color: #666;
+                            font-size: 12px;
+                            text-transform: uppercase;
+                            margin-bottom: 4px;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 15px;
+                            background: white;
+                        }
+                        th {
+                            background: #ff69b4;
+                            color: white;
+                            padding: 10px;
+                            text-align: left;
+                        }
+                        td {
+                            padding: 8px;
+                            border-bottom: 1px solid #ddd;
+                        }
+                        .financial-summary {
+                            background: white;
+                            padding: 15px;
+                            border-radius: 4px;
+                            border: 1px solid #ddd;
+                            margin-top: 15px;
+                        }
+                        .financial-grid {
+                            display: grid;
+                            grid-template-columns: repeat(3, 1fr);
+                            gap: 15px;
+                        }
+                        .financial-item {
+                            text-align: center;
+                            padding: 10px;
+                            background: #f8f9fa;
+                            border-radius: 4px;
+                        }
+                        .financial-item .amount {
+                            font-size: 18px;
+                            font-weight: bold;
+                            display: block;
+                        }
+                        .total-cost .amount { color: #333; }
+                        .total-paid .amount { color: #28a745; }
+                        .balance-due .amount { color: #dc3545; }
+                        .print-btn {
+                            background: #ff69b4;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 16px;
+                            margin-bottom: 20px;
+                        }
+                        .print-btn:hover {
+                            background: #ff85c1;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <button class="print-btn no-print" onclick="window.print()">🖨️ Print Client Details</button>
+                    
+                    <div class="header">
+                        <img src="/assets/images/LogoPink.png" alt="Content Catalogz" style="height: 60px; margin-bottom: 10px;">
+                        <h1>Client Details</h1>
+                        <p>Generated on ${printDate}</p>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>📋 Contact Information</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <strong>Client Name</strong>
+                                ${clientName}
+                            </div>
+                            <div class="info-item">
+                                <strong>Company</strong>
+                                ${clientCompany}
+                            </div>
+                            <div class="info-item">
+                                <strong>Email Address</strong>
+                                ${clientEmail}
+                            </div>
+                            <div class="info-item">
+                                <strong>Phone Number</strong>
+                                ${clientPhone}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>🏠 Address Information</h3>
+                        <div class="info-item" style="grid-column: 1 / -1;">
+                            <strong>Full Address</strong>
+                            ${formattedAddress}
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>💼 Services & Pricing</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Service Description</th>
+                                    <th style="text-align: right;">Cost (GBP)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${servicesHTML}
+                            </tbody>
+                        </table>
+                        
+                        <div class="financial-summary">
+                            <h4 style="margin-top: 0; margin-bottom: 15px;">Financial Summary</h4>
+                            <div class="financial-grid">
+                                <div class="financial-item total-cost">
+                                    <span class="amount">£${totalCost.toFixed(2)}</span>
+                                    <strong>Total Cost</strong>
+                                </div>
+                                <div class="financial-item total-paid">
+                                    <span class="amount">£${totalPaid.toFixed(2)}</span>
+                                    <strong>Total Paid</strong>
+                                </div>
+                                <div class="financial-item balance-due">
+                                    <span class="amount">£${totalRemaining.toFixed(2)}</span>
+                                    <strong>Balance Due</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666; font-size: 12px;">
+                        <p>Content Catalogz - Professional Content Services</p>
+                        <p>Client details generated from admin dashboard</p>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            // Open client details in new window
+            const detailsWindow = window.open('', '_blank');
+            detailsWindow.document.write(clientDetailsHTML);
+            detailsWindow.document.close();
         }
 
         // Email invoice as PDF
