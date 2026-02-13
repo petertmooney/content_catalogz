@@ -9,7 +9,8 @@ include __DIR__ . '/../config/auth.php';
 include __DIR__ . '/../config/db.php';
 
 // Caching: prefer Redis if available, otherwise fall back to file cache.
-$cacheTtl = 300; // seconds
+// Lowered TTL for near-real-time consistency (was 300s).
+$cacheTtl = 60; // seconds
 $cacheKey = 'crm_dashboard_v1';
 $servedFromCache = false;
 
@@ -74,13 +75,28 @@ $stats['urgent_tasks'] = $result->fetch_assoc()['count'];
 $result = $conn->query("SELECT COUNT(*) as count FROM activities WHERE activity_date >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
 $stats['activities_this_week'] = $result->fetch_assoc()['count'];
 
-// Clients needing follow-up
-$result = $conn->query("SELECT COUNT(*) as count FROM quotes WHERE next_follow_up <= CURDATE() AND status IN ('new', 'contacted', 'in_progress')");
-$stats['follow_ups_due'] = $result->fetch_assoc()['count'];
+// Clients needing follow-up (only if column exists)
+$stats['follow_ups_due'] = 0;
+$colCheck = $conn->query("SHOW COLUMNS FROM quotes LIKE 'next_follow_up'");
+if ($colCheck && $colCheck->num_rows > 0) {
+    $result = $conn->query("SELECT COUNT(*) as count FROM quotes WHERE next_follow_up <= CURDATE() AND status IN ('new', 'contacted', 'in_progress')");
+    $stats['follow_ups_due'] = intval($result->fetch_assoc()['count']);
+}
 
-// Expected value (pipeline)
-$result = $conn->query("SELECT COALESCE(SUM(expected_value), 0) as total FROM quotes WHERE status IN ('new', 'contacted', 'in_progress')");
-$stats['pipeline_value'] = floatval($result->fetch_assoc()['total']);
+// Expected value (pipeline) - prefer expected_value if available, otherwise fall back to total_cost if present
+$stats['pipeline_value'] = 0.0;
+$colCheck = $conn->query("SHOW COLUMNS FROM quotes LIKE 'expected_value'");
+if ($colCheck && $colCheck->num_rows > 0) {
+    $result = $conn->query("SELECT COALESCE(SUM(expected_value), 0) as total FROM quotes WHERE status IN ('new', 'contacted', 'in_progress')");
+    $stats['pipeline_value'] = floatval($result->fetch_assoc()['total']);
+} else {
+    // fallback to total_cost if available
+    $colCheck = $conn->query("SHOW COLUMNS FROM quotes LIKE 'total_cost'");
+    if ($colCheck && $colCheck->num_rows > 0) {
+        $result = $conn->query("SELECT COALESCE(SUM(total_cost), 0) as total FROM quotes WHERE status IN ('new', 'contacted', 'in_progress')");
+        $stats['pipeline_value'] = floatval($result->fetch_assoc()['total']);
+    }
+}
 
 // Recent activities (last 10)
 $stmt = $conn->query("SELECT a.*, q.name as client_name, q.company FROM activities a LEFT JOIN quotes q ON a.client_id = q.id ORDER BY a.activity_date DESC LIMIT 10");
@@ -98,13 +114,17 @@ while ($row = $stmt->fetch_assoc()) {
 }
 $stats['upcoming_tasks'] = $upcoming_tasks;
 
-// Lead sources breakdown
-$stmt = $conn->query("SELECT lead_source, COUNT(*) as count FROM quotes WHERE lead_source IS NOT NULL GROUP BY lead_source ORDER BY count DESC");
-$lead_sources = [];
-while ($row = $stmt->fetch_assoc()) {
-    $lead_sources[] = $row;
+// Lead sources breakdown (only if column exists)
+$stats['lead_sources'] = [];
+$colCheck = $conn->query("SHOW COLUMNS FROM quotes LIKE 'lead_source'");
+if ($colCheck && $colCheck->num_rows > 0) {
+    $stmt = $conn->query("SELECT lead_source, COUNT(*) as count FROM quotes WHERE lead_source IS NOT NULL GROUP BY lead_source ORDER BY count DESC");
+    $lead_sources = [];
+    while ($row = $stmt->fetch_assoc()) {
+        $lead_sources[] = $row;
+    }
+    $stats['lead_sources'] = $lead_sources;
 }
-$stats['lead_sources'] = $lead_sources;
 
 // Status breakdown
 $stmt = $conn->query("SELECT status, COUNT(*) as count FROM quotes GROUP BY status");

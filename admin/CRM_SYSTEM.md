@@ -274,6 +274,9 @@ POST /admin/api/notes.php
 GET /admin/api/crm_dashboard.php
 ```
 
+- Database migration available: `admin/migrations/2026-02-13_add_crm_fields.sql` (adds optional `lead_source`, `next_follow_up`, `expected_value`).
+- CRM cache TTL reduced for near-real-time updates (now 60s).
+
 ## Setup Instructions
 
 ### Database Setup
