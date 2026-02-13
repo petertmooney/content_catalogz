@@ -934,19 +934,19 @@ if ($invoices_result) {
                     <div class="stats-grid">
                         <div class="stat-card crm-kpi">
                             <div class="stat-small">Total Revenue</div>
-                            <div class="stat-number-sm" id="dash-total-revenue">£0.00</div>
+                            <div class="stat-number-sm" id="dash-total-revenue">£0.00 <span class="kpi-delta" id="delta-total-revenue"></span></div>
                         </div>
                         <div class="stat-card crm-kpi">
                             <div class="stat-small">Pipeline Value</div>
-                            <div class="stat-number-sm" id="dash-pipeline-value">£0.00</div>
+                            <div class="stat-number-sm" id="dash-pipeline-value">£0.00 <span class="kpi-delta" id="delta-pipeline-value"></span></div>
                         </div>
                         <div class="stat-card crm-kpi">
                             <div class="stat-small">New Leads</div>
-                            <div class="stat-number-sm" id="dash-new-leads">0</div>
+                            <div class="stat-number-sm" id="dash-new-leads">0 <span class="kpi-delta" id="delta-new-leads"></span></div>
                         </div>
                         <div class="stat-card crm-kpi">
                             <div class="stat-small">Conversion Rate</div>
-                            <div class="stat-number-sm" id="dash-conversion-rate">0%</div>
+                            <div class="stat-number-sm" id="dash-conversion-rate">0% <span class="kpi-delta" id="delta-conversion-rate"></span></div>
                         </div>
                     </div>
 
@@ -4345,21 +4345,90 @@ invoices.forEach(invoice => {
                         if (!data.success || !data.stats) return;
                         const s = data.stats;
 
-                        // KPIs
-                        document.getElementById('dash-total-revenue').textContent = '£' + (parseFloat(s.total_revenue) || 0).toFixed(2);
-                        document.getElementById('dash-pipeline-value').textContent = '£' + (parseFloat(s.pipeline_value) || 0).toFixed(2);
-                        const newLeads = (s.status_breakdown && s.status_breakdown.new) ? s.status_breakdown.new : 0;
-                        document.getElementById('dash-new-leads').textContent = newLeads;
-                        const conv = s.total_clients ? ((s.won_deals / s.total_clients) * 100) : 0;
-                        document.getElementById('dash-conversion-rate').textContent = (conv).toFixed(1) + '%';
+                        // helper: map lead source to chip color
+                        function getLeadColor(source) {
+                            if (!source) return '#e2e8f0';
+                            const key = (source || '').toLowerCase();
+                            if (key.includes('referr')) return '#f6d365';
+                            if (key.includes('web') || key.includes('site') || key.includes('website')) return '#7dd3fc';
+                            if (key.includes('ad')) return '#fca5a5';
+                            if (key.includes('email')) return '#c7f9d2';
+                            if (key.includes('social')) return '#fbcfe8';
+                            return '#d1fae5';
+                        }
 
-                        // Recent activities
+
+                        // KPIs (with small client-side deltas)
+                        const kpis = {
+                            total_revenue: parseFloat(s.total_revenue) || 0,
+                            pipeline_value: parseFloat(s.pipeline_value) || 0,
+                            new_leads: (s.status_breakdown && s.status_breakdown.new) ? s.status_breakdown.new : 0,
+                            conversion_rate: s.total_clients ? ((s.won_deals / s.total_clients) * 100) : 0
+                        };
+
+                        // show values
+                        document.getElementById('dash-total-revenue').firstChild.nodeValue = '£' + kpis.total_revenue.toFixed(2) + ' ';
+                        document.getElementById('dash-pipeline-value').firstChild.nodeValue = '£' + kpis.pipeline_value.toFixed(2) + ' ';
+                        document.getElementById('dash-new-leads').firstChild.nodeValue = String(kpis.new_leads) + ' ';
+                        document.getElementById('dash-conversion-rate').firstChild.nodeValue = kpis.conversion_rate.toFixed(1) + '% ';
+
+                        // compute & render deltas using persisted previous values
+                        window.prevKpis = window.prevKpis || {};
+                        Object.keys(kpis).forEach(key => {
+                            const prev = window.prevKpis[key] || 0;
+                            const cur = kpis[key];
+                            const delta = cur - prev;
+                            const deltaEl = document.getElementById('delta-' + key.replace('_','-')) || document.getElementById('delta-' + key);
+                            if (deltaEl) {
+                                if (Math.abs(delta) < 0.0001) { deltaEl.textContent = ''; deltaEl.className = 'kpi-delta'; }
+                                else {
+                                    const sign = delta > 0 ? '▲' : '▼';
+                                    const pct = prev ? ((delta / Math.abs(prev)) * 100).toFixed(0) + '%' : (Math.abs(delta) > 0 ? Math.abs(delta).toFixed(0) + (key === 'conversion_rate' ? '%' : '') : '');
+                                    deltaEl.textContent = `${sign} ${pct}`;
+                                    deltaEl.className = 'kpi-delta ' + (delta > 0 ? 'positive' : 'negative');
+                                }
+                            }
+                            window.prevKpis[key] = cur;
+                        });
+
+                        // Recent activities (render lead-source chips when available)
                         const raEl = document.getElementById('dash-recent-activities');
                         raEl.innerHTML = '';
                         if (s.recent_activities && s.recent_activities.length) {
                             s.recent_activities.forEach(a => {
                                 const li = document.createElement('li');
-                                li.textContent = `${a.activity_date} — ${a.activity_type} — ${a.client_name || 'General'}${a.note ? ' — ' + a.note : ''}`;
+
+                                // main text
+                                const txt = document.createElement('span');
+                                txt.textContent = `${a.activity_date} — ${a.activity_type} — ${a.client_name || 'General'}`;
+                                li.appendChild(txt);
+
+                                // optional note
+                                if (a.note) {
+                                    const note = document.createElement('div');
+                                    note.style.opacity = '0.9';
+                                    note.style.fontSize = '12px';
+                                    note.style.marginTop = '6px';
+                                    note.textContent = a.note;
+                                    li.appendChild(note);
+                                }
+
+                                // lead-source chip (if available)
+                                if (a.lead_source) {
+                                    const chip = document.createElement('span');
+                                    chip.className = 'lead-chip';
+                                    chip.textContent = a.lead_source;
+                                    chip.style.backgroundColor = getLeadColor(a.lead_source);
+                                    chip.style.color = '#0b0b0b';
+                                    chip.style.padding = '4px 8px';
+                                    chip.style.borderRadius = '999px';
+                                    chip.style.fontSize = '11px';
+                                    chip.style.marginLeft = '8px';
+                                    chip.style.display = 'inline-block';
+                                    chip.style.fontWeight = '700';
+                                    txt.appendChild(chip);
+                                }
+
                                 raEl.appendChild(li);
                             });
                         } else {
@@ -4379,13 +4448,16 @@ invoices.forEach(invoice => {
                             utEl.innerHTML = '<li>No upcoming tasks</li>';
                         }
 
-                        // Charts (create or update)
+                        // Charts (create or update) + subtle load animation
                         try {
                             const statusLabels = Object.keys(s.status_breakdown || {});
                             const statusData = statusLabels.map(k => s.status_breakdown[k] || 0);
 
+                            const statusCanvas = document.getElementById('chart-status-breakdown');
+                            statusCanvas.style.opacity = 0; statusCanvas.style.transform = 'scale(0.98)';
+
                             if (!window.crmStatusChart) {
-                                const ctx = document.getElementById('chart-status-breakdown').getContext('2d');
+                                const ctx = statusCanvas.getContext('2d');
                                 window.crmStatusChart = new Chart(ctx, {
                                     type: 'doughnut',
                                     data: { labels: statusLabels, datasets: [{ data: statusData, backgroundColor: ['#007bff','#17a2b8','#ffc107','#28a745','#dc3545'] }] },
@@ -4397,11 +4469,17 @@ invoices.forEach(invoice => {
                                 window.crmStatusChart.update();
                             }
 
+                            // fade/scale in
+                            setTimeout(() => { statusCanvas.style.transition = 'opacity 420ms ease, transform 420ms ease'; statusCanvas.style.opacity = 1; statusCanvas.style.transform = 'none'; }, 60);
+
                             const leadLabels = (s.lead_sources || []).map(r => r.lead_source || 'Unknown');
                             const leadData = (s.lead_sources || []).map(r => parseInt(r.count || 0));
 
+                            const leadCanvas = document.getElementById('chart-lead-sources');
+                            leadCanvas.style.opacity = 0; leadCanvas.style.transform = 'scale(0.98)';
+
                             if (!window.crmLeadChart) {
-                                const ctx2 = document.getElementById('chart-lead-sources').getContext('2d');
+                                const ctx2 = leadCanvas.getContext('2d');
                                 window.crmLeadChart = new Chart(ctx2, {
                                     type: 'pie',
                                     data: { labels: leadLabels, datasets: [{ data: leadData, backgroundColor: ['#667eea','#34d399','#f6ad55','#f472b6','#60a5fa'] }] },
@@ -4412,6 +4490,8 @@ invoices.forEach(invoice => {
                                 window.crmLeadChart.data.datasets[0].data = leadData;
                                 window.crmLeadChart.update();
                             }
+
+                            setTimeout(() => { leadCanvas.style.transition = 'opacity 420ms ease, transform 420ms ease'; leadCanvas.style.opacity = 1; leadCanvas.style.transform = 'none'; }, 120);
                         } catch (e) { console.error('Error rendering CRM charts', e); }
                     })
                     .catch(err => console.error('Error loading CRM dashboard:', err));

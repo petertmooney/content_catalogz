@@ -103,7 +103,7 @@ if ($colCheck && $colCheck->num_rows > 0) {
 }
 
 // Recent activities (last 10)
-$stmt = $conn->query("SELECT a.*, q.name as client_name, q.company FROM activities a LEFT JOIN quotes q ON a.client_id = q.id ORDER BY a.activity_date DESC LIMIT 10");
+$stmt = $conn->query("SELECT a.*, q.name as client_name, q.company, q.lead_source FROM activities a LEFT JOIN quotes q ON a.client_id = q.id ORDER BY a.activity_date DESC LIMIT 10");
 $recent_activities = [];
 while ($row = $stmt->fetch_assoc()) {
     $recent_activities[] = $row;

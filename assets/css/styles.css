@@ -497,6 +497,15 @@ footer p {
 .crm-summary .stat-small { color: rgba(245,245,245,0.68); font-size: 12px; }
 .crm-summary .stat-number-sm { font-size: 20px; font-weight: 700; color: var(--text-lighter); }
 
+/* KPI delta */
+.kpi-delta { font-size: 11px; margin-left: 8px; opacity: 0.9; color: rgba(255,255,255,0.6); }
+.kpi-delta.positive { color: #9be15d; }
+.kpi-delta.negative { color: #ff7b7b; }
+
+/* Lead chip */
+.lead-chip { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; margin-left: 8px; }
+
+
 /* CRM layout helpers */
 .crm-summary .crm-flex { display:flex; gap:12px; align-items:flex-start; }
 .crm-summary .small-column { width:220px; flex-shrink:0; }
