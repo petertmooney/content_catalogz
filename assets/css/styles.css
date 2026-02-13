@@ -163,7 +163,7 @@ body {
     font-size: 1.25rem;
     color: var(--text-light);
     margin-bottom: 2rem;
-    max-width: 600px;
+    max-width: 100%; /* allow subtitle to fill the container */
     margin-left: auto;
     margin-right: auto;
 }
@@ -223,7 +223,7 @@ section {
 .consultation p {
     font-size: 1.1rem;
     margin-bottom: 2rem;
-    max-width: 700px;
+    max-width: 100%; /* let consultation copy fill the container */
     margin-left: auto;
     margin-right: auto;
 }
@@ -306,7 +306,7 @@ section {
 .newsletter-form {
     display: flex;
     gap: 1rem;
-    max-width: 500px;
+    max-width: 100%; /* allow newsletter to expand to container */
     margin: 0 auto;
     flex-wrap: wrap;
     justify-content: center;
@@ -392,7 +392,7 @@ section {
 
 /* Quote Form */
 .quote-content {
-    max-width: 700px;
+    max-width: 100%; /* allow quote form to fill available container space */
     margin: 0 auto;
 }
 
