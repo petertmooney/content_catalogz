@@ -574,8 +574,8 @@ footer p {
 }
 
 .crm-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
-.crm-charts .chart-card { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius: 10px; padding: 12px; border: 1px solid rgba(255,255,255,0.03); }
-.crm-charts canvas { width: 100% !important; height: 220px !important; transition: opacity 360ms ease, transform 360ms ease; }
+.crm-charts .chart-card { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius: 10px; padding: 20px; min-height: 320px; border: 1px solid rgba(255,255,255,0.03); }
+.crm-charts canvas { width: 100% !important; height: 320px !important; transition: opacity 360ms ease, transform 360ms ease; }
 
 /* Compact CRM: smaller spacing and charts so the whole section fits on one screen */
 .crm-summary.compact { padding: 10px; border-radius: 8px; }
@@ -605,7 +605,7 @@ footer p {
 
 
 .revenue-trend { margin-top: 16px; background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.03); }
-.revenue-trend canvas { width: 100% !important; height: 220px !important; }
+.revenue-trend canvas { width: 100% !important; height: 320px !important; }
 .revenue-trend .controls { display:flex; gap:8px; align-items:center; }
 .revenue-trend .controls select { background: transparent; color: var(--text-lighter); border: 1px solid rgba(255,255,255,0.06); padding:6px 8px; border-radius:6px; }
 .revenue-trend .controls .btn { padding:6px 10px; }

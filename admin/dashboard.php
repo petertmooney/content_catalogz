@@ -2332,6 +2332,44 @@ if ($invoices_result) {
         window.addEventListener('error', function(e) {
             console.error('%c JavaScript Error:', 'color: red; font-weight: bold;', e.message, 'at', e.filename + ':' + e.lineno);
         });
+
+        // Canvas scaling helper for crisp charts on high-DPR displays
+        function scaleCanvasForRetina(canvas, desiredHeight = 320) {
+            if (!canvas) return;
+            const dpr = window.devicePixelRatio || 1;
+            // ensure CSS height is set so layout doesn't jump
+            canvas.style.height = desiredHeight + 'px';
+            // set backing store size to CSS size * dpr
+            const displayWidth = Math.max(0, canvas.clientWidth);
+            const backingWidth = Math.max(1, Math.floor(displayWidth * dpr));
+            const backingHeight = Math.max(1, Math.floor(desiredHeight * dpr));
+            if (canvas.width !== backingWidth || canvas.height !== backingHeight) {
+                canvas.width = backingWidth;
+                canvas.height = backingHeight;
+                const ctx = canvas.getContext('2d');
+                if (ctx && typeof ctx.setTransform === 'function') ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+        }
+
+        // Rescale known dashboard charts and trigger Chart.js resize where available
+        function refreshAllDashboardCharts() {
+            ['chart-status-breakdown','chart-lead-sources','chart-revenue-trend'].forEach(id => {
+                const c = document.getElementById(id);
+                if (!c) return;
+                // choose height by type (revenue slightly taller)
+                const h = (id === 'chart-revenue-trend') ? 320 : 320;
+                scaleCanvasForRetina(c, h);
+                try {
+                    const chart = window[id.replace(/-/g,'') + 'Chart'] || (id === 'chart-revenue-trend' ? window.revenueTrendChart : null);
+                    if (chart && typeof chart.resize === 'function') chart.resize();
+                    if (chart && typeof chart.update === 'function') chart.update();
+                } catch (e) { /* ignore */ }
+            });
+        }
+
+        // debounce resize handling for charts
+        let _chartResizeTimer = null;
+        window.addEventListener('resize', () => { clearTimeout(_chartResizeTimer); _chartResizeTimer = setTimeout(refreshAllDashboardCharts, 120); });
         
         function toggleSubmenu(event, submenuId) {
             event.preventDefault();
@@ -4502,6 +4540,8 @@ invoices.forEach(invoice => {
                             const statusData = statusLabels.map(k => s.status_breakdown[k] || 0);
 
                             const statusCanvas = document.getElementById('chart-status-breakdown');
+                            // enforce crisp retina backing-store and larger visual size
+                            scaleCanvasForRetina(statusCanvas, 320);
                             statusCanvas.style.opacity = 0; statusCanvas.style.transform = 'scale(0.995)';
 
                             if (!window.crmStatusChart) {
@@ -4530,6 +4570,8 @@ invoices.forEach(invoice => {
                             const leadData = (s.lead_sources || []).map(r => parseInt(r.count || 0));
 
                             const leadCanvas = document.getElementById('chart-lead-sources');
+                            // enforce crisp retina backing-store and larger visual size
+                            scaleCanvasForRetina(leadCanvas, 320);
                             leadCanvas.style.opacity = 0; leadCanvas.style.transform = 'scale(0.995)';
 
                             if (!window.crmLeadChart) {
@@ -4605,6 +4647,8 @@ invoices.forEach(invoice => {
                                             try {
                                                 const canvas = document.getElementById('chart-revenue-trend');
                                                 if (!canvas) return;
+                                                // ensure revenue canvas is retina-scaled and visually larger
+                                                scaleCanvasForRetina(canvas, 320);
                 
                                                 if (!window.revenueTrendChart) {
                                                     const ctx = canvas.getContext('2d');
