@@ -932,43 +932,43 @@ if ($invoices_result) {
                 <div id="crm-summary" class="crm-summary" style="margin-top:18px;">
                     <h3>CRM Summary</h3>
                     <div class="stats-grid">
-                        <div class="stat-card" style="background:white;padding:14px;border-radius:8px;">
+                        <div class="stat-card crm-kpi">
                             <div class="stat-small">Total Revenue</div>
                             <div class="stat-number-sm" id="dash-total-revenue">£0.00</div>
                         </div>
-                        <div class="stat-card" style="background:white;padding:14px;border-radius:8px;">
+                        <div class="stat-card crm-kpi">
                             <div class="stat-small">Pipeline Value</div>
                             <div class="stat-number-sm" id="dash-pipeline-value">£0.00</div>
                         </div>
-                        <div class="stat-card" style="background:white;padding:14px;border-radius:8px;">
+                        <div class="stat-card crm-kpi">
                             <div class="stat-small">New Leads</div>
                             <div class="stat-number-sm" id="dash-new-leads">0</div>
                         </div>
-                        <div class="stat-card" style="background:white;padding:14px;border-radius:8px;">
+                        <div class="stat-card crm-kpi">
                             <div class="stat-small">Conversion Rate</div>
                             <div class="stat-number-sm" id="dash-conversion-rate">0%</div>
                         </div>
                     </div>
 
                     <div class="crm-charts">
-                        <div style="background:white;padding:12px;border-radius:8px;">
+                        <div class="chart-card">
                             <div class="stat-small">Quotes by Status</div>
                             <canvas id="chart-status-breakdown"></canvas>
                         </div>
-                        <div style="background:white;padding:12px;border-radius:8px;">
+                        <div class="chart-card">
                             <div class="stat-small">Leads by Source</div>
                             <canvas id="chart-lead-sources"></canvas>
                         </div>
                     </div>
 
-                    <div style="display:flex;gap:12px;align-items:flex-start">
+                    <div class="crm-flex">
                         <div style="flex:1">
                             <div class="stat-small">Recent Activities</div>
                             <ul class="recent-activities" id="dash-recent-activities">
                                 <li>No recent activity</li>
                             </ul>
                         </div>
-                        <div style="width:220px">
+                        <div class="small-column">
                             <div class="stat-small">Upcoming Tasks (7d)</div>
                             <ul class="recent-activities" id="dash-upcoming-tasks">
                                 <li>No upcoming tasks</li>
@@ -979,19 +979,19 @@ if ($invoices_result) {
                     <div class="revenue-trend">
                         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
                             <div class="stat-small">Revenue trend</div>
-                            <div style="display:flex;gap:8px;align-items:center;">
+                            <div class="controls">
                                 <label class="stat-small" style="margin-right:6px">Metric</label>
-                                <select id="revenueMetric" style="padding:6px;border-radius:4px;border:1px solid #ddd;background:white;">
+                                <select id="revenueMetric">
                                     <option value="collected">Collected</option>
                                     <option value="invoiced">Invoiced</option>
                                 </select>
                                 <label class="stat-small" style="margin-left:8px; margin-right:6px">Range</label>
-                                <select id="revenueRange" style="padding:6px;border-radius:4px;border:1px solid #ddd;background:white;">
+                                <select id="revenueRange">
                                     <option value="monthly">Last 12 months</option>
                                     <option value="yearly">Last 5 years</option>
                                 </select>
                                 <label class="stat-small" style="margin-left:8px; margin-right:6px">Chart</label>
-                                <select id="revenueChartType" style="padding:6px;border-radius:4px;border:1px solid #ddd;background:white;">
+                                <select id="revenueChartType">
                                     <option value="line">Line (area)</option>
                                     <option value="bar">Bar</option>
                                     <option value="stacked">Stacked area</option>
