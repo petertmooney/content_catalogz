@@ -842,7 +842,7 @@ if ($invoices_result) {
             color: white;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js?v=<?php echo time(); ?>"></script>
+    <script src="assets/js/chart.js?v=<?php echo time(); ?>"></script>
 </head>
 <body>
     
@@ -5763,31 +5763,35 @@ invoices.forEach(invoice => {
 
         // Apply glow effect to stat cards with values > 0
         function applyGlowEffect() {
-            const enabled = localStorage.getItem('dashboardGlowEnabled') !== 'false';
-            if (!enabled) return;
+            try {
+                const enabled = localStorage.getItem('dashboardGlowEnabled') !== 'false';
+                if (!enabled) return;
 
-            // Define the stat cards that should glow when > 0
-            const glowCards = [
-                { id: 'dash-emails-unread', cardId: 'dash-emails-unread' },
-                { id: 'dash-quotes-new', cardId: 'dash-quotes-new' },
-                { id: 'dash-tasks-overdue', cardId: 'dash-tasks-overdue' },
-                { id: 'dash-invoices-overdue', cardId: 'dash-invoices-overdue' }
-            ];
+                // Define the stat cards that should glow when > 0
+                const glowCards = [
+                    { id: 'dash-emails-unread', cardId: 'dash-emails-unread' },
+                    { id: 'dash-quotes-new', cardId: 'dash-quotes-new' },
+                    { id: 'dash-tasks-overdue', cardId: 'dash-tasks-overdue' },
+                    { id: 'dash-invoices-overdue', cardId: 'dash-invoices-overdue' }
+                ];
 
-            glowCards.forEach(card => {
-                const element = document.getElementById(card.id);
-                const cardElement = element ? element.closest('.stat-card') : null;
+                glowCards.forEach(card => {
+                    const element = document.getElementById(card.id);
+                    const cardElement = element ? element.closest('.stat-card') : null;
 
-                if (element && cardElement) {
-                    const value = parseInt(element.textContent) || 0;
+                    if (element && cardElement) {
+                        const value = parseInt(element.textContent) || 0;
 
-                    if (value > 0) {
-                        cardElement.classList.add('glow');
-                    } else {
-                        cardElement.classList.remove('glow');
+                        if (value > 0) {
+                            cardElement.classList.add('glow');
+                        } else {
+                            cardElement.classList.remove('glow');
+                        }
                     }
-                }
-            });
+                });
+            } catch (e) {
+                console.warn('Error applying glow effect:', e);
+            }
         }
 
         // Load CRM Charts
@@ -8086,48 +8090,64 @@ invoices.forEach(invoice => {
 
         // Glow effect settings functions
         function loadGlowSettings() {
-            const glowEnabled = localStorage.getItem('dashboardGlowEnabled') !== 'false'; // Default to true
-            const glowColor = localStorage.getItem('dashboardGlowColor') || '#db1c56'; // Default to navbar color
+            try {
+                const glowEnabled = localStorage.getItem('dashboardGlowEnabled') !== 'false'; // Default to true
+                const glowColor = localStorage.getItem('dashboardGlowColor') || '#db1c56'; // Default to navbar color
 
-            document.getElementById('glow-enabled').checked = glowEnabled;
-            document.getElementById('glow-color').value = glowColor;
-            document.getElementById('glow-color-preview').textContent = glowColor;
+                document.getElementById('glow-enabled').checked = glowEnabled;
+                document.getElementById('glow-color').value = glowColor;
+                document.getElementById('glow-color-preview').textContent = glowColor;
 
-            // Apply the settings
-            updateGlowEffect();
+                // Apply the settings
+                updateGlowEffect();
+            } catch (e) {
+                console.warn('Error loading glow settings:', e);
+            }
         }
 
         function toggleGlowEffect() {
-            const enabled = document.getElementById('glow-enabled').checked;
-            localStorage.setItem('dashboardGlowEnabled', enabled);
-            updateGlowEffect();
+            try {
+                const enabled = document.getElementById('glow-enabled').checked;
+                localStorage.setItem('dashboardGlowEnabled', enabled);
+                updateGlowEffect();
+            } catch (e) {
+                console.warn('Error toggling glow effect:', e);
+            }
         }
 
         function changeGlowColor() {
-            const color = document.getElementById('glow-color').value;
-            document.getElementById('glow-color-preview').textContent = color;
-            localStorage.setItem('dashboardGlowColor', color);
-            updateGlowEffect();
+            try {
+                const color = document.getElementById('glow-color').value;
+                document.getElementById('glow-color-preview').textContent = color;
+                localStorage.setItem('dashboardGlowColor', color);
+                updateGlowEffect();
+            } catch (e) {
+                console.warn('Error changing glow color:', e);
+            }
         }
 
         function updateGlowEffect() {
-            const enabled = localStorage.getItem('dashboardGlowEnabled') !== 'false';
-            const color = localStorage.getItem('dashboardGlowColor') || '#db1c56';
+            try {
+                const enabled = localStorage.getItem('dashboardGlowEnabled') !== 'false';
+                const color = localStorage.getItem('dashboardGlowColor') || '#db1c56';
 
-            // Convert hex color to RGB
-            const rgb = hexToRgb(color);
-            if (rgb) {
-                document.documentElement.style.setProperty('--glow-color-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
-            }
+                // Convert hex color to RGB
+                const rgb = hexToRgb(color);
+                if (rgb) {
+                    document.documentElement.style.setProperty('--glow-color-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+                }
 
-            // Re-apply glow effect
-            if (enabled) {
-                applyGlowEffect();
-            } else {
-                // Remove glow from all stat cards
-                document.querySelectorAll('.stat-card.glow').forEach(card => {
-                    card.classList.remove('glow');
-                });
+                // Re-apply glow effect
+                if (enabled) {
+                    applyGlowEffect();
+                } else {
+                    // Remove glow from all stat cards
+                    document.querySelectorAll('.stat-card.glow').forEach(card => {
+                        card.classList.remove('glow');
+                    });
+                }
+            } catch (e) {
+                console.warn('Error updating glow effect:', e);
             }
         }
 
@@ -8162,13 +8182,22 @@ invoices.forEach(invoice => {
 
         // Initialize glow settings when page loads
         function initializeGlowSettings() {
-            const enabled = localStorage.getItem('dashboardGlowEnabled') !== 'false';
-            const color = localStorage.getItem('dashboardGlowColor') || '#db1c56';
+            try {
+                const enabled = localStorage.getItem('dashboardGlowEnabled') !== 'false';
+                const color = localStorage.getItem('dashboardGlowColor') || '#db1c56';
 
-            // Convert hex color to RGB and set CSS custom property
-            const rgb = hexToRgb(color);
-            if (rgb) {
-                document.documentElement.style.setProperty('--glow-color-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+                // Convert hex color to RGB and set CSS custom property if enabled
+                if (enabled) {
+                    const rgb = hexToRgb(color);
+                    if (rgb) {
+                        document.documentElement.style.setProperty('--glow-color-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+                    }
+                } else {
+                    // Remove glow if disabled
+                    document.documentElement.style.removeProperty('--glow-color-rgb');
+                }
+            } catch (e) {
+                console.warn('Error initializing glow settings:', e);
             }
         }
         
