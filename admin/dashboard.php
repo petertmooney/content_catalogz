@@ -1620,14 +1620,14 @@ if ($invoices_result) {
 
     <!-- Client Details Modal -->
     <div id="clientModal" class="modal">
-        <div class="modal-content" style="max-width: 1100px;">
+        <div class="modal-content" style="max-width: 1100px; height: 80vh; display: flex; flex-direction: column;">
             <div class="modal-header">
                 <h3>Client Details - <span id="clientModalName"></span></h3>
                 <button class="close-btn" onclick="closeClientModal()">&times;</button>
             </div>
             
             <!-- CRM Tabs -->
-            <div style="border-bottom: 2px solid #ddd; margin-bottom: 20px;">
+            <div style="border-bottom: 2px solid #ddd; margin-bottom: 0; flex-shrink: 0;">
                 <div style="display: flex; gap: 5px;">
                     <button type="button" class="crm-tab active" onclick="switchClientTab('details')" id="tab-details">📋 Details & Billing</button>
                     <button type="button" class="crm-tab" onclick="switchClientTab('activities')" id="tab-activities">📅 Activity Timeline</button>
@@ -1636,10 +1636,12 @@ if ($invoices_result) {
                 </div>
             </div>
             
-            <!-- Tab: Details & Billing -->
-            <div id="client-tab-details" class="client-tab-content">
-            <form id="clientForm" onsubmit="updateClient(event)">
-                <input type="hidden" id="clientId" name="id">
+            <!-- Tab Content Container -->
+            <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+                <!-- Tab: Details & Billing -->
+                <div id="client-tab-details" class="client-tab-content" style="flex: 1; overflow-y: auto; padding: 20px;">
+                <form id="clientForm" onsubmit="updateClient(event)">
+                    <input type="hidden" id="clientId" name="id">
                 
                 <!-- Client Information -->
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
@@ -1763,7 +1765,7 @@ if ($invoices_result) {
             </div>
             
             <!-- Tab: Activity Timeline -->
-            <div id="client-tab-activities" class="client-tab-content" style="display: none;">
+            <div id="client-tab-activities" class="client-tab-content" style="display: none; flex: 1; overflow-y: auto; padding: 20px;">
                 <div style="margin-bottom: 20px;">
                     <button class="btn btn-primary" onclick="openLogActivityModal()">+ Log Activity</button>
                     <button class="btn btn-secondary" onclick="composeEmail()">✉️ Email Client</button>
@@ -1777,7 +1779,7 @@ if ($invoices_result) {
             </div>
             
             <!-- Tab: Notes -->
-            <div id="client-tab-notes" class="client-tab-content" style="display: none;">
+            <div id="client-tab-notes" class="client-tab-content" style="display: none; flex: 1; overflow-y: auto; padding: 20px;">
                 <div style="margin-bottom: 20px;">
                     <button class="btn btn-primary" onclick="openAddNoteModal()">+ Add Note</button>
                 </div>
@@ -1790,7 +1792,7 @@ if ($invoices_result) {
             </div>
             
             <!-- Tab: Tasks -->
-            <div id="client-tab-tasks" class="client-tab-content" style="display: none;">
+            <div id="client-tab-tasks" class="client-tab-content" style="display: none; flex: 1; overflow-y: auto; padding: 20px;">
                 <div style="margin-bottom: 20px;">
                     <button class="btn btn-primary" onclick="openAddClientTaskModal()">+ Add Task</button>
                 </div>
@@ -1800,6 +1802,7 @@ if ($invoices_result) {
                         <p>Create tasks related to this client.</p>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
     </div>
