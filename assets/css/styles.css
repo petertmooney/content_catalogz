@@ -222,6 +222,23 @@ section {
     padding-right: 20px;
 }
 
+/* Admin-specific full-bleed adjustments: ensure full-bleed inside .main-content
+   does not get hidden under the fixed sidebar and aligns visually with content. */
+.main-content .full-bleed {
+    /* add left offset equal to the sidebar width + main-content padding */
+    padding-left: calc(250px + 30px); /* sidebar (250px) + main-content padding (30px) */
+    padding-right: 30px;
+}
+
+/* Make sure full-bleed stat cards and invoice panels don't overflow */
+.main-content .full-bleed .stats-grid,
+.main-content .full-bleed .invoice-panel,
+.main-content .full-bleed .stat-card {
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 /* Make modals and cards fluid so they don't overflow on small screens */
 .modal .modal-content {
     max-width: calc(100% - 40px);
