@@ -1828,17 +1828,7 @@ if ($invoices_result) {
                         <label for="newClientPhone">Phone</label>
                         <input type="text" id="newClientPhone" name="phone" class="form-control" placeholder="+44 123 456 7890">
                     </div>
-                    <div class="form-group">
-                        <label for="newClientLeadSource">Lead Source</label>
-                        <input type="text" id="newClientLeadSource" name="lead_source" class="form-control" placeholder="e.g. Website, Referral">
-                    </div>
-                    <div class="form-group">
-                        <label for="newClientExpectedValue">Expected value (£)</label>
-                        <div style="position: relative;">
-                            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 500; color: #333;">£</span>
-                            <input type="number" id="newClientExpectedValue" name="expected_value" class="form-control" step="0.01" min="0" style="padding-left: 28px;">
-                        </div>
-                    </div>
+
                     <div class="form-group" style="grid-column: 1 / -1;">
                         <label for="newClientAddressStreet">Address Street</label>
                         <input type="text" id="newClientAddressStreet" name="address_street" class="form-control" placeholder="123 Main Street">
