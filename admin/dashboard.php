@@ -1661,13 +1661,10 @@ if ($invoices_result) {
                 <button class="close-btn" onclick="closeClientModal()">&times;</button>
             </div>
             
-            <!-- CRM Tabs -->
+            <!-- Client Tabs (CRM tabs removed - only Details visible) -->
             <div style="border-bottom: 2px solid #ddd; margin-bottom: 20px;">
                 <div style="display: flex; gap: 5px;">
-                    <button type="button" class="crm-tab active" onclick="switchClientTab('details')" id="tab-details">📋 Details & Billing</button>
-                    <button type="button" class="crm-tab" onclick="switchClientTab('activities')" id="tab-activities">📅 Activity Timeline</button>
-                    <button type="button" class="crm-tab" onclick="switchClientTab('notes')" id="tab-notes">📝 Notes</button>
-                    <button type="button" class="crm-tab" onclick="switchClientTab('tasks')" id="tab-tasks">✅ Tasks</button>
+                    <button type="button" class="tab active" onclick="switchClientTab('details')" id="tab-details">📋 Details & Billing</button>
                 </div>
             </div>
             
@@ -1696,21 +1693,7 @@ if ($invoices_result) {
                             <strong>Phone:</strong><br>
                             <span id="clientPhone"></span>
                         </div>
-                        <div>
-                            <label style="font-weight:600;">Lead Source</label><br>
-                            <input type="text" id="clientLeadSource" name="lead_source" class="form-control" placeholder="e.g. Website, Referral, Ad">
-                        </div>
-                        <div>
-                            <label style="font-weight:600;">Next follow-up</label><br>
-                            <input type="date" id="clientNextFollowUp" name="next_follow_up" class="form-control">
-                        </div>
-                        <div>
-                            <label style="font-weight:600;">Expected value (£)</label><br>
-                            <div style="position: relative;">
-                                <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 500; color: #333;">£</span>
-                                <input type="number" id="clientExpectedValue" name="expected_value" class="form-control" step="0.01" min="0" style="padding-left: 28px;">
-                            </div>
-                        </div>
+
                     </div>
                 </div>
 
@@ -1810,71 +1793,9 @@ if ($invoices_result) {
                 </div>
             </form>
 
-                <!-- CRM Settings -->
-                <div style="margin-top:28px; border-top:1px dashed #eee; padding-top:18px;">
-                    <h3 style="margin-bottom:12px; color:#333;">CRM Settings — Lead source colors</h3>
-                    <p style="color:#666; margin-bottom:12px;">Assign colors for lead sources — these appear as badges in Recent Activities and charts.</p>
 
-                    <div id="crmColorsList" style="display:flex;flex-direction:column;gap:8px;max-width:720px;margin-bottom:12px;"></div>
-                    <template id="crmColorRowTpl">
-                        <div style="display:flex;gap:8px;align-items:center;">
-                            <input class="crm-source form-control" placeholder="Source name" style="max-width:260px;">
-                            <input class="crm-color" type="color" value="#f6d365" style="width:48px;height:36px;border-radius:6px;border:1px solid #ddd;">
-                            <button type="button" class="btn btn-secondary crm-remove">Remove</button>
-                        </div>
-                    </template>
+            
 
-                    <div style="display:flex;gap:8px;align-items:center; margin-bottom:12px;">
-                        <input id="newLeadSourceName" placeholder="Lead source (e.g. Referral)" class="form-control" style="max-width:260px;">
-                        <input id="newLeadSourceColor" type="color" value="#f6d365" style="width:48px;height:36px;border-radius:6px;border:1px solid #ddd;">
-                        <button type="button" class="btn btn-secondary" onclick="addCrmColorRow()">Add</button>
-                    </div>
-
-                    <div style="display:flex;gap:8px;">
-                        <button type="button" class="btn btn-primary" onclick="saveCrmSettings()">Save CRM Settings</button>
-                        <button type="button" class="btn btn-secondary" onclick="loadCrmSettings()">Reload</button>
-                    </div>
-                </div>
-            
-            <!-- Tab: Activity Timeline -->
-            <div id="client-tab-activities" class="client-tab-content" style="display: none;">
-                <div style="margin-bottom: 20px;">
-                    <button class="btn btn-primary" onclick="openLogActivityModal()">+ Log Activity</button>
-                    <button class="btn btn-secondary" onclick="composeEmail()">✉️ Email Client</button>
-                </div>
-                <div id="client-activities-list">
-                    <div class="empty-state">
-                        <h3>No Activities Yet</h3>
-                        <p>Log your first interaction with this client.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Tab: Notes -->
-            <div id="client-tab-notes" class="client-tab-content" style="display: none;">
-                <div style="margin-bottom: 20px;">
-                    <button class="btn btn-primary" onclick="openAddNoteModal()">+ Add Note</button>
-                </div>
-                <div id="client-notes-list">
-                    <div class="empty-state">
-                        <h3>No Notes Yet</h3>
-                        <p>Add notes to keep track of important information about this client.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Tab: Tasks -->
-            <div id="client-tab-tasks" class="client-tab-content" style="display: none;">
-                <div style="margin-bottom: 20px;">
-                    <button class="btn btn-primary" onclick="openAddClientTaskModal()">+ Add Task</button>
-                </div>
-                <div id="client-tasks-list">
-                    <div class="empty-state">
-                        <h3>No Tasks Yet</h3>
-                        <p>Create tasks related to this client.</p>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
     
@@ -3337,9 +3258,7 @@ if ($invoices_result) {
             document.getElementById('totalPaid').value = client.total_paid || 0.00;
 
             // CRM-specific fields
-            document.getElementById('clientLeadSource').value = client.lead_source || '';
-            document.getElementById('clientNextFollowUp').value = client.next_follow_up || '';
-            document.getElementById('clientExpectedValue').value = client.expected_value || '';
+
 
             
             // Load services
@@ -3364,14 +3283,15 @@ if ($invoices_result) {
                 tab.classList.remove('active');
                 tab.style.display = 'none';
             });
-            document.querySelectorAll('.crm-tab').forEach(btn => {
+            document.querySelectorAll('.tab').forEach(btn => {
                 btn.classList.remove('active');
             });
             
             // Show Details tab by default
             document.getElementById('client-tab-details').style.display = 'block';
             document.getElementById('client-tab-details').classList.add('active');
-            document.querySelector('.crm-tab[onclick*="details"]').classList.add('active');
+            const detailsTabBtn = document.querySelector('.tab[onclick*="details"]');
+            if (detailsTabBtn) detailsTabBtn.classList.add('active');
             
             // Load payment history
             loadClientPayments(currentClientId);
@@ -3552,9 +3472,7 @@ if ($invoices_result) {
                 total_cost: totalCost,
                 total_paid: totalPaid,
                 // CRM fields
-                lead_source: document.getElementById('clientLeadSource').value || null,
-                next_follow_up: document.getElementById('clientNextFollowUp').value || null,
-                expected_value: parseFloat(document.getElementById('clientExpectedValue').value || 0) || null
+
             };
             
             fetch('api/update_client.php', {
@@ -4132,8 +4050,7 @@ if ($invoices_result) {
                 status: document.getElementById('newClientStatus').value,
                 notes: document.getElementById('newClientNotes').value,
                 // CRM fields
-                lead_source: document.getElementById('newClientLeadSource').value || null,
-                expected_value: parseFloat(document.getElementById('newClientExpectedValue').value || 0) || null
+
             };
             
             fetch('api/add_client.php', {
@@ -4319,8 +4236,7 @@ invoices.forEach(invoice => {
                 console.log('Loading dashboard stats...');
                 loadDashboardStats();
 
-                // preload CRM settings (lead-source colors)
-                loadCrmSettings();
+
                 
                 console.log('%c All data loading functions called successfully', 'background: #667eea; color: white; padding: 2px 8px; border-radius: 3px;');
             } catch (error) {
@@ -4792,7 +4708,7 @@ invoices.forEach(invoice => {
             });
             
             // Remove active class from all buttons
-            document.querySelectorAll('.crm-tab').forEach(btn => {
+            document.querySelectorAll('.tab').forEach(btn => {
                 btn.classList.remove('active');
             });
             
