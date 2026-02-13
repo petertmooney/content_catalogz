@@ -769,17 +769,21 @@ if ($invoices_result) {
             background: linear-gradient(135deg, rgba(0, 123, 255, 0.1) 0%, rgba(0, 123, 255, 0.05) 100%);
         }
 
+        :root {
+            --glow-color: #db1c56;
+        }
+
         .stat-card.glow {
             animation: glow 1.5s ease-in-out infinite alternate;
-            box-shadow: 0 0 10px rgba(219, 28, 86, 0.6), 0 0 20px rgba(219, 28, 86, 0.4), 0 0 30px rgba(219, 28, 86, 0.2);
+            box-shadow: 0 0 10px rgba(var(--glow-color-rgb, 219, 28, 86), 0.6), 0 0 20px rgba(var(--glow-color-rgb, 219, 28, 86), 0.4), 0 0 30px rgba(var(--glow-color-rgb, 219, 28, 86), 0.2);
         }
 
         @keyframes glow {
             from {
-                box-shadow: 0 0 10px rgba(219, 28, 86, 0.6), 0 0 20px rgba(219, 28, 86, 0.4), 0 0 30px rgba(219, 28, 86, 0.2);
+                box-shadow: 0 0 10px rgba(var(--glow-color-rgb, 219, 28, 86), 0.6), 0 0 20px rgba(var(--glow-color-rgb, 219, 28, 86), 0.4), 0 0 30px rgba(var(--glow-color-rgb, 219, 28, 86), 0.2);
             }
             to {
-                box-shadow: 0 0 15px rgba(219, 28, 86, 0.8), 0 0 30px rgba(219, 28, 86, 0.6), 0 0 45px rgba(219, 28, 86, 0.4);
+                box-shadow: 0 0 15px rgba(var(--glow-color-rgb, 219, 28, 86), 0.8), 0 0 30px rgba(var(--glow-color-rgb, 219, 28, 86), 0.6), 0 0 45px rgba(var(--glow-color-rgb, 219, 28, 86), 0.4);
             }
         }
 
@@ -2290,8 +2294,25 @@ if ($invoices_result) {
             </div>
             <div style="padding: 20px;">
                 <p style="color: #666; margin-bottom: 20px;">Show/hide dashboard sections and reorder them. Changes save automatically.</p>
-                <div id="dashboard-sections-list" style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+                <div id="dashboard-sections-list" style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
                     <!-- Dashboard sections will be loaded here -->
+                </div>
+
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+                    <h4 style="margin: 0 0 15px 0; color: #333;">✨ Visual Effects</h4>
+
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="glow-enabled" checked onchange="toggleGlowEffect()">
+                            <span>Enable glow effect on stat cards</span>
+                        </label>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <label style="font-weight: 500; color: #555;">Glow Color:</label>
+                        <input type="color" id="glow-color" value="#db1c56" onchange="changeGlowColor()" style="border: 1px solid #ddd; border-radius: 4px; width: 50px; height: 30px; cursor: pointer;">
+                        <span id="glow-color-preview" style="font-size: 12px; color: #666;">#db1c56</span>
+                    </div>
                 </div>
             </div>
             <div style="padding: 20px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end; gap: 10px;">
@@ -5637,6 +5658,9 @@ invoices.forEach(invoice => {
 
         // Apply glow effect to stat cards with values > 0
         function applyGlowEffect() {
+            const enabled = localStorage.getItem('dashboardGlowEnabled') !== 'false';
+            if (!enabled) return;
+
             // Define the stat cards that should glow when > 0
             const glowCards = [
                 { id: 'dash-emails-unread', cardId: 'dash-emails-unread' },
@@ -7738,6 +7762,7 @@ invoices.forEach(invoice => {
         
         function openDashboardCustomizationModal() {
             loadDashboardSections();
+            loadGlowSettings();
             document.getElementById('dashboardCustomizationModal').style.display = 'flex';
         }
         
@@ -7871,6 +7896,62 @@ invoices.forEach(invoice => {
                 applyDashboardLayout(defaultDashboardSections);
             }
         }
+
+        // Glow effect settings functions
+        function loadGlowSettings() {
+            const glowEnabled = localStorage.getItem('dashboardGlowEnabled') !== 'false'; // Default to true
+            const glowColor = localStorage.getItem('dashboardGlowColor') || '#db1c56'; // Default to navbar color
+
+            document.getElementById('glow-enabled').checked = glowEnabled;
+            document.getElementById('glow-color').value = glowColor;
+            document.getElementById('glow-color-preview').textContent = glowColor;
+
+            // Apply the settings
+            updateGlowEffect();
+        }
+
+        function toggleGlowEffect() {
+            const enabled = document.getElementById('glow-enabled').checked;
+            localStorage.setItem('dashboardGlowEnabled', enabled);
+            updateGlowEffect();
+        }
+
+        function changeGlowColor() {
+            const color = document.getElementById('glow-color').value;
+            document.getElementById('glow-color-preview').textContent = color;
+            localStorage.setItem('dashboardGlowColor', color);
+            updateGlowEffect();
+        }
+
+        function updateGlowEffect() {
+            const enabled = localStorage.getItem('dashboardGlowEnabled') !== 'false';
+            const color = localStorage.getItem('dashboardGlowColor') || '#db1c56';
+
+            // Convert hex color to RGB
+            const rgb = hexToRgb(color);
+            if (rgb) {
+                document.documentElement.style.setProperty('--glow-color-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+            }
+
+            // Re-apply glow effect
+            if (enabled) {
+                applyGlowEffect();
+            } else {
+                // Remove glow from all stat cards
+                document.querySelectorAll('.stat-card.glow').forEach(card => {
+                    card.classList.remove('glow');
+                });
+            }
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
         
         // Function to reload dashboard data after layout changes
         function loadDashboardData() {
@@ -7891,11 +7972,24 @@ invoices.forEach(invoice => {
                     // Use default layout if no saved layout exists
                 });
         }
+
+        // Initialize glow settings when page loads
+        function initializeGlowSettings() {
+            const enabled = localStorage.getItem('dashboardGlowEnabled') !== 'false';
+            const color = localStorage.getItem('dashboardGlowColor') || '#db1c56';
+
+            // Convert hex color to RGB and set CSS custom property
+            const rgb = hexToRgb(color);
+            if (rgb) {
+                document.documentElement.style.setProperty('--glow-color-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+            }
+        }
         
         // Initialize menu order when page loads
         document.addEventListener('DOMContentLoaded', () => {
             initializeMenuOrder();
             initializeDashboardLayout();
+            initializeGlowSettings();
 
             // Time-of-day greeting (Good morning/afternoon/evening)
             try {
