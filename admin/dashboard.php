@@ -1002,11 +1002,27 @@ if ($invoices_result) {
                                 <li>No recent activity</li>
                             </ul>
                         </div>
-                        <div class="small-column">
-                            <div class="stat-small">Upcoming Tasks (7d)</div>
-                            <ul class="recent-activities" id="dash-upcoming-tasks">
-                                <li>No upcoming tasks</li>
-                            </ul>
+
+                        <!-- Tasks column moved into CRM summary (dashboard copy) -->
+                        <div class="tasks-column">
+                            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;">
+                                <div class="stat-small">Tasks &amp; To-Do</div>
+                                <div style="display:flex;gap:6px;align-items:center;">
+                                    <button class="btn btn-primary btn-sm" onclick="openAddTaskModal()">+ Add</button>
+                                    <select id="dashTaskStatusFilter" onchange="(function(){ currentTaskFilter = this.value || 'all'; loadTasks(); }).call(this)" style="padding:6px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text-lighter);font-size:13px;">
+                                        <option value="all">All</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="in_progress">In Progress</option>
+                                        <option value="completed">Completed</option>
+                                        <option value="cancelled">Cancelled</option>
+                                    </select>
+                                    <button class="btn btn-secondary btn-sm" onclick="loadTasks()">🔄</button>
+                                </div>
+                            </div>
+
+                            <div id="dash-tasks-list" style="max-height:420px;overflow:auto;padding-right:6px;">
+                                <div class="empty-state">Loading tasks…</div>
+                            </div>
                         </div>
                     </div>
 
@@ -4488,46 +4504,51 @@ invoices.forEach(invoice => {
                             raEl.innerHTML = '<li>No recent activity</li>';
                         }
 
-                        // Upcoming tasks (priority & status badges)
+                        // Upcoming tasks (priority & status badges) — only render if the short list container exists
                         const utEl = document.getElementById('dash-upcoming-tasks');
-                        utEl.innerHTML = '';
-                        if (s.upcoming_tasks && s.upcoming_tasks.length) {
-                            s.upcoming_tasks.forEach(t => {
-                                const li = document.createElement('li');
+                        if (utEl) {
+                            utEl.innerHTML = '';
+                            if (s.upcoming_tasks && s.upcoming_tasks.length) {
+                                s.upcoming_tasks.forEach(t => {
+                                    const li = document.createElement('li');
 
-                                const left = document.createElement('div');
-                                left.style.flex = '1';
-                                left.textContent = `${t.due_date} — ${t.title}`;
+                                    const left = document.createElement('div');
+                                    left.style.flex = '1';
+                                    left.textContent = `${t.due_date} — ${t.title}`;
 
-                                const meta = document.createElement('div');
-                                meta.className = 'activity-meta';
+                                    const meta = document.createElement('div');
+                                    meta.className = 'activity-meta';
 
-                                // priority badge
-                                const p = document.createElement('span');
-                                p.className = 'priority-badge ' + ((t.priority || '').toLowerCase() || 'medium');
-                                p.textContent = (t.priority || 'medium').toUpperCase();
-                                meta.appendChild(p);
+                                    // priority badge
+                                    const p = document.createElement('span');
+                                    p.className = 'priority-badge ' + ((t.priority || '').toLowerCase() || 'medium');
+                                    p.textContent = (t.priority || 'medium').toUpperCase();
+                                    meta.appendChild(p);
 
-                                // status badge
-                                const st = document.createElement('span');
-                                st.className = 'status-badge ' + ((t.status || '').toLowerCase() || 'pending');
-                                st.textContent = (t.status || 'pending').replace('_',' ');
-                                meta.appendChild(st);
+                                    // status badge
+                                    const st = document.createElement('span');
+                                    st.className = 'status-badge ' + ((t.status || '').toLowerCase() || 'pending');
+                                    st.textContent = (t.status || 'pending').replace('_',' ');
+                                    meta.appendChild(st);
 
-                                // client name small
-                                const client = document.createElement('div');
-                                client.style.opacity = '0.8';
-                                client.style.fontSize = '12px';
-                                client.textContent = t.client_name || 'General';
-                                meta.appendChild(client);
+                                    // client name small
+                                    const client = document.createElement('div');
+                                    client.style.opacity = '0.8';
+                                    client.style.fontSize = '12px';
+                                    client.textContent = t.client_name || 'General';
+                                    meta.appendChild(client);
 
-                                li.appendChild(left);
-                                li.appendChild(meta);
-                                utEl.appendChild(li);
-                            });
-                        } else {
-                            utEl.innerHTML = '<li>No upcoming tasks</li>';
+                                    li.appendChild(left);
+                                    li.appendChild(meta);
+                                    utEl.appendChild(li);
+                                });
+                            } else {
+                                utEl.innerHTML = '<li>No upcoming tasks</li>';
+                            }
                         }
+
+                        // Ensure dashboard copy of full Tasks list (if present) is refreshed from tasks API
+                        // loadTasks() will populate `#tasks-list`; renderTasksList will mirror into `#dash-tasks-list` if present.
 
                         // Charts (create or update) + subtle load animation
                         try {
@@ -5274,8 +5295,9 @@ invoices.forEach(invoice => {
         let currentEditTaskId = null;
         
         function loadTasks() {
-            // Get filter value from dropdown if it exists
-            const filterSelect = document.getElementById('taskStatusFilter');
+            // Prefer dashboard filter if present, otherwise fall back to page filter
+            const dashFilter = document.getElementById('dashTaskStatusFilter');
+            const filterSelect = dashFilter || document.getElementById('taskStatusFilter');
             if (filterSelect) {
                 currentTaskFilter = filterSelect.value || 'all';
             }
@@ -5293,11 +5315,14 @@ invoices.forEach(invoice => {
                         const overdue = data.tasks.filter(t => t.due_date && t.due_date < today && t.status !== 'completed' && t.status !== 'cancelled').length;
                         const urgent = data.tasks.filter(t => t.priority === 'urgent' && t.status !== 'completed' && t.status !== 'cancelled').length;
                         
-                        document.getElementById('stat-tasks-pending').textContent = pending;
-                        document.getElementById('stat-tasks-overdue').textContent = overdue;
-                        document.getElementById('stat-tasks-urgent').textContent = urgent;
+                        const statPending = document.getElementById('stat-tasks-pending');
+                        const statOverdue = document.getElementById('stat-tasks-overdue');
+                        const statUrgent = document.getElementById('stat-tasks-urgent');
+                        if (statPending) statPending.textContent = pending;
+                        if (statOverdue) statOverdue.textContent = overdue;
+                        if (statUrgent) statUrgent.textContent = urgent;
                         
-                        // Render tasks list
+                        // Render tasks list (main page) and mirror to dashboard copy
                         renderTasksList(data.tasks);
                     }
                     return data;
@@ -5310,9 +5335,12 @@ invoices.forEach(invoice => {
         
         function renderTasksList(tasks) {
             const container = document.getElementById('tasks-list');
+            const dashContainer = document.getElementById('dash-tasks-list');
             
-            if (tasks.length === 0) {
-                container.innerHTML = '<div class="empty-state"><h3>No Tasks Found</h3><p>Create your first task to get started.</p></div>';
+            if (!tasks || tasks.length === 0) {
+                const emptyHtml = '<div class="empty-state"><h3>No Tasks Found</h3><p>Create your first task to get started.</p></div>';
+                if (container) container.innerHTML = emptyHtml;
+                if (dashContainer) dashContainer.innerHTML = emptyHtml;
                 return;
             }
             
@@ -5330,7 +5358,7 @@ invoices.forEach(invoice => {
                 cancelled: '❌ Cancelled'
             };
             
-            container.innerHTML = tasks.map(task => {
+            const fullHtml = tasks.map(task => {
                 const priorityColor = priorityColors[task.priority] || '#666';
                 return `
                 <div class="task-item ${task.status === 'completed' || task.status === 'cancelled' ? 'completed' : ''}" data-status="${task.status}" data-priority="${task.priority}" data-due-date="${task.due_date || ''}">
@@ -5353,6 +5381,9 @@ invoices.forEach(invoice => {
                 </div>
                 `;
             }).join('');
+
+            if (container) container.innerHTML = fullHtml;
+            if (dashContainer) dashContainer.innerHTML = fullHtml; // mirror exact same list into dashboard column
         }
         
         function filterTasks(status) {
