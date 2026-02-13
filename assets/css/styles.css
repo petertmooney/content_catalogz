@@ -461,6 +461,60 @@ footer p {
     color: var(--text-light);
 }
 
+/* CRM - polished, professional look */
+.crm-summary {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.04);
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+    color: var(--text-lighter);
+    overflow: hidden;
+}
+.crm-summary h3 {
+    margin: 0 0 14px;
+    font-size: 18px;
+    color: var(--text-lighter);
+    letter-spacing: 0.2px;
+}
+.crm-summary .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+.crm-summary .stat-card.crm-kpi {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.03);
+    padding: 14px 16px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.crm-summary .stat-card.crm-kpi:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(2,6,23,0.6); }
+.crm-summary .stat-small { color: rgba(245,245,245,0.68); font-size: 12px; }
+.crm-summary .stat-number-sm { font-size: 20px; font-weight: 700; color: var(--text-lighter); }
+
+/* CRM layout helpers */
+.crm-summary .crm-flex { display:flex; gap:12px; align-items:flex-start; }
+.crm-summary .small-column { width:220px; flex-shrink:0; }
+
+.crm-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.crm-charts .chart-card { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius: 10px; padding: 12px; border: 1px solid rgba(255,255,255,0.03); }
+.crm-charts canvas { width: 100% !important; height: 240px !important; }
+
+.recent-activities { list-style: none; margin: 6px 0 0; padding: 0; max-height: 160px; overflow: auto; }
+.recent-activities li { padding: 8px 10px; border-radius: 6px; background: rgba(255,255,255,0.01); margin-bottom: 8px; font-size: 13px; color: rgba(245,245,245,0.9); }
+.recent-activities li strong { color: var(--accent-pink); }
+
+.revenue-trend { margin-top: 16px; background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.03); }
+.revenue-trend canvas { width: 100% !important; height: 220px !important; }
+.revenue-trend .controls { display:flex; gap:8px; align-items:center; }
+.revenue-trend .controls select { background: transparent; color: var(--text-lighter); border: 1px solid rgba(255,255,255,0.06); padding:6px 8px; border-radius:6px; }
+.revenue-trend .controls .btn { padding:6px 10px; }
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .nav-menu {
