@@ -45,6 +45,9 @@
     if (!parsed) return;
 
     const fn = window[parsed.name];
+    // Debug: report delegated actions to console for easier diagnosis
+    // eslint-disable-next-line no-console
+    console.debug(`[dashboard-ui] delegated action -> ${parsed.name}`, { element: el, args: parsed.args });
     if (typeof fn === 'function') {
       try {
         // Prefer explicit data-params attribute when present (single raw arg)
