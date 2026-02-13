@@ -208,6 +208,27 @@ section {
     position: relative;
 }
 
+/* Full-bleed utility: let section background span edge-to-edge while keeping
+   inner `.container` centered. Use on specific sections (hero, newsletter, etc.) */
+.full-bleed {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    box-sizing: border-box;
+    padding-left: 20px; /* match .container padding */
+    padding-right: 20px;
+}
+
+/* Make modals and cards fluid so they don't overflow on small screens */
+.modal .modal-content {
+    max-width: calc(100% - 40px);
+}
+
+.stat-card { max-width: 100%; box-sizing: border-box; }
+
 .consultation {
     background-color: rgba(15, 15, 15, 0.85);
     backdrop-filter: blur(10px);
