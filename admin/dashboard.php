@@ -4532,6 +4532,28 @@ invoices.forEach(invoice => {
 
                             setTimeout(() => { leadCanvas.style.transition = 'opacity 420ms ease, transform 420ms ease'; leadCanvas.style.opacity = 1; leadCanvas.style.transform = 'none'; }, 120);
                         } catch (e) { console.error('Error rendering CRM charts', e); }
+
+                        // Adjust CRM layout to try to fit the summary onto a single screen
+                        function adjustCrmLayout() {
+                            try {
+                                const el = document.getElementById('crm-summary');
+                                if (!el) return;
+                                // available vertical space from the top of the CRM section to bottom of viewport
+                                const available = window.innerHeight - el.getBoundingClientRect().top - 60;
+                                // natural required height
+                                const required = el.scrollHeight;
+                                if (required > available) {
+                                    el.classList.add('compact');
+                                } else {
+                                    el.classList.remove('compact');
+                                }
+                            } catch (err) { /* ignore */ }
+                        }
+
+                        // run once after charts rendered and again on resize
+                        setTimeout(adjustCrmLayout, 100);
+                        window.removeEventListener('resize', adjustCrmLayout);
+                        window.addEventListener('resize', () => { clearTimeout(window._crmLayoutTimer); window._crmLayoutTimer = setTimeout(adjustCrmLayout, 120); });
                     })
                     .catch(err => console.error('Error loading CRM dashboard:', err));
 

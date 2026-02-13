@@ -512,7 +512,17 @@ footer p {
 
 .crm-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
 .crm-charts .chart-card { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius: 10px; padding: 12px; border: 1px solid rgba(255,255,255,0.03); }
-.crm-charts canvas { width: 100% !important; height: 240px !important; }
+.crm-charts canvas { width: 100% !important; height: 220px !important; transition: opacity 360ms ease, transform 360ms ease; }
+
+/* Compact CRM: smaller spacing and charts so the whole section fits on one screen */
+.crm-summary.compact { padding: 10px; border-radius: 8px; }
+.crm-summary.compact .stat-number-sm { font-size: 16px; }
+.crm-summary.compact .stats-grid { gap: 8px; }
+.crm-summary.compact .crm-charts canvas { height: 140px !important; }
+.crm-summary.compact .recent-activities { max-height: 96px; font-size: 13px; }
+.crm-summary.compact .small-column { width: 180px; }
+.crm-summary.compact .revenue-trend canvas { height: 140px !important; }
+
 
 .recent-activities { list-style: none; margin: 6px 0 0; padding: 0; max-height: 160px; overflow: auto; }
 .recent-activities li { padding: 8px 10px; border-radius: 6px; background: rgba(255,255,255,0.01); margin-bottom: 8px; font-size: 13px; color: rgba(245,245,245,0.9); }
