@@ -4967,12 +4967,32 @@ invoices.forEach(invoice => {
     html += '<td>£' + parseFloat(invoice.total_cost).toFixed(2) + '</td>';
     html += '<td>£' + parseFloat(invoice.total_paid).toFixed(2) + '</td>';
     html += '<td style="color: ' + balanceColor + '; font-weight: bold;">£' + parseFloat(invoice.total_remaining).toFixed(2) + '</td>';
-    html += `<td><button class="btn btn-primary btn-sm" onclick="openInvoiceModal(${invoice.id})">Edit</button> <button class="btn btn-danger btn-sm" onclick="deleteInvoice(${invoice.id})">Delete</button></td>`;
+    html += `<td><button class="btn btn-primary btn-sm" onclick="openInvoiceModal(${invoice.id})">Edit</button> <button class="btn btn-info btn-sm" onclick="printInvoiceFromTable(${invoice.id})" title="Print Invoice">🖨️ Print</button> <button class="btn btn-warning btn-sm" onclick="emailInvoiceFromTable(${invoice.id})" title="Email Invoice">📧 Email</button> <button class="btn btn-danger btn-sm" onclick="deleteInvoice(${invoice.id})">Delete</button></td>`;
     html += '</tr>';
 });
 
             html += '</tbody></table></div>';
             container.innerHTML = html;
+        }
+
+        // Print invoice from table action
+        function printInvoiceFromTable(invoiceId) {
+            // Open the invoice modal first to load the data
+            openInvoiceModal(invoiceId);
+            // Wait a bit for the modal to load, then print
+            setTimeout(() => {
+                printInvoice();
+            }, 500);
+        }
+
+        // Email invoice from table action
+        function emailInvoiceFromTable(invoiceId) {
+            // Open the invoice modal first to load the data
+            openInvoiceModal(invoiceId);
+            // Wait a bit for the modal to load, then email
+            setTimeout(() => {
+                emailInvoice();
+            }, 500);
         }
 
         function clearInvoiceSearch() {
