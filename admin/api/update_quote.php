@@ -77,13 +77,34 @@ while ($col = $columnsResult->fetch_assoc()) {
 $useFullUpdate = in_array('services', $columns) && in_array('total_cost', $columns);
 
 if ($useFullUpdate) {
-    $sql = "UPDATE quotes SET status = ?, notes = ?, services = ?, total_cost = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+    // Include optional CRM fields if the columns exist
+    $includeLead = in_array('lead_source', $columns);
+    $includeExpected = in_array('expected_value', $columns);
+
+    $sql = "UPDATE quotes SET status = ?, notes = ?, services = ?, total_cost = ?, updated_at = CURRENT_TIMESTAMP";
+    if ($includeLead) $sql .= ", lead_source = ?";
+    if ($includeExpected) $sql .= ", expected_value = ?";
+    $sql .= " WHERE id = ?";
+
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         echo json_encode(['success' => false, 'message' => 'Database error: ' . $conn->error]);
         exit;
     }
-    $stmt->bind_param("sssdi", $status, $notes, $services, $total_cost, $quote_id);
+
+    if ($includeLead && $includeExpected) {
+        $lead = isset($_POST['lead_source']) ? trim($_POST['lead_source']) : null;
+        $expected = isset($_POST['expected_value']) ? floatval($_POST['expected_value']) : 0.0;
+        $stmt->bind_param("sssdis", $status, $notes, $services, $total_cost, $lead, $expected, $quote_id);
+    } elseif ($includeLead) {
+        $lead = isset($_POST['lead_source']) ? trim($_POST['lead_source']) : null;
+        $stmt->bind_param("ssssid", $status, $notes, $services, $total_cost, $lead, $quote_id);
+    } elseif ($includeExpected) {
+        $expected = isset($_POST['expected_value']) ? floatval($_POST['expected_value']) : 0.0;
+        $stmt->bind_param("sssidd", $status, $notes, $services, $total_cost, $expected, $quote_id);
+    } else {
+        $stmt->bind_param("sssdi", $status, $notes, $services, $total_cost, $quote_id);
+    }
 } else {
     // Simple update with only status and notes
     $sql = "UPDATE quotes SET status = ?, notes = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";

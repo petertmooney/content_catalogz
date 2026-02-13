@@ -48,6 +48,10 @@ if (empty($message)) {
 $service = trim($data['service'] ?? '');
 $status = trim($data['status'] ?? 'new');
 $notes = trim($data['notes'] ?? '');
+// Optional CRM fields
+$lead_source = isset($data['lead_source']) ? trim($data['lead_source']) : null;
+$expected_value = isset($data['expected_value']) ? floatval($data['expected_value']) : null;
+$next_follow_up = isset($data['next_follow_up']) && $data['next_follow_up'] !== '' ? trim($data['next_follow_up']) : null;
 
 // Concatenate first and last name for the name field
 $name = trim($first_name . ' ' . $last_name);
@@ -80,8 +84,8 @@ if ($result->num_rows > 0) {
 $stmt->close();
 
 // Insert the new client into quotes table - use correct column names
-$stmt = $conn->prepare("INSERT INTO quotes (name, first_name, last_name, email, company, phone, address_street, address_line2, address_city, address_county, address_postcode, address_country, message, service, status, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
-$stmt->bind_param("ssssssssssssssss", $name, $first_name, $last_name, $email, $company, $phone, $address_street, $address_line2, $address_city, $address_county, $address_postcode, $address_country, $message, $service, $status, $notes);
+$stmt = $conn->prepare("INSERT INTO quotes (name, first_name, last_name, email, company, phone, address_street, address_line2, address_city, address_county, address_postcode, address_country, message, service, status, notes, lead_source, expected_value, next_follow_up, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+$stmt->bind_param("sssssssssssssssssds", $name, $first_name, $last_name, $email, $company, $phone, $address_street, $address_line2, $address_city, $address_county, $address_postcode, $address_country, $message, $service, $status, $notes, $lead_source, $expected_value, $next_follow_up);
 
 if ($stmt->execute()) {
     $clientId = $conn->insert_id;

@@ -70,6 +70,10 @@ if ($isPaymentOnly) {
     $services = isset($data['services']) ? $data['services'] : [];
     $totalCost = isset($data['total_cost']) ? floatval($data['total_cost']) : 0.00;
     $totalPaid = isset($data['total_paid']) ? floatval($data['total_paid']) : 0.00;
+    // Optional CRM fields
+    $leadSource = isset($data['lead_source']) ? trim($data['lead_source']) : null;
+    $expectedValue = isset($data['expected_value']) ? floatval($data['expected_value']) : null;
+    $nextFollowUp = isset($data['next_follow_up']) && $data['next_follow_up'] !== '' ? trim($data['next_follow_up']) : null;
 
     // Fetch old services to compare for activity logging
     $oldServices = [];
@@ -95,14 +99,14 @@ if ($isPaymentOnly) {
     }
 
     // Update the client information
-    $stmt = $conn->prepare("UPDATE quotes SET address_street = ?, address_line2 = ?, address_city = ?, address_county = ?, address_postcode = ?, address_country = ?, services = ?, total_cost = ?, total_paid = ?, total_remaining = ? WHERE id = ?");
+    $stmt = $conn->prepare("UPDATE quotes SET address_street = ?, address_line2 = ?, address_city = ?, address_county = ?, address_postcode = ?, address_country = ?, services = ?, total_cost = ?, total_paid = ?, total_remaining = ?, lead_source = ?, expected_value = ?, next_follow_up = ? WHERE id = ?");
     if (!$stmt) {
         http_response_code(500);
         echo json_encode(['success' => false, 'message' => 'Database prepare error: ' . $conn->error]);
         exit;
     }
 
-    $stmt->bind_param("sssssssdddi", $addressStreet, $addressLine2, $addressCity, $addressCounty, $addressPostcode, $addressCountry, $servicesJson, $totalCost, $totalPaid, $totalRemaining, $clientId);
+    $stmt->bind_param("sssssssdddsdsi", $addressStreet, $addressLine2, $addressCity, $addressCounty, $addressPostcode, $addressCountry, $servicesJson, $totalCost, $totalPaid, $totalRemaining, $leadSource, $expectedValue, $nextFollowUp, $clientId);
 }
 
 if ($stmt->execute()) {
