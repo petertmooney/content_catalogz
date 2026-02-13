@@ -745,6 +745,27 @@ if ($invoices_result) {
             padding: 6px 12px;
             font-size: 13px;
         }
+
+        .stat-card.active-filter {
+            border: 2px solid #007bff;
+            background: linear-gradient(135deg, rgba(0, 123, 255, 0.1) 0%, rgba(0, 123, 255, 0.05) 100%);
+        }
+
+        .btn-outline {
+            background: white;
+            color: #007bff;
+            border: 1px solid #007bff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-outline:hover {
+            background: #007bff;
+            color: white;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -1002,19 +1023,22 @@ if ($invoices_result) {
                 </div>
 
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="filterExistingClients('active')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #28a745; font-size: 14px; margin-bottom: 5px;">Active Clients</h4>
                         <p id="active-clients-count" style="font-size: 24px; font-weight: bold; color: #28a745;">0</p>
+                        <small style="color: #666; font-size: 12px;">Click to filter active</small>
                     </div>
-                    <div class="stat-card" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="stat-card" onclick="filterExistingClients('completed')" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';">
                         <h4 style="color: #17a2b8; font-size: 14px; margin-bottom: 5px;">Completed Projects</h4>
                         <p id="total-projects-count" style="font-size: 24px; font-weight: bold; color: #17a2b8;">0</p>
+                        <small style="color: #666; font-size: 12px;">Click to filter completed</small>
                     </div>
                 </div>
 
                 <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <input type="text" id="searchClients" placeholder="Search by name, email, company..." style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ddd; width: 300px;" onkeyup="loadExistingClients()">
                     <button class="btn btn-secondary" onclick="loadExistingClients()">Refresh</button>
+                    <button class="btn btn-outline" onclick="filterExistingClients('all')">Show All</button>
                     <button class="btn btn-primary" onclick="openAddClientModal()">+ Add New Client</button>
                 </div>
 
@@ -2419,6 +2443,11 @@ if ($invoices_result) {
                     if (sectionName === 'clients') {
                         loadQuotes();
                     } else if (sectionName === 'existing-clients') {
+                        // Reset filter when switching to existing clients
+                        currentClientFilter = 'all';
+                        document.querySelectorAll('.stat-card').forEach(card => {
+                            card.classList.remove('active-filter');
+                        });
                         loadExistingClients();
                     }
                 }
@@ -3076,6 +3105,17 @@ if ($invoices_result) {
                             quote.status === 'completed'
                         );
                         
+                        // Apply status filter
+                        if (currentClientFilter === 'active') {
+                            filteredClients = filteredClients.filter(client => 
+                                client.status === 'new' || client.status === 'in_progress'
+                            );
+                        } else if (currentClientFilter === 'completed') {
+                            filteredClients = filteredClients.filter(client => 
+                                client.status === 'completed'
+                            );
+                        }
+                        
                         // Apply search filter if provided
                         if (search) {
                             const searchLower = search.toLowerCase();
@@ -3087,11 +3127,16 @@ if ($invoices_result) {
                         }
                         
                         displayExistingClients(filteredClients);
-                        document.getElementById('active-clients-count').textContent = filteredClients.length;
                         
-                        // Count total projects (completed only)
-                        const completedCount = data.quotes.filter(q => q.status === 'completed').length;
-                        document.getElementById('total-projects-count').textContent = completedCount;
+                        // Update stat counts (always show total counts, not filtered counts)
+                        const allActiveClients = data.quotes.filter(quote => 
+                            (quote.status === 'new' || quote.status === 'in_progress' || quote.status === 'completed') &&
+                            (quote.status === 'new' || quote.status === 'in_progress')
+                        );
+                        const allCompletedProjects = data.quotes.filter(q => q.status === 'completed');
+                        
+                        document.getElementById('active-clients-count').textContent = allActiveClients.length;
+                        document.getElementById('total-projects-count').textContent = allCompletedProjects.length;
                     } else {
                         console.error('Failed to load clients:', data.message);
                         document.getElementById('existing-clients-list').innerHTML = '<div class="empty-state"><h3>Error Loading Clients</h3><p>' + (data.message || 'Unknown error') + '</p></div>';
@@ -3101,6 +3146,32 @@ if ($invoices_result) {
                     console.error('Error loading clients:', error);
                     document.getElementById('existing-clients-list').innerHTML = '<div class="empty-state"><h3>Error Loading Clients</h3><p>Network error: ' + error.message + '</p></div>';
                 });
+        }
+
+        // Filter existing clients
+        let currentClientFilter = 'all'; // 'all', 'active', 'completed'
+
+        function filterExistingClients(filterType) {
+            // If clicking the same filter, reset to 'all'
+            if (currentClientFilter === filterType) {
+                currentClientFilter = 'all';
+            } else {
+                currentClientFilter = filterType;
+            }
+
+            // Update visual feedback on stat cards
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.classList.remove('active-filter');
+            });
+
+            if (currentClientFilter === 'active') {
+                document.querySelector('.stat-card:first-child').classList.add('active-filter');
+            } else if (currentClientFilter === 'completed') {
+                document.querySelector('.stat-card:nth-child(2)').classList.add('active-filter');
+            }
+
+            // Reload clients with filter
+            loadExistingClients();
         }
 
         // Display existing clients in table
