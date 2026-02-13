@@ -5706,6 +5706,11 @@ invoices.forEach(invoice => {
                                 },
                                 options: {
                                     responsive: true,
+                                    plugins: {
+                                        legend: {
+                                            position: 'bottom'
+                                        }
+                                    },
                                     scales: {
                                         y: {
                                             beginAtZero: true,

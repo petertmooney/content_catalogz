@@ -73,11 +73,43 @@ $stats['upcoming_tasks'] = $upcoming_tasks;
 
 // Lead sources breakdown
 $stmt = $conn->query("SELECT lead_source, COUNT(*) as count FROM quotes WHERE lead_source IS NOT NULL GROUP BY lead_source ORDER BY count DESC");
-$lead_sources = [];
+$lead_sources_raw = [];
 while ($row = $stmt->fetch_assoc()) {
-    $lead_sources[] = $row;
+    $lead_sources_raw[] = $row;
 }
-$stats['lead_sources'] = $lead_sources;
+
+// Define standard lead sources
+$standard_sources = ['Website', 'Facebook', 'Instagram', 'TikTok', 'Phone', 'Meeting', 'Other'];
+
+// Group non-standard sources as "Other"
+$lead_sources_grouped = [];
+$other_count = 0;
+
+foreach ($lead_sources_raw as $source) {
+    if (in_array($source['lead_source'], $standard_sources)) {
+        $lead_sources_grouped[] = $source;
+    } else {
+        $other_count += $source['count'];
+    }
+}
+
+// Add "Other" count if there are any non-standard sources
+if ($other_count > 0) {
+    // Check if "Other" already exists in the grouped array
+    $other_exists = false;
+    foreach ($lead_sources_grouped as &$grouped_source) {
+        if ($grouped_source['lead_source'] === 'Other') {
+            $grouped_source['count'] += $other_count;
+            $other_exists = true;
+            break;
+        }
+    }
+    if (!$other_exists) {
+        $lead_sources_grouped[] = ['lead_source' => 'Other', 'count' => $other_count];
+    }
+}
+
+$stats['lead_sources'] = $lead_sources_grouped;
 
 // Status breakdown
 $stmt = $conn->query("SELECT status, COUNT(*) as count FROM quotes GROUP BY status");
