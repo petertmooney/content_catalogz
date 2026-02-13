@@ -4099,6 +4099,18 @@ if ($invoices_result) {
                                         visible: (window.getComputedStyle(first).visibility !== 'hidden' && window.getComputedStyle(first).display !== 'none')
                                     };
                                     console.debug('addClientModal diagnostics -> activeElement:', details, 'targetState:', targetState);
+
+                                    // Walk ancestor chain and log computed display/visibility to find hidden ancestor
+                                    try {
+                                        const chain = [];
+                                        let el = first;
+                                        while (el) {
+                                            const cs = window.getComputedStyle(el);
+                                            chain.push({ tag: el.tagName, id: el.id || null, class: el.className || null, display: cs.display, visibility: cs.visibility, width: el.offsetWidth, height: el.offsetHeight });
+                                            el = el.parentElement;
+                                        }
+                                        console.debug('addClientModal ancestor chain (from target up):', chain);
+                                    } catch (err) { console.debug('ancestor chain error', err); }
                                 } catch (err) { console.debug('addClientModal diagnostics error', err); }
                             }, 80);
                         } catch (e) {
