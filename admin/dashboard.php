@@ -6140,8 +6140,8 @@ invoices.forEach(invoice => {
                         }
 
                         // Populate financial information
-                        calculateInvoiceTotalCost();
                         document.getElementById('totalPaid').value = parseFloat(invoice.total_paid || 0).toFixed(2);
+                        calculateInvoiceTotalCost();
 
                         document.getElementById('invoiceModal').classList.add('show');
                     } else {
