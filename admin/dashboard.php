@@ -3332,7 +3332,177 @@ if ($invoices_result) {
         }
 
         // ==================== Invoice Functions ====================
+        
+        function loadClientInvoices(clientId) {
+            fetch('api/get_client_invoices.php?client_id=' + clientId)
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('client-invoices-list');
+                    
+                    if (data.success && data.invoices && data.invoices.length > 0) {
+                        let html = '<div class="table-container"><table><thead><tr>';
+                        html += '<th>Invoice Number</th><th>Date</th><th>Total Cost</th><th>Total Paid</th><th>Balance Due</th><th>Actions</th>';
+                        html += '</tr></thead><tbody>';
+                        
+                        data.invoices.forEach(invoice => {
+                            const invoiceDate = new Date(invoice.invoice_date).toLocaleDateString('en-GB');
+                            const balanceColor = parseFloat(invoice.total_remaining) > 0 ? '#dc3545' : '#28a745';
+                            
+                            html += '<tr>';
+                            html += `<td><strong>${escapeHtml(invoice.invoice_number)}</strong></td>`;
+                            html += `<td>${invoiceDate}</td>`;
+                            html += `<td>£${parseFloat(invoice.total_cost).toFixed(2)}</td>`;
+                            html += `<td style="color: #28a745;">£${parseFloat(invoice.total_paid).toFixed(2)}</td>`;
+                            html += `<td style="color: ${balanceColor}; font-weight: bold;">£${parseFloat(invoice.total_remaining).toFixed(2)}</td>`;
+                            html += `<td>
+                                <button class="btn btn-primary btn-sm" onclick="openInvoiceModal(${invoice.id})" title="Edit Invoice">✏️ Edit</button>
+                                <button class="btn btn-info btn-sm" onclick="window.open('api/generate_invoice_pdf.php?id=${invoice.id}', '_blank')" title="View PDF">📄 PDF</button>
+                                <button class="btn btn-warning btn-sm" onclick="emailInvoiceFromClient(${invoice.id})" title="Email Invoice">📧 Email</button>
+                            </td>`;
+                            html += '</tr>';
+                        });
+                        
+                        html += '</tbody></table></div>';
+                        container.innerHTML = html;
+                    } else {
+                        container.innerHTML = '<div class="empty-state"><h3>No Invoices Yet</h3><p>Invoices generated for this client will appear here.</p></div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading client invoices:', error);
+                    document.getElementById('client-invoices-list').innerHTML = '<div class="empty-state"><h3>Error Loading Invoices</h3><p>Unable to load invoice data. Please try again.</p></div>';
+                });
+        }
 
+        function emailInvoiceFromClient(invoiceId) {
+            // Open the invoice modal first to load the data
+            openInvoiceModal(invoiceId);
+            // Wait a bit for the modal to load, then email
+            setTimeout(() => {
+                emailInvoice();
+            }, 500);
+        }
+
+        function updateInvoice(event) {
+            event.preventDefault();
+            
+            const invoiceId = document.getElementById('invoiceId').value;
+            const clientId = document.getElementById('clientId').value;
+            const invoiceNumber = document.getElementById('invoiceNumber').value;
+            const invoiceDate = document.getElementById('invoiceDate').value;
+            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            
+            // Collect services
+            const services = [];
+            const serviceRows = document.querySelectorAll('#invoiceServicesContainer .service-row');
+            serviceRows.forEach(row => {
+                const nameInput = row.querySelector('.service-name');
+                const costInput = row.querySelector('.service-cost');
+                if (nameInput && costInput) {
+                    const name = nameInput.value.trim();
+                    const cost = parseFloat(costInput.value) || 0;
+                    if (name && cost > 0) {
+                        services.push({ name, cost });
+                    }
+                }
+            });
+            
+            // Calculate total cost
+            const totalCost = services.reduce((sum, service) => sum + service.cost, 0);
+            const totalRemaining = totalCost - totalPaid;
+            
+            const invoiceData = {
+                id: invoiceId,
+                client_id: clientId,
+                invoice_number: invoiceNumber,
+                invoice_date: invoiceDate,
+                total_cost: totalCost,
+                total_paid: totalPaid,
+                total_remaining: totalRemaining,
+                services: services
+            };
+            
+            fetch('api/update_invoice.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(invoiceData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Invoice updated successfully!');
+                    closeInvoiceModal();
+                    // Refresh the invoices list if we're in the client modal
+                    if (currentClientId) {
+                        loadClientInvoices(currentClientId);
+                    }
+                    // Refresh stats
+                    loadInvoiceStats();
+                    loadDashboardStats();
+                } else {
+                    alert('Error updating invoice: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error updating invoice:', error);
+                alert('Failed to update invoice. Please try again.');
+            });
+        }
+
+        function addInvoiceServiceRow(name = '', cost = 0) {
+            const container = document.getElementById('invoiceServicesContainer');
+            const rowCount = container.querySelectorAll('.service-row').length;
+            const rowId = 'invoice-service-row-' + (rowCount + 1);
+            
+            const row = document.createElement('div');
+            row.className = 'service-row';
+            row.id = rowId;
+            row.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr auto 100px 40px; gap: 10px; align-items: end; margin-bottom: 10px; padding: 15px; background: #f8f9fa; border-radius: 4px;">
+                    <div class="form-group" style="margin: 0;">
+                        <label>Service Description</label>
+                        <input type="text" class="form-control service-name" value="${escapeHtml(name)}" placeholder="e.g., Website Design" oninput="calculateInvoiceTotalCost()">
+                    </div>
+                    <div style="font-size: 18px; font-weight: bold; color: #333; padding-bottom: 8px;">£</div>
+                    <div class="form-group" style="margin: 0;">
+                        <label>Cost (£)</label>
+                        <input type="number" class="form-control service-cost" value="${cost}" step="0.01" min="0" placeholder="0.00" oninput="calculateInvoiceTotalCost()">
+                    </div>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeInvoiceServiceRow('${rowId}')" title="Remove service">×</button>
+                </div>
+            `;
+            
+            container.appendChild(row);
+            calculateInvoiceTotalCost();
+        }
+
+        function removeInvoiceServiceRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.remove();
+                calculateInvoiceTotalCost();
+            }
+        }
+
+        function calculateInvoiceTotalCost() {
+            const serviceRows = document.querySelectorAll('#invoiceServicesContainer .service-row');
+            let totalCost = 0;
+            
+            serviceRows.forEach(row => {
+                const costInput = row.querySelector('.service-cost');
+                if (costInput) {
+                    const cost = parseFloat(costInput.value) || 0;
+                    totalCost += cost;
+                }
+            });
+            
+            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            const totalRemaining = totalCost - totalPaid;
+            
+            document.getElementById('totalCost').value = totalCost.toFixed(2);
+            document.getElementById('totalPaidDisplay').value = totalPaid.toFixed(2);
+            document.getElementById('totalRemaining').value = totalRemaining.toFixed(2);
+        }
         // Add a service row to the invoice modal
         function addInvoiceServiceRow(serviceName = '', serviceCost = 0) {
             const container = document.getElementById('invoiceServicesContainer');
