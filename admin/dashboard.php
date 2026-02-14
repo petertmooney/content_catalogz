@@ -2055,6 +2055,7 @@ if ($invoices_result) {
                 <button class="close-btn" onclick="closeNoteModal()">&times;</button>
             </div>
             <form id="noteForm" onsubmit="saveNote(event)">
+                <input type="hidden" id="noteId">
                 <input type="hidden" id="noteClientId">
                 <div class="form-group">
                     <label for="noteText">Note *</label>
@@ -6718,9 +6719,9 @@ invoices.forEach(invoice => {
                     if (item.source === 'invoice') {
                         subjectHtml = `<a href="#" onclick="openInvoiceModal(${item.id}); return false;">${escapeHtml(item.subject || 'Invoice')}</a>`;
                     } else if (item.source === 'note') {
-                        subjectHtml = `<a href="#" onclick="goToClientNote(${item.id}); return false;">${escapeHtml(item.subject || 'Note')}</a>`;
+                        subjectHtml = `<a href="#" onclick="openEditNoteModal(${item.id}); return false;">${escapeHtml(item.subject || 'Note')}</a>`;
                     } else if (item.source === 'task') {
-                        subjectHtml = `<a href="#" onclick="goToClientTask(${item.id}); return false;">${escapeHtml(item.subject || 'Task')}</a>`;
+                        subjectHtml = `<a href="#" onclick="openEditTaskModal(${item.id}); return false;">${escapeHtml(item.subject || 'Task')}</a>`;
                     } else if (item.source === 'activity') {
                         subjectHtml = `<a href="#" onclick="viewActivity(${item.id}); return false;">${escapeHtml(item.subject || 'Activity')}</a>`;
                     } else {
@@ -6863,13 +6864,13 @@ invoices.forEach(invoice => {
                     const container = document.getElementById('client-notes-list');
                     if (data.success && data.notes && data.notes.length > 0) {
                         container.innerHTML = data.notes.map(note => `
-                            <div id="client-note-${note.id}" class="note-item ${note.is_important ? 'important' : ''}">
+                            <div id="client-note-${note.id}" class="note-item ${note.is_important ? 'important' : ''}" data-note-text="${encodeURIComponent(note.note_text || '')}" data-note-important="${note.is_important ? 1 : 0}">
                                 ${note.is_important ? '<span class="note-important-badge">⭐ IMPORTANT</span>' : ''}
                                 <div class="note-text">${escapeHtml(note.note_text || '')}</div>
                                 <div class="note-meta">
                                     <span>📅 ${new Date(note.created_at).toLocaleString()}</span>
                                     <span>👤 ${escapeHtml(note.created_by_name || note.created_by_username || 'System')}</span>
-                                    <a href="javascript:void(0)" class="note-delete" onclick="deleteNote(${note.id})">Delete</a>
+                                    <a href="javascript:void(0)" class="note-edit" onclick="openEditNoteModal(${note.id})">Edit</a> <a href="javascript:void(0)" class="note-delete" onclick="deleteNote(${note.id})">Delete</a>
                                 </div>
                             </div>
                         `).join('');
@@ -6883,10 +6884,32 @@ invoices.forEach(invoice => {
         }
         
         function openAddNoteModal() {
+            document.getElementById('noteId').value = '';
+            document.querySelector('#noteModal .modal-header h3').textContent = 'Add Note';
             document.getElementById('noteClientId').value = currentClientId;
             document.getElementById('noteForm').reset();
             document.getElementById('noteClientId').value = currentClientId;
             document.getElementById('noteModal').style.display = 'flex';
+        }
+
+        function openEditNoteModal(noteId) {
+            // Populate note modal from rendered DOM (fast) and open for editing
+            const el = document.getElementById('client-note-' + noteId);
+            if (el) {
+                const text = el.dataset && el.dataset.noteText ? decodeURIComponent(el.dataset.noteText) : (el.querySelector('.note-text') ? el.querySelector('.note-text').textContent : '');
+                const important = el.dataset && el.dataset.noteImportant ? (el.dataset.noteImportant === '1') : (el.classList.contains('important'));
+                document.getElementById('noteId').value = noteId;
+                document.querySelector('#noteModal .modal-header h3').textContent = 'Edit Note';
+                document.getElementById('noteClientId').value = currentClientId;
+                document.getElementById('noteText').value = text;
+                document.getElementById('noteImportant').checked = !!important;
+                document.getElementById('noteModal').style.display = 'flex';
+                return;
+            }
+
+            // Fallback: reload notes and open the modal after load
+            loadClientNotes(currentClientId);
+            setTimeout(() => openEditNoteModal(noteId), 200);
         }
         
         function closeNoteModal() {
@@ -6895,15 +6918,20 @@ invoices.forEach(invoice => {
         
         function saveNote(event) {
             event.preventDefault();
-            
+
+            const noteId = document.getElementById('noteId').value || '';
             const formData = {
                 client_id: document.getElementById('noteClientId').value,
                 note: document.getElementById('noteText').value,
                 is_important: document.getElementById('noteImportant').checked ? 1 : 0
             };
-            
+
+            // If noteId exists -> update (PUT). Otherwise create (POST).
+            const method = noteId ? 'PUT' : 'POST';
+            if (noteId) formData.id = noteId;
+
             fetch('api/notes.php', {
-                method: 'POST',
+                method: method,
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(formData)
             })
@@ -6912,14 +6940,15 @@ invoices.forEach(invoice => {
                 if (data.success) {
                     closeNoteModal();
                     loadClientNotes(currentClientId);
-                    showNotification('Note added successfully', 'success');
+                    loadClientActivities(currentClientId);
+                    showNotification(noteId ? 'Note updated successfully' : 'Note added successfully', 'success');
                 } else {
-                    alert('Error: ' + (data.message || 'Failed to add note'));
+                    alert('Error: ' + (data.message || 'Failed to save note'));
                 }
             })
             .catch(err => {
                 console.error('Error:', err);
-                alert('Error adding note');
+                alert('Error saving note');
             });
         }
         
@@ -7284,6 +7313,7 @@ invoices.forEach(invoice => {
                             </div>
                                 <div class="client-task-actions">
                                     ${task.status !== 'completed' ? `<button class="btn btn-sm btn-primary" onclick="markTaskComplete(${task.id})">✓ Complete</button>` : ''}
+                                    <button class="btn btn-sm btn-secondary" onclick="openEditTaskModal(${task.id})">✏️ Edit</button>
                                     <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})">Delete</button>
                                 </div>
                             </div>
@@ -7630,6 +7660,7 @@ invoices.forEach(invoice => {
                         <button class="btn btn-sm btn-secondary" onclick="editTask(${task.id})">Edit</button>
                         <button class="btn btn-sm btn-info" onclick="printTask(${task.id})">🖨️ Print</button>
                         ${task.status !== 'completed' ? `<button class="btn btn-sm btn-primary" onclick="markTaskComplete(${task.id})">✓ Complete</button>` : ''}
+                        <button class="btn btn-sm btn-secondary" onclick="openEditTaskModal(${task.id})">✏️ Edit</button>
                         <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})">Delete</button>
                     </div>
                 </div>
@@ -7818,6 +7849,52 @@ invoices.forEach(invoice => {
         
         function openTaskModal() {
             openAddTaskModal();
+        }
+
+        function openEditTaskModal(taskId) {
+            // Fetch single task (API returns tasks array) and prefill the task modal for editing
+            fetch(`api/tasks.php?id=${taskId}`)
+                .then(res => res.json())
+                .then(data => {
+                    let task = null;
+                    if (data && data.success && Array.isArray(data.tasks)) {
+                        task = data.tasks.find(t => Number(t.id) === Number(taskId)) || data.tasks[0];
+                    }
+
+                    if (!task) {
+                        // fallback: try to find in rendered list
+                        const el = document.getElementById('client-task-' + taskId);
+                        if (el) {
+                            // minimal fill
+                            document.getElementById('taskId').value = taskId;
+                            document.getElementById('taskTitle').value = el.querySelector('.client-task-title') ? el.querySelector('.client-task-title').textContent.trim() : '';
+                            document.getElementById('taskDescription').value = '';
+                            document.getElementById('taskClientId').value = currentClientId || '';
+                            document.getElementById('taskPriority').value = 'normal';
+                            document.getElementById('taskDueDate').value = '';
+                            document.getElementById('taskStatus').value = 'pending';
+                            document.getElementById('taskModalTitle').textContent = 'Edit Task';
+                            document.getElementById('taskModal').style.display = 'flex';
+                            return;
+                        }
+                        alert('Task not found');
+                        return;
+                    }
+
+                    document.getElementById('taskId').value = task.id || '';
+                    document.getElementById('taskTitle').value = task.title || '';
+                    document.getElementById('taskDescription').value = task.description || '';
+                    document.getElementById('taskClientId').value = task.client_id || currentClientId || '';
+                    document.getElementById('taskPriority').value = task.priority || 'normal';
+                    document.getElementById('taskDueDate').value = task.due_date ? task.due_date.split(' ')[0] : '';
+                    document.getElementById('taskStatus').value = task.status || 'pending';
+                    document.getElementById('taskModalTitle').textContent = 'Edit Task';
+                    document.getElementById('taskModal').style.display = 'flex';
+                })
+                .catch(err => {
+                    console.error('Error loading task:', err);
+                    alert('Error loading task for editing');
+                });
         }
         
         // ==================== User Management Functions ====================
