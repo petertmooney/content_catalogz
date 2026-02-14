@@ -3556,7 +3556,7 @@ if ($invoices_result) {
                     <td style="padding: 8px 12px;"><span style="display: inline-block; padding: 3px 8px; border-radius: 10px; background: ${statusColor}; color: white; font-size: 11px; font-weight: 600;">${statusLabel}</span></td>
                     <td style="padding: 8px 12px; font-size: 13px;">${clientDate}</td>
                     <td style="padding: 8px 12px;">
-                        <div style="display: flex; gap: 3px; flex-wrap: wrap; align-items: center;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 3px; width: fit-content;">
                             <button class="btn btn-primary btn-sm" onclick="viewClientDetails(${client.id})" style="padding: 3px 6px; font-size: 10px;" title="View Details">👁️ View</button>
                             <button class="btn btn-secondary btn-sm" onclick="viewClientDetails(${client.id})" style="padding: 3px 6px; font-size: 10px;" title="Edit Client">✏️ Edit</button>
                             <button class="btn btn-secondary btn-sm" onclick="printClientFromTable(${client.id})" style="padding: 3px 6px; font-size: 10px;" title="Print Client Details">🖨️ Print</button>
