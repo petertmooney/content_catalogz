@@ -431,6 +431,12 @@ if ($invoices_result) {
             cursor: not-allowed;
         }
 
+        select:disabled {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
         .close-btn {
             float: right;
             font-size: 28px;
@@ -1709,27 +1715,27 @@ if ($invoices_result) {
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div class="form-group" style="grid-column: 1 / -1;">
                             <label for="clientAddressStreet">Street Address</label>
-                            <input type="text" id="clientAddressStreet" name="address_street" class="form-control" placeholder="123 Main Street">
+                            <input type="text" id="clientAddressStreet" name="address_street" class="form-control" placeholder="123 Main Street" readonly>
                         </div>
                         <div class="form-group" style="grid-column: 1 / -1;">
                             <label for="clientAddressLine2">Address Line 2 (Optional)</label>
-                            <input type="text" id="clientAddressLine2" name="address_line2" class="form-control" placeholder="Apartment, suite, unit, etc.">
+                            <input type="text" id="clientAddressLine2" name="address_line2" class="form-control" placeholder="Apartment, suite, unit, etc." readonly>
                         </div>
                         <div class="form-group">
                             <label for="clientAddressCity">Town/City</label>
-                            <input type="text" id="clientAddressCity" name="address_city" class="form-control" placeholder="London">
+                            <input type="text" id="clientAddressCity" name="address_city" class="form-control" placeholder="London" readonly>
                         </div>
                         <div class="form-group">
                             <label for="clientAddressCounty">County</label>
-                            <input type="text" id="clientAddressCounty" name="address_county" class="form-control" placeholder="Greater London">
+                            <input type="text" id="clientAddressCounty" name="address_county" class="form-control" placeholder="Greater London" readonly>
                         </div>
                         <div class="form-group">
                             <label for="clientAddressPostcode">Postcode</label>
-                            <input type="text" id="clientAddressPostcode" name="address_postcode" class="form-control" placeholder="SW1A 1AA" style="text-transform: uppercase;">
+                            <input type="text" id="clientAddressPostcode" name="address_postcode" class="form-control" placeholder="SW1A 1AA" style="text-transform: uppercase;" readonly>
                         </div>
                         <div class="form-group">
                             <label for="clientAddressCountry">Country</label>
-                            <input type="text" id="clientAddressCountry" name="address_country" class="form-control" value="United Kingdom">
+                            <input type="text" id="clientAddressCountry" name="address_country" class="form-control" value="United Kingdom" readonly>
                         </div>
                     </div>
                 </div>
@@ -3693,50 +3699,59 @@ if ($invoices_result) {
         function setupClientMode(mode) {
             const editControls = document.getElementById('editControls');
             const contactFields = ['clientNameInput', 'clientCompanyInput', 'clientEmailInput', 'clientPhoneInput'];
+            const addressFields = ['clientAddressStreet', 'clientAddressLine2', 'clientAddressCity', 'clientAddressCounty', 'clientAddressPostcode', 'clientAddressCountry'];
             
             if (mode === 'edit') {
                 // Show edit controls
                 editControls.style.display = 'block';
-                // Make contact fields editable
-                contactFields.forEach(fieldId => {
+                // Make contact and address fields editable
+                [...contactFields, ...addressFields].forEach(fieldId => {
                     const field = document.getElementById(fieldId);
                     field.removeAttribute('readonly');
                     field.classList.remove('readonly-field');
                 });
+                // Enable lead source select
+                document.getElementById('clientLeadSource').removeAttribute('disabled');
             } else {
                 // Hide edit controls
                 editControls.style.display = 'none';
-                // Make contact fields read-only
-                contactFields.forEach(fieldId => {
+                // Make contact and address fields read-only
+                [...contactFields, ...addressFields].forEach(fieldId => {
                     const field = document.getElementById(fieldId);
                     field.setAttribute('readonly', 'readonly');
                     field.classList.add('readonly-field');
                 });
+                // Disable lead source select
+                document.getElementById('clientLeadSource').setAttribute('disabled', 'disabled');
             }
         }
 
         function toggleEditMode() {
             const contactFields = ['clientNameInput', 'clientCompanyInput', 'clientEmailInput', 'clientPhoneInput'];
+            const addressFields = ['clientAddressStreet', 'clientAddressLine2', 'clientAddressCity', 'clientAddressCounty', 'clientAddressPostcode', 'clientAddressCountry'];
             const editControls = document.getElementById('editControls');
+            const leadSource = document.getElementById('clientLeadSource');
             
             if (currentClientMode === 'view') {
                 // Switch to edit mode
                 currentClientMode = 'edit';
                 editControls.style.display = 'block';
-                contactFields.forEach(fieldId => {
+                [...contactFields, ...addressFields].forEach(fieldId => {
                     const field = document.getElementById(fieldId);
                     field.removeAttribute('readonly');
                     field.classList.remove('readonly-field');
                 });
+                leadSource.removeAttribute('disabled');
             } else {
                 // Switch to view mode
                 currentClientMode = 'view';
                 editControls.style.display = 'none';
-                contactFields.forEach(fieldId => {
+                [...contactFields, ...addressFields].forEach(fieldId => {
                     const field = document.getElementById(fieldId);
                     field.setAttribute('readonly', 'readonly');
                     field.classList.add('readonly-field');
                 });
+                leadSource.setAttribute('disabled', 'disabled');
             }
         }
 
@@ -3747,7 +3762,14 @@ if ($invoices_result) {
                 name: document.getElementById('clientNameInput').value,
                 company: document.getElementById('clientCompanyInput').value,
                 email: document.getElementById('clientEmailInput').value,
-                phone: document.getElementById('clientPhoneInput').value
+                phone: document.getElementById('clientPhoneInput').value,
+                lead_source: document.getElementById('clientLeadSource').value,
+                address_street: document.getElementById('clientAddressStreet').value,
+                address_line2: document.getElementById('clientAddressLine2').value,
+                address_city: document.getElementById('clientAddressCity').value,
+                address_county: document.getElementById('clientAddressCounty').value,
+                address_postcode: document.getElementById('clientAddressPostcode').value,
+                address_country: document.getElementById('clientAddressCountry').value
             };
             
             fetch('api/update_client.php', {
