@@ -7835,6 +7835,7 @@ invoices.forEach(invoice => {
                     loadTasks();
                     if (currentClientId) {
                         loadClientTasks(currentClientId);
+                        loadClientActivities(currentClientId);
                     }
                     showNotification(taskId ? 'Task updated successfully' : 'Task created successfully', 'success');
                 } else {
