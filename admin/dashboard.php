@@ -132,6 +132,7 @@ if ($invoices_result) {
             height: calc(100vh - 89px); /* Full height minus navbar */
             overflow-y: auto; /* Allow internal scrolling if content overflows */
             z-index: 999;
+            pointer-events: auto; /* ensure sidebar remains interactive */
         }
 
         .sidebar a {
@@ -6869,7 +6870,6 @@ invoices.forEach(invoice => {
                 console.error('Error loading payments:', err);
                 document.getElementById('invoice-payments-list').innerHTML = '<div class="empty-state"><p>Error loading payment history.</p></div>';
             });
-        }
             fetch('api/activities.php?client_id=' + clientId)
             .then(res => res.json())
             .then(data => {
@@ -8373,6 +8373,70 @@ invoices.forEach(invoice => {
                     dg.innerHTML = `${part}, ${nameText}${roleHtml}`;
                 }
             } catch (e) { /* ignore */ }
+
+            // Defensive fallback: ensure sidebar links remain clickable even if inline handlers fail
+            try {
+                // expose core functions to window (defensive)
+                if (typeof window.showSection !== 'function' && typeof showSection === 'function') {
+                    window.showSection = showSection;
+                }
+                if (typeof window.toggleSubmenu !== 'function' && typeof toggleSubmenu === 'function') {
+                    window.toggleSubmenu = toggleSubmenu;
+                }
+
+                // Attach robust click handlers to sidebar anchors
+                document.querySelectorAll('.sidebar a').forEach(a => {
+                    // skip external links and links with real href targets (like export.php or /)
+                    const href = a.getAttribute('href') || '';
+                    if (href.startsWith('http') || href.startsWith('/') || href.indexOf('.php') !== -1) return;
+
+                    a.addEventListener('click', (ev) => {
+                        try {
+                            ev.preventDefault();
+                            const onclick = a.getAttribute('onclick') || '';
+                            if (onclick.includes("showSection(")) {
+                                const m = onclick.match(/showSection\(['\"]([^'\"]+)['\"]\)/);
+                                if (m) return window.showSection(m[1]);
+                            }
+                            if (onclick.includes("toggleSubmenu(")) {
+                                const m = onclick.match(/toggleSubmenu\(event,\s*['\"]([^'\"]+)['\"]\)/);
+                                if (m) return window.toggleSubmenu(ev, m[1]);
+                            }
+                            // fallback: call function by name if present
+                            const fn = onclick.split('(')[0].trim();
+                            if (fn && typeof window[fn] === 'function') {
+                                return window[fn]();
+                            }
+                        } catch (err) {
+                            console.error('sidebar fallback handler error:', err);
+                        }
+                    }, { passive: true });
+                });
+
+                // Ensure menu-parent elements toggle submenu on click
+                document.querySelectorAll('.sidebar .menu-parent').forEach(parent => {
+                    parent.addEventListener('click', (ev) => {
+                        try {
+                            const next = parent.nextElementSibling;
+                            if (next && next.classList.contains('submenu')) {
+                                ev.preventDefault();
+                                const id = next.id;
+                                if (typeof window.toggleSubmenu === 'function') {
+                                    window.toggleSubmenu(ev, id);
+                                } else {
+                                    next.classList.toggle('open');
+                                    parent.classList.toggle('open');
+                                }
+                            }
+                        } catch (err) { /* ignore */ }
+                    }, { passive: true });
+                });
+
+                // final sanity log
+                console.log('✅ Sidebar fallback handlers attached');
+            } catch (err) {
+                console.error('Failed to attach sidebar fallback handlers:', err);
+            }
         });
     </script>
 </body>
