@@ -2429,7 +2429,7 @@ if ($invoices_result) {
             <!-- Invoice Details -->
             <div style="background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px;">
                 <h4 style="margin-top: 0; margin-bottom: 15px; color: #333;">Invoice Information</h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px;">
                     <div class="form-group">
                         <label for="invoiceNumber">Invoice Number</label>
                         <input type="text" id="invoiceNumber" class="form-control" readonly style="background: #f8f9fa;">
@@ -2437,6 +2437,10 @@ if ($invoices_result) {
                     <div class="form-group">
                         <label for="invoiceDate">Invoice Date</label>
                         <input type="date" id="invoiceDate" class="form-control" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="invoiceDueDate">Due Date</label>
+                        <input type="date" id="invoiceDueDate" class="form-control" readonly style="background: #f8f9fa;">
                     </div>
                     <div class="form-group">
                         <label for="invoiceStatus">Status</label>
@@ -5881,6 +5885,7 @@ invoices.forEach(invoice => {
                         document.getElementById('invoiceId').value = invoice.id;
                         document.getElementById('invoiceNumber').value = invoice.invoice_number;
                         document.getElementById('invoiceDate').value = invoice.invoice_date;
+                        document.getElementById('invoiceDueDate').value = invoice.due_date || '';
                         
                         // Populate invoice status with color
                         const statusElement = document.getElementById('invoiceStatus');
@@ -6713,63 +6718,6 @@ invoices.forEach(invoice => {
                 });
         }
         
-        function openInvoiceModal(invoiceId) {
-            fetch('api/get_invoice.php?id=' + invoiceId)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const invoice = data.invoice;
-                        
-                        // Populate client information
-                        document.getElementById('clientId').value = invoice.client_id;
-                        document.getElementById('clientName').textContent = invoice.name || 'N/A';
-                        document.getElementById('clientCompany').textContent = invoice.company || 'N/A';
-                        document.getElementById('clientEmail').textContent = invoice.email || 'N/A';
-                        document.getElementById('clientPhone').textContent = invoice.phone || 'N/A';
-                        
-                        // Populate address fields
-                        document.getElementById('clientAddressStreet').value = invoice.address_street || '';
-                        document.getElementById('clientAddressLine2').value = invoice.address_line2 || '';
-                        document.getElementById('clientAddressCity').value = invoice.address_city || '';
-                        document.getElementById('clientAddressCounty').value = invoice.address_county || '';
-                        document.getElementById('clientAddressPostcode').value = invoice.address_postcode || '';
-                        document.getElementById('clientAddressCountry').value = invoice.address_country || 'United Kingdom';
-                        
-                        // Populate invoice information
-                        document.getElementById('invoiceId').value = invoice.id;
-                        document.getElementById('invoiceNumber').value = invoice.invoice_number;
-                        document.getElementById('invoiceDate').value = invoice.invoice_date;
-                        
-                        // Clear existing services
-                        document.getElementById('invoiceServicesContainer').innerHTML = '';
-                        
-                        // Populate services
-                        if (invoice.services && invoice.services.length > 0) {
-                            invoice.services.forEach(service => {
-                                addInvoiceServiceRow(service.description, service.unit_price);
-                            });
-                        } else {
-                            // Add one empty row if no services
-                            addInvoiceServiceRow();
-                        }
-                        
-                        // Populate financial information
-                        document.getElementById('totalPaid').value = parseFloat(invoice.total_paid || 0).toFixed(2);
-                        
-                        // Calculate totals once after everything is loaded
-                        calculateInvoiceTotalCost();
-                        
-                        document.getElementById('invoiceModal').classList.add('show');
-                    } else {
-                        alert('Error loading invoice: ' + (data.message || 'Unknown error'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading invoice:', error);
-                    alert('Failed to load invoice details');
-                });
-        }
-        
         function closeInvoiceModal() {
             document.getElementById('invoiceModal').classList.remove('show');
         }
@@ -6919,60 +6867,9 @@ invoices.forEach(invoice => {
             })
             .catch(err => {
                 console.error('Error loading payments:', err);
-                document.getElementById('client-payments-list').innerHTML = '<div class="empty-state"><p>Error loading payment history.</p></div>';
+                document.getElementById('invoice-payments-list').innerHTML = '<div class="empty-state"><p>Error loading payment history.</p></div>';
             });
         }
-            .then(res => res.json())
-            .then(data => {
-                const container = document.getElementById('client-payments-list');
-                
-                // Filter only payment activities
-                const payments = data.activities ? data.activities.filter(a => a.type === 'payment_received') : [];
-                
-                if (payments.length === 0) {
-                    container.innerHTML = '<div class="empty-state"><p>No payments recorded yet.</p></div>';
-                    return;
-                }
-                
-                // Sort by date, newest first
-                payments.sort((a, b) => new Date(b.activity_date) - new Date(a.activity_date));
-                
-                let html = '<div style="overflow-x: auto;">';
-                html += '<table style="width: 100%; border-collapse: collapse;">';
-                html += '<thead><tr style="background: #f8f9fa; border-bottom: 2px solid #ddd;">';
-                html += '<th style="padding: 10px; text-align: left;">Date</th>';
-                html += '<th style="padding: 10px; text-align: left;">Amount</th>';
-                html += '<th style="padding: 10px; text-align: left;">Details</th>';
-                html += '</tr></thead><tbody>';
-                
-                payments.forEach(payment => {
-                    const date = new Date(payment.activity_date);
-                    const dateStr = date.toLocaleDateString('en-GB', { 
-                        day: '2-digit', 
-                        month: 'short', 
-                        year: 'numeric' 
-                    });
-                    
-                    // Extract amount from subject (e.g., "Payment Received: £500.00")
-                    const amountMatch = payment.subject.match(/£([\d,]+\.\d{2})/);
-                    const amount = amountMatch ? amountMatch[1] : '0.00';
-                    
-                    html += '<tr style="border-bottom: 1px solid #eee;">';
-                    html += `<td style="padding: 10px;">${dateStr}</td>`;
-                    html += `<td style="padding: 10px; font-weight: bold; color: #28a745;">£${amount}</td>`;
-                    html += `<td style="padding: 10px; color: #666;">${escapeHtml(payment.description || '')}</td>`;
-                    html += '</tr>';
-                });
-                
-                html += '</tbody></table></div>';
-                container.innerHTML = html;
-            })
-            .catch(err => {
-                console.error('Error loading payments:', err);
-            });
-        }
-
-        function loadInvoicePayments(clientId) {
             fetch('api/activities.php?client_id=' + clientId)
             .then(res => res.json())
             .then(data => {
