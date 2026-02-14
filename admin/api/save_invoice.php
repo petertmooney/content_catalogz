@@ -80,6 +80,15 @@ if ($stmt->execute()) {
         $serviceStmt->close();
     }
     
+    // Log activity for invoice creation
+    $activityStmt = $conn->prepare("INSERT INTO activities (client_id, type, subject, description, activity_date, created_by) VALUES (?, 'invoice_sent', ?, ?, NOW(), ?)");
+    $activitySubject = "Invoice Generated: " . $invoiceNumber;
+    $activityDescription = "Invoice created with total £" . number_format($totalCost, 2);
+    $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+    $activityStmt->bind_param("issi", $clientId, $activitySubject, $activityDescription, $userId);
+    $activityStmt->execute();
+    $activityStmt->close();
+    
     echo json_encode([
         'success' => true, 
         'message' => 'Invoice saved successfully',
