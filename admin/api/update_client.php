@@ -72,11 +72,20 @@ if ($isPaymentOnly) {
         echo json_encode(['success' => false, 'message' => 'Name is required']);
         exit;
     }
+    /*
     if (empty($email)) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'Email is required']);
         exit;
     }
+    
+    // Validate email format
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Invalid email format']);
+        exit;
+    }
+    */
     $addressStreet = isset($data['address_street']) ? trim($data['address_street']) : null;
     $addressLine2 = isset($data['address_line2']) ? trim($data['address_line2']) : null;
     $addressCity = isset($data['address_city']) ? trim($data['address_city']) : null;
@@ -84,6 +93,26 @@ if ($isPaymentOnly) {
     $addressPostcode = isset($data['address_postcode']) ? trim($data['address_postcode']) : null;
     $addressCountry = isset($data['address_country']) ? trim($data['address_country']) : 'United Kingdom';
     $services = isset($data['services']) ? $data['services'] : [];
+    
+    // Validate services array
+    if (!is_array($services)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Services must be an array']);
+        exit;
+    }
+    
+    // Clean up services array - remove invalid entries
+    $validServices = [];
+    foreach ($services as $service) {
+        if (is_array($service) && isset($service['name']) && isset($service['cost']) && 
+            !empty(trim($service['name'])) && is_numeric($service['cost'])) {
+            $validServices[] = [
+                'name' => trim($service['name']),
+                'cost' => floatval($service['cost'])
+            ];
+        }
+    }
+    $services = $validServices;
     $totalCost = isset($data['total_cost']) ? floatval($data['total_cost']) : 0.00;
     $totalPaid = isset($data['total_paid']) ? floatval($data['total_paid']) : 0.00;
     $leadSource = isset($data['lead_source']) ? trim($data['lead_source']) : null;
@@ -120,44 +149,54 @@ if ($isPaymentOnly) {
     }
 
     $stmt->bind_param("sssssssssssssdddi", $name, $company, $email, $phone, $addressStreet, $addressLine2, $addressCity, $addressCounty, $addressPostcode, $addressCountry, $leadSource, $servicesJson, $totalCost, $totalPaid, $totalRemaining, $clientId);
-}
 
-if ($stmt->execute()) {
+    if (!$stmt->execute()) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Database execute error: ' . $stmt->error]);
+        exit;
+    }
+    
     // Log activity if services changed (only for full updates)
+    /*
     if (!$isPaymentOnly) {
-        $servicesChanged = false;
-        $activityDescription = '';
-        
-        // Check if services were added or modified
-        $newServiceNames = array_column($services, 'name');
-        $oldServiceNames = array_column($oldServices, 'name');
-        
-        // Find added services
-        $addedServices = array_diff($newServiceNames, $oldServiceNames);
-        
-        if (!empty($addedServices)) {
-            $servicesChanged = true;
-            $servicesList = implode(', ', $addedServices);
-            $activityDescription = "New service(s) added: " . $servicesList;
+        try {
+            $servicesChanged = false;
+            $activityDescription = '';
             
-            // Log the activity
-            $userId = $_SESSION['user_id'] ?? 1;
-            $activityStmt = $conn->prepare("INSERT INTO activities (client_id, type, subject, description, activity_date, created_by) VALUES (?, 'note', ?, ?, NOW(), ?)");
-            $activitySubject = "Services Updated";
-            $activityStmt->bind_param("issi", $clientId, $activitySubject, $activityDescription, $userId);
-            $activityStmt->execute();
-            $activityStmt->close();
+            // Check if services were added or modified
+            $newServiceNames = is_array($services) ? array_column($services, 'name') : [];
+            $oldServiceNames = is_array($oldServices) ? array_column($oldServices, 'name') : [];
+            
+            // Find added services
+            $addedServices = array_diff($newServiceNames, $oldServiceNames);
+            
+            if (!empty($addedServices)) {
+                $servicesChanged = true;
+                $servicesList = implode(', ', $addedServices);
+                $activityDescription = "New service(s) added: " . $servicesList;
+                
+                // Log the activity
+                $userId = $_SESSION['user_id'] ?? 1;
+                $activityStmt = $conn->prepare("INSERT INTO activities (client_id, type, subject, description, activity_date, created_by) VALUES (?, 'note', ?, ?, NOW(), ?)");
+                if ($activityStmt) {
+                    $activitySubject = "Services Updated";
+                    $activityStmt->bind_param("issi", $clientId, $activitySubject, $activityDescription, $userId);
+                    $activityStmt->execute();
+                    $activityStmt->close();
+                }
+            }
+        } catch (Exception $e) {
+            // Log activity logging error but don't fail the update
+            error_log("Activity logging error: " . $e->getMessage());
         }
     }
+    */
     
     echo json_encode([
         'success' => true, 
         'message' => 'Client information updated successfully',
         'total_remaining' => number_format($totalRemaining, 2)
     ]);
-} else {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Database error: ' . $stmt->error]);
 }
 
 $stmt->close();
