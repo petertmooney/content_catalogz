@@ -3664,9 +3664,21 @@ if ($invoices_result) {
             // Fetch all quotes except 'contacted' and 'declined' to show as existing clients
             fetch('api/get_quotes.php')
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error('HTTP ' + response.status);
+                    // If redirected to login (session expired), send user there
+                    if (response.redirected || response.status === 302 || response.status === 401) {
+                        window.location = '/admin/login.php';
+                        throw new Error('Not authenticated');
                     }
+
+                    const ct = (response.headers.get('content-type') || '').toLowerCase();
+                    if (!ct.includes('application/json')) {
+                        return response.text().then(text => { throw new Error('Unexpected non-JSON response'); });
+                    }
+
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.message || 'HTTP ' + response.status); });
+                    }
+
                     return response.json();
                 })
                 .then(data => {
@@ -3797,37 +3809,70 @@ if ($invoices_result) {
 
         // View client details (reuse quote modal)
         function viewClientDetails(clientId, mode = 'view') {
-            // Fetch client data
+            // Fetch client data (with defensive checks for auth/HTML responses)
             fetch('api/get_client.php?id=' + clientId)
-                .then(response => response.json())
+                .then(response => {
+                    // If not authenticated, redirect to login
+                    if (response.redirected || response.status === 302 || response.status === 401) {
+                        window.location = '/admin/login.php';
+                        return Promise.reject(new Error('Not authenticated'));
+                    }
+
+                    const ct = (response.headers.get('content-type') || '').toLowerCase();
+                    if (!ct.includes('application/json')) {
+                        return response.text().then(text => {
+                            console.error('Unexpected non-JSON response from get_client.php:', response.status, text.slice(0, 500));
+                            throw new Error('Unexpected server response (not JSON)');
+                        });
+                    }
+
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.message || 'HTTP ' + response.status); });
+                    }
+
+                    return response.json();
+                })
                 .then(data => {
-                    if (data.success) {
+                    if (data && data.success) {
                         openClientModal(data.client, mode);
                     } else {
-                        alert('Error loading client details: ' + data.message);
+                        alert('Error loading client details: ' + (data && data.message ? data.message : 'Unknown error'));
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    alert('Failed to load client details');
+                    console.error('Error loading client details:', error);
+                    alert('Failed to load client details — you may need to sign in again.');
                 });
         }
 
         // Print client details directly from table (without opening modal)
         function printClientFromTable(clientId) {
-            // Fetch client data
+            // Fetch client data for printing (defensive checks)
             fetch('api/get_client.php?id=' + clientId)
-                .then(response => response.json())
+                .then(response => {
+                    if (response.redirected || response.status === 302 || response.status === 401) {
+                        window.location = '/admin/login.php';
+                        return Promise.reject(new Error('Not authenticated'));
+                    }
+                    const ct = (response.headers.get('content-type') || '').toLowerCase();
+                    if (!ct.includes('application/json')) {
+                        return response.text().then(text => { throw new Error('Unexpected server response'); });
+                    }
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.message || 'HTTP ' + response.status); });
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    if (data.success) {
+                    if (data && data.success) {
                         printClientDetailsFromData(data.client);
                     } else {
-                        alert('Error loading client details: ' + data.message);
+                        alert('Error loading client details: ' + (data && data.message ? data.message : 'Unknown error'));
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    alert('Failed to load client details');
+                    console.error('Error loading client for print:', error);
+                    alert('Failed to load client details — you may need to sign in again.');
                 });
         }
 
