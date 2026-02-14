@@ -3828,7 +3828,7 @@ if ($invoices_result) {
                     if (servicesChanged || paymentsChanged) {
                         // Auto-generate invoice
                         if (totalCost > 0) {
-                            generateInvoiceForClient();
+                            generateInvoiceForClient(totalCost);
                         }
                     }
                     
@@ -4104,10 +4104,10 @@ if ($invoices_result) {
             });
         }
 
-        function generateInvoiceForClient() {
+        function generateInvoiceForClient(totalCostOverride = null) {
             const clientId = document.getElementById('clientId').value;
             const clientName = document.getElementById('clientName').textContent;
-            const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
+            const totalCost = totalCostOverride !== null ? totalCostOverride : (parseFloat(document.getElementById('totalCost').value) || 0);
             const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
             
             if (totalCost === 0) {
