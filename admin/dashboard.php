@@ -3562,20 +3562,7 @@ if ($invoices_result) {
             }
         }
 
-        function calculateInvoiceTotalCost() {
-            let total = 0;
-            document.querySelectorAll('#invoiceServicesContainer .service-cost').forEach(input => {
-                total += parseFloat(input.value) || 0;
-            });
-            document.getElementById('totalCost').value = total.toFixed(2);
 
-            // Update paid and remaining
-            const paid = parseFloat(document.getElementById('totalPaid').value) || 0;
-            const remaining = total - paid;
-
-            document.getElementById('totalPaidDisplay').value = paid.toFixed(2);
-            document.getElementById('totalRemaining').value = remaining.toFixed(2);
-        }
 
         function updateInvoice(event) {
             event.preventDefault();
