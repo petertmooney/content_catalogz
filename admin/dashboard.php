@@ -3839,32 +3839,17 @@ if ($invoices_result) {
         // View client details (reuse quote modal)
         function viewClientDetails(clientId, mode = 'view') {
             console.log('Fetching client details for id=' + clientId);
-            // Fetch client data (with defensive checks for auth/HTML responses)
-            fetch('api/get_client.php?id=' + clientId)
-                .then(response => {
-                    // If not authenticated, redirect to login
-                    if (response.redirected || response.status === 302 || response.status === 401) {
-                        window.location = '/admin/login.php';
-                        return Promise.reject(new Error('Not authenticated'));
-                    }
 
-                    const ct = (response.headers.get('content-type') || '').toLowerCase();
-                    if (!ct.includes('application/json')) {
-                        return response.text().then(text => {
-                            console.error('Unexpected non-JSON response from get_client.php:', response.status, text.slice(0, 500));
-                            throw new Error('Unexpected server response (not JSON)');
-                        });
-                    }
-
-                    if (!response.ok) {
-                        return response.json().then(err => { throw new Error(err.message || 'HTTP ' + response.status); });
-                    }
-
-                    return response.json();
-                })
+            fetchJson('api/get_client.php?id=' + clientId)
                 .then(data => {
+                    console.log('Client data received for id=' + clientId, data);
                     if (data && data.success) {
-                        openClientModal(data.client, mode);
+                        try {
+                            openClientModal(data.client, mode);
+                        } catch (err) {
+                            console.error('openClientModal threw an error:', err);
+                            alert('Failed to display client details: ' + (err && err.message ? err.message : err));
+                        }
                     } else {
                         alert('Error loading client details: ' + (data && data.message ? data.message : 'Unknown error'));
                     }
@@ -3878,23 +3863,10 @@ if ($invoices_result) {
         // Print client details directly from table (without opening modal)
         function printClientFromTable(clientId) {
             console.log('Printing client from table — fetching id=' + clientId);
-            // Fetch client data for printing (defensive checks)
-            fetch('api/get_client.php?id=' + clientId)
-                .then(response => {
-                    if (response.redirected || response.status === 302 || response.status === 401) {
-                        window.location = '/admin/login.php';
-                        return Promise.reject(new Error('Not authenticated'));
-                    }
-                    const ct = (response.headers.get('content-type') || '').toLowerCase();
-                    if (!ct.includes('application/json')) {
-                        return response.text().then(text => { throw new Error('Unexpected server response'); });
-                    }
-                    if (!response.ok) {
-                        return response.json().then(err => { throw new Error(err.message || 'HTTP ' + response.status); });
-                    }
-                    return response.json();
-                })
+
+            fetchJson('api/get_client.php?id=' + clientId)
                 .then(data => {
+                    console.log('printClientFromTable received:', data);
                     if (data && data.success) {
                         printClientDetailsFromData(data.client);
                     } else {
