@@ -4195,7 +4195,7 @@ if ($invoices_result) {
                         })).sort((a, b) => a.name.localeCompare(b.name));
                         
                         const servicesChanged = JSON.stringify(currentServicesNormalized) !== JSON.stringify(existingServicesNormalized);
-                        const paymentsChanged = Math.abs(currentTotalPaid - existingTotalPaid) > 0.01; // Allow for small floating point differences
+                        const paymentsChanged = Math.abs(totalPaid - existingTotalPaid) > 0.01; // Allow for small floating point differences
                         
                         if (servicesChanged || paymentsChanged) {
                             // Services or payments changed, generate new invoice
