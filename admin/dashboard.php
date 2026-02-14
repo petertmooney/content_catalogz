@@ -1666,10 +1666,9 @@ if ($invoices_result) {
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h4 style="margin: 0; color: #333;">Contact Information</h4>
-                        <div id="editModeControls" style="display: none;">
-                            <button type="button" class="btn btn-sm btn-secondary" onclick="toggleEditMode()" id="editModeBtn">✏️ Edit</button>
-                            <button type="button" class="btn btn-sm btn-success" onclick="saveClientChanges()" id="saveBtn" style="display: none;">💾 Save</button>
-                            <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEditMode()" id="cancelBtn" style="display: none;">❌ Cancel</button>
+                        <div id="editControls" style="display: none;">
+                            <button type="button" class="btn btn-sm btn-success" onclick="saveClientChanges()" id="saveBtn">💾 Save</button>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEditMode()" id="cancelBtn">❌ Cancel</button>
                         </div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
