@@ -1799,7 +1799,7 @@ if ($invoices_result) {
                         <button type="button" class="btn btn-primary" onclick="generateInvoiceForClient()" title="Generate and save invoice to database">📄 Generate Invoice</button>
                         <button type="button" class="btn btn-secondary" onclick="composeEmail()">✉️ Send Email</button>
                         <button type="button" class="btn btn-secondary" onclick="printClientDetails()" title="Print client details">🖨️ Print Details</button>
-                        <button type="button" class="btn btn-secondary" onclick="printInvoice()">🖨️ Print Invoice</button>
+                        <button type="button" class="btn btn-secondary" onclick="printClientInvoice()">🖨️ Print Invoice</button>
                         <button type="button" class="btn btn-secondary" onclick="emailInvoice()">📧 Email Invoice</button>
                         <button type="submit" class="btn btn-primary">Save Changes</button>
                     </div>
@@ -4192,6 +4192,29 @@ if ($invoices_result) {
             });
         }
 
+        function printClientInvoice() {
+            const clientId = document.getElementById('clientId').value;
+            
+            // First check if an invoice already exists for this client
+            fetch('api/get_client_invoices.php?client_id=' + clientId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.invoices && data.invoices.length > 0) {
+                        // Open the most recent invoice PDF
+                        const latestInvoice = data.invoices[0];
+                        window.open('api/generate_invoice_pdf.php?id=' + latestInvoice.id, '_blank');
+                    } else {
+                        // No invoice exists, generate one first
+                        generateInvoiceForClient();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking for existing invoices:', error);
+                    // If we can't check, just try to generate
+                    generateInvoiceForClient();
+                });
+        }
+
         async function printInvoice() {
             // Get current client data from the form
             const clientId = document.getElementById('clientId').value;
@@ -5552,12 +5575,8 @@ invoices.forEach(invoice => {
 
         // Print invoice from table action
         function printInvoiceFromTable(invoiceId) {
-            // Open the invoice modal first to load the data
-            openInvoiceModal(invoiceId);
-            // Wait a bit for the modal to load, then print
-            setTimeout(() => {
-                printInvoice();
-            }, 500);
+            // Open PDF view in new window for printing
+            window.open('api/generate_invoice_pdf.php?id=' + invoiceId, '_blank');
         }
 
         // Email invoice from table action
