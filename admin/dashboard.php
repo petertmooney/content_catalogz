@@ -4353,17 +4353,13 @@ if ($invoices_result) {
             serviceRows.forEach(row => {
                 const select = row.querySelector('.service-select');
                 const customInput = row.querySelector('.service-custom');
-                const cost = parseFloat(row.querySelector('.service-cost').value) || 0;
+                const costInput = row.querySelector('.service-cost');
+                const cost = costInput ? (parseFloat(costInput.value) || 0) : 0;
                 
                 let name = '';
-                if (select.value === 'Other') {
-                    name = customInput.value.trim();
-                } else {
-                    name = select.value;
-                }
-                
-                if (name) {  // Only add if service has a name
-                    services.push({ name, cost });
+                if (select && select.value === 'Other') {
+                    name = customInput ? customInput.value.trim() : '';
+                } else if (select) {
                 }
             });
             
@@ -6078,6 +6074,13 @@ invoices.forEach(invoice => {
                         // Status breakdown pie chart
                         const statusCanvas = document.getElementById('statusChart');
                         if (statusCanvas) {
+                            // destroy previous chart instance (if any)
+                            window._dashboardCharts = window._dashboardCharts || {};
+                            if (window._dashboardCharts.statusChart) {
+                                try { window._dashboardCharts.statusChart.destroy(); } catch(e) { console.warn('failed to destroy previous statusChart', e); }
+                                delete window._dashboardCharts.statusChart;
+                            }
+
                             const statusCtx = statusCanvas.getContext('2d');
                             const statusChart = new Chart(statusCtx, {
                                 type: 'doughnut',
@@ -6148,13 +6151,24 @@ invoices.forEach(invoice => {
                                 const rect = statusCanvas.getBoundingClientRect();
                                 const x = event.clientX - rect.left;
                                 const y = event.clientY - rect.top;
-                                statusChart._handleClick(event, statusChart, x, y);
+                                try { statusChart._handleClick(event, statusChart, x, y); } catch(e) { console.warn('statusChart click failed', e); }
                             };
+
+                            // persist chart instance for safe destroy later
+                            window._dashboardCharts = window._dashboardCharts || {};
+                            window._dashboardCharts.statusChart = statusChart;
                         }
 
                         // Lead sources bar chart
                         const leadCanvas = document.getElementById('leadSourceChart');
                         if (leadCanvas) {
+                            // destroy previous chart instance (if any)
+                            window._dashboardCharts = window._dashboardCharts || {};
+                            if (window._dashboardCharts.leadChart) {
+                                try { window._dashboardCharts.leadChart.destroy(); } catch(e) { console.warn('failed to destroy previous leadChart', e); }
+                                delete window._dashboardCharts.leadChart;
+                            }
+
                             const leadCtx = leadCanvas.getContext('2d');
                             const leadLabels = stats.lead_sources?.map(item => item.lead_source || 'Unknown') || [];
                             const leadCounts = stats.lead_sources?.map(item => item.count) || [];
@@ -6236,8 +6250,12 @@ invoices.forEach(invoice => {
                                 const rect = leadCanvas.getBoundingClientRect();
                                 const x = event.clientX - rect.left;
                                 const y = event.clientY - rect.top;
-                                leadChart._handleClick(event, leadChart, x, y);
+                                try { leadChart._handleClick(event, leadChart, x, y); } catch(e) { console.warn('leadChart click failed', e); }
                             };
+
+                            // persist chart instance for safe destroy later
+                            window._dashboardCharts = window._dashboardCharts || {};
+                            window._dashboardCharts.leadChart = leadChart;
                         }
                     }
                 })
@@ -6252,6 +6270,14 @@ invoices.forEach(invoice => {
                             const revenueCtx = revenueCanvas.getContext('2d');
                             const labels = Object.keys(data.months);
                             const values = Object.values(data.months);
+
+                            // destroy previous chart instance (if any)
+                            window._dashboardCharts = window._dashboardCharts || {};
+                            if (window._dashboardCharts.revenueChart) {
+                                try { window._dashboardCharts.revenueChart.destroy(); } catch(e) { console.warn('failed to destroy previous revenueChart', e); }
+                                delete window._dashboardCharts.revenueChart;
+                            }
+
                             const revenueChart = new Chart(revenueCtx, {
                                 type: 'line',
                                 data: {
@@ -6317,8 +6343,12 @@ invoices.forEach(invoice => {
                                 const rect = revenueCanvas.getBoundingClientRect();
                                 const x = event.clientX - rect.left;
                                 const y = event.clientY - rect.top;
-                                revenueChart._handleClick(event, revenueChart, x, y);
+                                try { revenueChart._handleClick(event, revenueChart, x, y); } catch(e) { console.warn('revenueChart click failed', e); }
                             };
+
+                            // persist chart instance for safe destroy later
+                            window._dashboardCharts = window._dashboardCharts || {};
+                            window._dashboardCharts.revenueChart = revenueChart;
                         }
                     }
                 })
@@ -6336,6 +6366,13 @@ invoices.forEach(invoice => {
                                 acc[priority] = (acc[priority] || 0) + 1;
                                 return acc;
                             }, {});
+
+                            // destroy previous chart instance (if any)
+                            window._dashboardCharts = window._dashboardCharts || {};
+                            if (window._dashboardCharts.taskChart) {
+                                try { window._dashboardCharts.taskChart.destroy(); } catch(e) { console.warn('failed to destroy previous taskChart', e); }
+                                delete window._dashboardCharts.taskChart;
+                            }
 
                             const taskChart = new Chart(taskCtx, {
                                 type: 'pie',
@@ -6415,12 +6452,16 @@ invoices.forEach(invoice => {
                                 const rect = taskCanvas.getBoundingClientRect();
                                 const x = event.clientX - rect.left;
                                 const y = event.clientY - rect.top;
-                                taskChart._handleClick(event, taskChart, x, y);
+                                try { taskChart._handleClick(event, taskChart, x, y); } catch (e) { console.warn('taskChart click failed', e); }
                             };
+
+                            // persist chart instance for safe destroy later
+                            window._dashboardCharts = window._dashboardCharts || {};
+                            window._dashboardCharts.taskChart = taskChart;
                         }
                     }
                 })
-                .catch(err => console.error('Error loading task stats:', err));
+                .catch(err => console.error('Error loading task stats:', err && err.message ? err.message : err));
         }
 
         // Chart Modal Functions
