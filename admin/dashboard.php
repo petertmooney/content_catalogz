@@ -3441,7 +3441,9 @@ if ($invoices_result) {
             const clientId = (modal.querySelector('#clientId') || {}).value || '';
             const invoiceNumber = (modal.querySelector('#invoiceNumber') || {}).value || '';
             const invoiceDate = (modal.querySelector('#invoiceDate') || {}).value || '';
-            const totalPaid = parseFloat((modal.querySelector('#totalPaid') || {}).value) || 0;
+            // prefer editable `#totalPaid`, otherwise use readonly `#totalPaidDisplay`
+            const _paidEl = modal.querySelector('#totalPaid') || modal.querySelector('#totalPaidDisplay');
+            const totalPaid = parseFloat((_paidEl && (_paidEl.value ?? _paidEl.textContent)) || 0) || 0;
 
             // Collect services
             const services = [];
@@ -3631,7 +3633,9 @@ if ($invoices_result) {
             const clientId = (modal.querySelector('#clientId') || {}).value || '';
             const invoiceNumber = (modal.querySelector('#invoiceNumber') || {}).value || '';
             const invoiceDate = (modal.querySelector('#invoiceDate') || {}).value || '';
-            const totalPaid = parseFloat((modal.querySelector('#totalPaid') || {}).value) || 0;
+            // read paid amount from editable `#totalPaid` if present, otherwise fallback to readonly `#totalPaidDisplay`
+            const _paidEl = modal.querySelector('#totalPaid') || modal.querySelector('#totalPaidDisplay');
+            const totalPaid = parseFloat((_paidEl && (_paidEl.value ?? _paidEl.textContent)) || 0) || 0;
 
             // Collect services
             const services = [];
