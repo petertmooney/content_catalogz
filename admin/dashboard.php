@@ -3061,6 +3061,34 @@ if ($invoices_result) {
             return div.innerHTML;
         }
 
+        // Defensive fetch helper that checks for auth redirects and non-JSON responses
+        function fetchJson(url, options) {
+            const cfg = Object.assign({}, options || {}, { credentials: 'same-origin' });
+            return fetch(url, cfg)
+                .then(response => {
+                    // Redirects or 302/401 likely mean session expired — send user to login
+                    if (response.redirected || response.status === 302 || response.status === 401) {
+                        console.warn('fetchJson: redirected/unauthenticated for', url, response.status);
+                        window.location = '/admin/login.php';
+                        throw new Error('Not authenticated');
+                    }
+
+                    const ct = (response.headers.get('content-type') || '').toLowerCase();
+                    if (!ct.includes('application/json')) {
+                        return response.text().then(text => {
+                            console.error('fetchJson: non-JSON response for', url, response.status, text && text.slice ? text.slice(0, 500) : text);
+                            throw new Error('Unexpected server response (not JSON)');
+                        });
+                    }
+
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err && err.message ? err.message : ('HTTP ' + response.status)); });
+                    }
+
+                    return response.json();
+                });
+        }
+
         // Open quote detail modal
         function openQuoteModal(quoteId) {
             fetch('api/get_quotes.php')
@@ -6007,8 +6035,7 @@ invoices.forEach(invoice => {
         // Load all dashboard stats
         function loadDashboardStats() {
             // Load task stats
-            fetch('api/tasks.php')
-                .then(res => res.json())
+            fetchJson('api/tasks.php')
                 .then(data => {
                     if (data.success && data.tasks) {
                         const pending = data.tasks.filter(t => t.status === 'pending').length;
@@ -6021,11 +6048,10 @@ invoices.forEach(invoice => {
                         document.getElementById('dash-tasks-urgent').textContent = urgent;
                     }
                 })
-                .catch(err => console.error('Error loading task stats:', err));
+                .catch(err => console.error('Error loading task stats:', err && err.message ? err.message : err));
             
             // Load invoice stats
-            fetch('api/invoice_stats.php')
-                .then(res => res.json())
+            fetchJson('api/invoice_stats.php')
                 .then(data => {
                     if (data.success) {
                         document.getElementById('dash-invoices-outstanding').textContent = data.outstanding_count || 0;
@@ -6036,11 +6062,10 @@ invoices.forEach(invoice => {
                         document.getElementById('dash-invoices-collected').textContent = '£' + (parseFloat(data.total_collected) || 0).toFixed(2);
                     }
                 })
-                .catch(err => console.error('Error loading invoice stats:', err));
+                .catch(err => console.error('Error loading invoice stats:', err && err.message ? err.message : err));
             
             // Load quote stats for dashboard
-            fetch('api/get_quotes.php')
-                .then(res => res.json())
+            fetchJson('api/get_quotes.php')
                 .then(data => {
                     if (data.success && data.quotes) {
                         const totalQuotes = data.quotes.length;
@@ -6052,7 +6077,7 @@ invoices.forEach(invoice => {
                         document.getElementById('dash-quotes-progress').textContent = inProgress;
                     }
                 })
-                .catch(err => console.error('Error loading quote stats:', err));
+                .catch(err => console.error('Error loading quote stats:', err && err.message ? err.message : err));
             
             // Load email stats (placeholder until email storage is implemented)
             // For now, showing 0 - can be connected to actual email data later
@@ -6073,8 +6098,7 @@ invoices.forEach(invoice => {
             }
 
             // Load status breakdown chart
-            fetch('api/crm_dashboard.php')
-                .then(res => res.json())
+            fetchJson('api/crm_dashboard.php')
                 .then(data => {
                     if (data.success && data.stats) {
                         const stats = data.stats;
@@ -6248,8 +6272,7 @@ invoices.forEach(invoice => {
                 .catch(err => console.error('Error loading CRM stats:', err));
 
             // Load revenue trends chart
-            fetch('api/invoice_trends.php?metric=collected&range=monthly')
-                .then(res => res.json())
+            fetchJson('api/invoice_trends.php?metric=collected&range=monthly')
                 .then(data => {
                     if (data.success && data.months) {
                         const revenueCanvas = document.getElementById('revenueChart');
@@ -6330,8 +6353,7 @@ invoices.forEach(invoice => {
                 .catch(err => console.error('Error loading revenue trends:', err));
 
             // Load task priority chart
-            fetch('api/tasks.php')
-                .then(res => res.json())
+            fetchJson('api/tasks.php')
                 .then(data => {
                     if (data.success && data.tasks) {
                         const taskCanvas = document.getElementById('taskPriorityChart');
@@ -8420,6 +8442,12 @@ invoices.forEach(invoice => {
                     const nameText = dg.childNodes[0] ? dg.childNodes[0].textContent.trim() : '';
                     dg.innerHTML = `${part}, ${nameText}${roleHtml}`;
                 }
+            } catch (e) { /* ignore */ }
+
+            // Log whether session cookie looks present (useful for debugging auth issues)
+            try {
+                const hasSessionCookie = /PHPSESSID=/.test(document.cookie);
+                console.log('session cookie present:', hasSessionCookie);
             } catch (e) { /* ignore */ }
 
             // Defensive fallback: ensure sidebar links remain clickable even if inline handlers fail
