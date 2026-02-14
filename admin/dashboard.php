@@ -6964,6 +6964,59 @@ invoices.forEach(invoice => {
             });
         }
         
+        // Load client payment history
+        function loadClientPayments(clientId) {
+            fetchJson('api/activities.php?client_id=' + clientId)
+            .then(data => {
+                const container = document.getElementById('client-payments-list');
+
+                // Filter only payment activities
+                const payments = data.activities ? data.activities.filter(a => a.type === 'payment_received') : [];
+
+                if (payments.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><p>No payments recorded yet.</p></div>';
+                    return;
+                }
+
+                // Sort by date, newest first
+                payments.sort((a, b) => new Date(b.activity_date) - new Date(a.activity_date));
+
+                let html = '<div style="overflow-x: auto;">';
+                html += '<table style="width: 100%; border-collapse: collapse;">';
+                html += '<thead><tr style="background: #f8f9fa; border-bottom: 2px solid #ddd;">';
+                html += '<th style="padding: 10px; text-align: left;">Date</th>';
+                html += '<th style="padding: 10px; text-align: left;">Amount</th>';
+                html += '<th style="padding: 10px; text-align: left;">Details</th>';
+                html += '</tr></thead><tbody>';
+
+                payments.forEach(payment => {
+                    const date = new Date(payment.activity_date);
+                    const dateStr = date.toLocaleDateString('en-GB', { 
+                        day: '2-digit', 
+                        month: 'short', 
+                        year: 'numeric' 
+                    });
+
+                    // Extract amount from subject (e.g., "Payment Received: £500.00")
+                    const amountMatch = payment.subject.match(/£([\d,]+\.\d{2})/);
+                    const amount = amountMatch ? amountMatch[1] : '0.00';
+
+                    html += '<tr style="border-bottom: 1px solid #eee;">';
+                    html += `<td style="padding: 10px;">${dateStr}</td>`;
+                    html += `<td style="padding: 10px; font-weight: bold; color: #28a745;">£${amount}</td>`;
+                    html += `<td style="padding: 10px; color: #666;">${escapeHtml(payment.description || '')}</td>`;
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+            })
+            .catch(err => {
+                console.error('Error loading payments:', err);
+                document.getElementById('client-payments-list').innerHTML = '<div class="empty-state"><p>Error loading payment history.</p></div>';
+            });
+        }
+        
         // ==================== Client Tasks Functions ====================
         
         function loadClientTasks(clientId) {
