@@ -4654,8 +4654,8 @@ if ($invoices_result) {
             .then(data => {
                 if (data.success) {
                     alert('Invoice ' + invoiceNumber + ' created successfully for ' + clientName + '!');
-                    // Open PDF view in new window
-                    window.open('api/generate_invoice_pdf.php?id=' + data.invoice_id, '_blank');
+                    // Don't automatically open PDF - let user manually open it if needed
+                    // window.open('api/generate_invoice_pdf.php?id=' + data.invoice_id, '_blank');
                     // Reload invoice stats
                     loadInvoiceStats();
                     loadDashboardStats();
