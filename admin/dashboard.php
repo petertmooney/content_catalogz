@@ -3510,19 +3510,19 @@ if ($invoices_result) {
 
             const row = document.createElement('div');
             row.id = rowId;
-            row.className = 'invoice-service-row';
+            row.className = 'service-row';
             row.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; margin-bottom: 10px; align-items: end;';
 
             row.innerHTML = `
                 <div class="form-group" style="margin: 0;">
                     <label>Service Description</label>
-                    <input type="text" class="form-control invoice-service-name" placeholder="e.g., Website Design" oninput="calculateInvoiceTotalCost()">
+                    <input type="text" class="form-control service-name" placeholder="e.g., Website Design" oninput="calculateInvoiceTotalCost()">
                 </div>
                 <div class="form-group" style="margin: 0;">
                     <label>Cost (£)</label>
                     <div style="position: relative;">
                         <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 500; color: #333;">£</span>
-                        <input type="number" class="form-control invoice-service-cost" step="0.01" min="0" placeholder="0.00" oninput="calculateInvoiceTotalCost()" style="padding-left: 28px;">
+                        <input type="number" class="form-control service-cost" step="0.01" min="0" placeholder="0.00" oninput="calculateInvoiceTotalCost()" style="padding-left: 28px;">
                     </div>
                 </div>
                 <button type="button" class="btn btn-danger btn-sm" onclick="removeInvoiceServiceRow('${rowId}')" style="height: 38px;">Remove</button>
@@ -3531,8 +3531,8 @@ if ($invoices_result) {
             container.appendChild(row);
 
             // Set values after DOM insertion to avoid escaping issues
-            const nameInput = row.querySelector('.invoice-service-name');
-            const costInput = row.querySelector('.invoice-service-cost');
+            const nameInput = row.querySelector('.service-name');
+            const costInput = row.querySelector('.service-cost');
             if (nameInput) nameInput.value = serviceName;
             if (costInput) costInput.value = serviceCost;
         }
@@ -3547,7 +3547,7 @@ if ($invoices_result) {
 
         function calculateInvoiceTotalCost() {
             let total = 0;
-            document.querySelectorAll('#invoiceServicesContainer .invoice-service-cost').forEach(input => {
+            document.querySelectorAll('#invoiceServicesContainer .service-cost').forEach(input => {
                 total += parseFloat(input.value) || 0;
             });
             document.getElementById('totalCost').value = total.toFixed(2);
@@ -3562,54 +3562,67 @@ if ($invoices_result) {
 
         function updateInvoice(event) {
             event.preventDefault();
-
+            
+            const invoiceId = document.getElementById('invoiceId').value;
+            const clientId = document.getElementById('clientId').value;
+            const invoiceNumber = document.getElementById('invoiceNumber').value;
+            const invoiceDate = document.getElementById('invoiceDate').value;
+            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            
             // Collect services
             const services = [];
-            document.querySelectorAll('#invoiceServicesContainer .invoice-service-row').forEach(row => {
-                const name = row.querySelector('.invoice-service-name').value.trim();
-                const cost = parseFloat(row.querySelector('.invoice-service-cost').value) || 0;
-                if (name) {
-                    services.push({ name, cost });
+            const serviceRows = document.querySelectorAll('#invoiceServicesContainer .service-row');
+            serviceRows.forEach(row => {
+                const nameInput = row.querySelector('.service-name');
+                const costInput = row.querySelector('.service-cost');
+                if (nameInput && costInput) {
+                    const name = nameInput.value.trim();
+                    const cost = parseFloat(costInput.value) || 0;
+                    if (name && cost > 0) {
+                        services.push({ name, cost });
+                    }
                 }
             });
-
-            const formData = {
-                id: document.getElementById('invoiceId').value,
-                client_id: document.getElementById('clientId').value,
-                invoice_number: document.getElementById('invoiceNumber').value,
-                invoice_date: document.getElementById('invoiceDate').value,
-                total_cost: document.getElementById('totalCost').value,
-                total_paid: document.getElementById('totalPaid').value,
-                services: services,
-                // Address fields
-                address_street: document.getElementById('clientAddressStreet').value,
-                address_line2: document.getElementById('clientAddressLine2').value,
-                address_city: document.getElementById('clientAddressCity').value,
-                address_county: document.getElementById('clientAddressCounty').value,
-                address_postcode: document.getElementById('clientAddressPostcode').value,
-                address_country: document.getElementById('clientAddressCountry').value
+            
+            // Calculate total cost
+            const totalCost = services.reduce((sum, service) => sum + service.cost, 0);
+            const totalRemaining = totalCost - totalPaid;
+            
+            const invoiceData = {
+                id: invoiceId,
+                client_id: clientId,
+                invoice_number: invoiceNumber,
+                invoice_date: invoiceDate,
+                total_cost: totalCost,
+                total_paid: totalPaid,
+                total_remaining: totalRemaining,
+                services: services
             };
-
-            fetch('api/save_invoice.php', {
+            
+            fetch('api/update_invoice.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(invoiceData)
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     alert('Invoice updated successfully!');
                     closeInvoiceModal();
-                    searchInvoices(); // Refresh the invoice list
-                    loadDashboardStats(); // Refresh stats
+                    // Refresh the invoices list if we're in the client modal
+                    if (currentClientId) {
+                        loadClientInvoices(currentClientId);
+                    }
+                    // Refresh stats
+                    loadInvoiceStats();
+                    loadDashboardStats();
                 } else {
                     alert('Error updating invoice: ' + (data.message || 'Unknown error'));
                 }
             })
             .catch(error => {
-                alert('Network error: ' + error.message);
+                console.error('Error updating invoice:', error);
+                alert('Failed to update invoice. Please try again.');
             });
         }
 
@@ -6122,7 +6135,7 @@ invoices.forEach(invoice => {
                             addInvoiceServiceRow();
                         } else {
                             services.forEach(service => {
-                                addInvoiceServiceRow(service.name, service.cost);
+                                addInvoiceServiceRow(service.description, service.unit_price);
                             });
                         }
 
