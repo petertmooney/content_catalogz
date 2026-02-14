@@ -3656,6 +3656,10 @@ if ($invoices_result) {
             
             document.getElementById('totalPaid').value = client.total_paid || 0.00;
             
+            // Store original data for change detection
+            originalClientServices = JSON.parse(JSON.stringify(client.services || []));
+            originalClientTotalPaid = client.total_paid || 0.00;
+            
             // Load services
             const services = client.services || [];
             const servicesContainer = document.getElementById('servicesContainer');
@@ -3757,6 +3761,36 @@ if ($invoices_result) {
 
         function saveClientChanges() {
             const clientId = document.getElementById('clientId').value;
+            
+            // Collect current services
+            const currentServices = [];
+            const serviceRows = document.querySelectorAll('.service-row');
+            serviceRows.forEach(row => {
+                const select = row.querySelector('.service-select');
+                const customInput = row.querySelector('.service-custom');
+                const cost = parseFloat(row.querySelector('.service-cost').value) || 0;
+                
+                let name = '';
+                if (select && select.value === 'Other') {
+                    name = customInput ? customInput.value.trim() : '';
+                } else if (select) {
+                    name = select.value;
+                }
+                
+                if (name) {  // Only add if service has a name
+                    currentServices.push({ name, cost });
+                }
+            });
+            
+            // Get current payment
+            const currentTotalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            
+            // Calculate total cost from services
+            let totalCost = 0;
+            currentServices.forEach(service => {
+                totalCost += service.cost;
+            });
+            
             const clientData = {
                 id: clientId,
                 name: document.getElementById('clientNameInput').value,
@@ -3769,7 +3803,10 @@ if ($invoices_result) {
                 address_city: document.getElementById('clientAddressCity').value,
                 address_county: document.getElementById('clientAddressCounty').value,
                 address_postcode: document.getElementById('clientAddressPostcode').value,
-                address_country: document.getElementById('clientAddressCountry').value
+                address_country: document.getElementById('clientAddressCountry').value,
+                services: currentServices,
+                total_cost: totalCost,
+                total_paid: currentTotalPaid
             };
             
             fetch('api/update_client.php', {
@@ -3783,6 +3820,18 @@ if ($invoices_result) {
             .then(data => {
                 if (data.success) {
                     alert('Client updated successfully');
+                    
+                    // Check if services or payments changed to auto-generate invoice
+                    const servicesChanged = JSON.stringify(currentServices) !== JSON.stringify(originalClientServices);
+                    const paymentsChanged = currentTotalPaid !== originalClientTotalPaid;
+                    
+                    if (servicesChanged || paymentsChanged) {
+                        // Auto-generate invoice
+                        if (totalCost > 0) {
+                            generateInvoiceForClient();
+                        }
+                    }
+                    
                     // Switch back to view mode
                     currentClientMode = 'view';
                     setupClientMode('view');
@@ -4103,9 +4152,9 @@ if ($invoices_result) {
             .then(data => {
                 if (data.success) {
                     if (data.exists) {
-                        showNotification('Invoice already exists for this client', 'info');
+                        alert('Invoice already exists for this client');
                     } else {
-                        showNotification('Invoice ' + invoiceNumber + ' generated successfully for ' + clientName + '!', 'success');
+                        alert('Invoice ' + invoiceNumber + ' created successfully for ' + clientName + '!');
                         // Reload invoice stats
                         loadInvoiceStats();
                         loadDashboardStats();
@@ -6094,6 +6143,8 @@ invoices.forEach(invoice => {
         
         let currentClientId = null;
         let currentClientMode = 'view';
+        let originalClientServices = [];
+        let originalClientTotalPaid = 0;
         
         // Tab Switching
         function switchClientTab(tabName) {
