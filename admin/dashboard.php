@@ -4144,8 +4144,6 @@ if ($invoices_result) {
             })
             .then(data => {
                 if (data.success) {
-                    alert('Client information updated successfully!');
-                    
                     // Check if client has any invoices, and generate one if not
                     const clientId = document.getElementById('clientId').value;
                     fetch('api/get_client_invoices.php?client_id=' + clientId)
@@ -4154,15 +4152,16 @@ if ($invoices_result) {
                             if (invoiceData.success && (!invoiceData.invoices || invoiceData.invoices.length === 0)) {
                                 // No existing invoices, generate new one
                                 generateInvoiceForClient();
+                                alert('Client information updated successfully! Generating invoice...');
+                            } else {
+                                // Client has invoices or check failed, just show client update success
+                                alert('Client information updated successfully!');
                             }
-                            // Close modal and refresh after invoice check/generation
-                            closeClientModal();
                             loadExistingClients(); // Refresh the clients list
                         })
                         .catch(error => {
                             console.error('Error checking invoices:', error);
-                            // Still close modal even if invoice check fails
-                            closeClientModal();
+                            alert('Client information updated successfully!');
                             loadExistingClients(); // Refresh the clients list
                         });
                 } else {
@@ -4271,6 +4270,153 @@ if ($invoices_result) {
                     // If we can't check, just try to generate
                     generateInvoiceForClient();
                 });
+        }
+
+        function printClientDetails() {
+            const clientId = document.getElementById('clientId').value;
+            const clientName = document.getElementById('clientName').textContent;
+            const clientCompany = document.getElementById('clientCompany').textContent;
+            const clientEmail = document.getElementById('clientEmail').textContent;
+            const clientPhone = document.getElementById('clientPhone').textContent;
+            const leadSource = document.getElementById('clientLeadSource').value;
+            
+            // Get address information
+            const addressStreet = document.getElementById('clientAddressStreet').value;
+            const addressLine2 = document.getElementById('clientAddressLine2').value;
+            const addressCity = document.getElementById('clientAddressCity').value;
+            const addressCounty = document.getElementById('clientAddressCounty').value;
+            const addressPostcode = document.getElementById('clientAddressPostcode').value;
+            const addressCountry = document.getElementById('clientAddressCountry').value;
+            
+            // Get services and costs
+            const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
+            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+            const totalRemaining = parseFloat(document.getElementById('totalRemaining').value) || 0;
+            
+            // Collect services
+            const services = [];
+            const serviceRows = document.querySelectorAll('.service-row');
+            serviceRows.forEach(row => {
+                const select = row.querySelector('.service-select');
+                const customInput = row.querySelector('.service-custom');
+                const cost = parseFloat(row.querySelector('.service-cost').value) || 0;
+                
+                let name = '';
+                if (select && select.value === 'Other') {
+                    name = customInput ? customInput.value.trim() : '';
+                } else if (select) {
+                    name = select.value;
+                }
+                
+                if (name && cost > 0) {
+                    services.push({ name, cost });
+                }
+            });
+            
+            // Create printable HTML
+            const printWindow = window.open('', '_blank');
+            const html = `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Client Details - ${clientName}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { border-bottom: 2px solid #DB1C56; padding-bottom: 10px; margin-bottom: 20px; }
+        .header h1 { color: #DB1C56; margin: 0; }
+        .section { margin-bottom: 20px; }
+        .section h2 { color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .info-item { margin-bottom: 8px; }
+        .info-label { font-weight: bold; color: #666; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f5f5f5; }
+        .total-row { font-weight: bold; }
+        .balance-due { color: #dc3545; }
+        @media print { body { margin: 0; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Client Details</h1>
+        <p><strong>${clientName}</strong></p>
+        ${clientCompany ? `<p>${clientCompany}</p>` : ''}
+    </div>
+    
+    <div class="section">
+        <h2>Contact Information</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Email:</span> ${clientEmail}
+            </div>
+            <div class="info-item">
+                <span class="info-label">Phone:</span> ${clientPhone || 'Not provided'}
+            </div>
+            <div class="info-item">
+                <span class="info-label">Lead Source:</span> ${leadSource || 'Not specified'}
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Address</h2>
+        <div>
+            ${addressStreet ? `<p>${addressStreet}</p>` : ''}
+            ${addressLine2 ? `<p>${addressLine2}</p>` : ''}
+            ${addressCity ? `<p>${addressCity}, ` : ''}${addressCounty ? `${addressCounty} ` : ''}${addressPostcode || ''}
+            ${addressCountry && addressCountry !== 'United Kingdom' ? `<p>${addressCountry}</p>` : ''}
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Services & Billing</h2>
+        ${services.length > 0 ? `
+        <table>
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th style="text-align: right;">Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${services.map(service => `
+                    <tr>
+                        <td>${service.name}</td>
+                        <td style="text-align: right;">£${service.cost.toFixed(2)}</td>
+                    </tr>
+                `).join('')}
+                <tr class="total-row">
+                    <td>Total Cost</td>
+                    <td style="text-align: right;">£${totalCost.toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td>Total Paid</td>
+                    <td style="text-align: right;">£${totalPaid.toFixed(2)}</td>
+                </tr>
+                <tr class="total-row balance-due">
+                    <td>Balance Due</td>
+                    <td style="text-align: right;">£${totalRemaining.toFixed(2)}</td>
+                </tr>
+            </tbody>
+        </table>
+        ` : '<p>No services recorded.</p>'}
+    </div>
+    
+    <div class="section">
+        <p><em>Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</em></p>
+    </div>
+</body>
+</html>`;
+            
+            printWindow.document.write(html);
+            printWindow.document.close();
+            printWindow.focus();
+            
+            // Wait for content to load then print
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
         }
 
         function generateNewInvoice(clientId, clientName, totalCost, totalPaid, services) {
