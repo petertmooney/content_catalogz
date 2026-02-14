@@ -59,6 +59,22 @@ if ($isPaymentOnly) {
     }
     
     $stmt->bind_param("ddi", $totalPaid, $totalRemaining, $clientId);
+    
+    if (!$stmt->execute()) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Database execute error: ' . $stmt->error]);
+        exit;
+    }
+    
+    echo json_encode([
+        'success' => true, 
+        'message' => 'Payment updated successfully',
+        'total_remaining' => number_format($totalRemaining, 2)
+    ]);
+    
+    $stmt->close();
+    $conn->close();
+    exit;
 } else {
     // Full update: update all fields
     $name = isset($data['name']) ? trim($data['name']) : null;
