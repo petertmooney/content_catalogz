@@ -6896,7 +6896,110 @@ invoices.forEach(invoice => {
             });
         }
         
-        // ==================== Payment Functions ====================
+        // ==================== Invoice Functions ====================
+        
+        function loadClientInvoices(clientId) {
+            fetch('api/get_client_invoices.php?client_id=' + clientId)
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('client-invoices-list');
+                    if (data.success && data.invoices && data.invoices.length > 0) {
+                        container.innerHTML = data.invoices.map(invoice => {
+                            const invoiceDate = new Date(invoice.invoice_date).toLocaleDateString('en-GB');
+                            const statusColor = invoice.status === 'paid' ? '#28a745' : (invoice.status === 'overdue' ? '#dc3545' : '#ffc107');
+                            const statusText = invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1);
+                            
+                            return `
+                                <div class="invoice-item" style="background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 10px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            <strong style="font-size: 16px;">${invoice.invoice_number}</strong>
+                                            <div style="color: #666; font-size: 14px; margin-top: 4px;">
+                                                ${invoiceDate} • £${parseFloat(invoice.total_cost).toFixed(2)}
+                                            </div>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <span style="display: inline-block; padding: 4px 12px; border-radius: 12px; background: ${statusColor}; color: white; font-size: 12px; font-weight: 600; margin-bottom: 8px;">
+                                                ${statusText}
+                                            </span>
+                                            <div style="display: flex; gap: 5px;">
+                                                <button class="btn btn-primary btn-sm" onclick="openInvoiceModal(${invoice.id})" title="Edit Invoice">✏️ Edit</button>
+                                                <button class="btn btn-info btn-sm" onclick="printInvoice(${invoice.id})" title="Print Invoice">🖨️ Print</button>
+                                                <button class="btn btn-warning btn-sm" onclick="emailInvoice(${invoice.id})" title="Email Invoice">📧 Email</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        container.innerHTML = '<div class="empty-state"><h3>No Invoices Yet</h3><p>Invoices generated for this client will appear here.</p></div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading client invoices:', error);
+                    document.getElementById('client-invoices-list').innerHTML = '<div class="empty-state"><h3>Error Loading Invoices</h3><p>Please try again later.</p></div>';
+                });
+        }
+        
+        function openInvoiceModal(invoiceId) {
+            fetch('api/get_invoice.php?id=' + invoiceId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const invoice = data.invoice;
+                        
+                        // Populate client information
+                        document.getElementById('clientId').value = invoice.client_id;
+                        document.getElementById('clientName').textContent = invoice.name || 'N/A';
+                        document.getElementById('clientCompany').textContent = invoice.company || 'N/A';
+                        document.getElementById('clientEmail').textContent = invoice.email || 'N/A';
+                        document.getElementById('clientPhone').textContent = invoice.phone || 'N/A';
+                        
+                        // Populate address fields
+                        document.getElementById('clientAddressStreet').value = invoice.address_street || '';
+                        document.getElementById('clientAddressLine2').value = invoice.address_line2 || '';
+                        document.getElementById('clientAddressCity').value = invoice.address_city || '';
+                        document.getElementById('clientAddressCounty').value = invoice.address_county || '';
+                        document.getElementById('clientAddressPostcode').value = invoice.address_postcode || '';
+                        document.getElementById('clientAddressCountry').value = invoice.address_country || 'United Kingdom';
+                        
+                        // Populate invoice information
+                        document.getElementById('invoiceId').value = invoice.id;
+                        document.getElementById('invoiceNumber').value = invoice.invoice_number;
+                        document.getElementById('invoiceDate').value = invoice.invoice_date;
+                        
+                        // Clear existing services
+                        document.getElementById('invoiceServicesContainer').innerHTML = '';
+                        
+                        // Populate services
+                        if (invoice.services && invoice.services.length > 0) {
+                            invoice.services.forEach(service => {
+                                addInvoiceServiceRow(service.description, service.unit_price);
+                            });
+                        } else {
+                            // Add one empty row if no services
+                            addInvoiceServiceRow();
+                        }
+                        
+                        // Populate financial information
+                        document.getElementById('totalPaid').value = parseFloat(invoice.total_paid || 0).toFixed(2);
+                        calculateInvoiceTotalCost();
+                        
+                        document.getElementById('invoiceModal').classList.add('show');
+                    } else {
+                        alert('Error loading invoice: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading invoice:', error);
+                    alert('Failed to load invoice details');
+                });
+        }
+        
+        function closeInvoiceModal() {
+            document.getElementById('invoiceModal').classList.remove('show');
+        }
         
         function openPaymentModal() {
             const clientId = document.getElementById('clientId').value;
