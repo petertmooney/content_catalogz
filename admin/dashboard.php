@@ -611,6 +611,10 @@ if ($invoices_result) {
             color: #999;
         }
         
+        /* transient highlight used when navigating from timeline */
+        .highlight { box-shadow: 0 0 12px rgba(102,126,234,0.45); animation: highlightFade 2s ease; }
+        @keyframes highlightFade { from { background: rgba(102,126,234,0.06); } to { background: transparent; } }
+
         .activity-delete {
             color: #dc3545;
             cursor: pointer;
@@ -3929,6 +3933,20 @@ if ($invoices_result) {
             // Store original data for change detection
             originalClientServices = JSON.parse(JSON.stringify(client.services || []));
             originalClientTotalPaid = client.total_paid || 0.00;
+            // Keep a lightweight snapshot of key client fields so we can record "changes" in the activity timeline
+            originalClientSnapshot = {
+                name: client.name || '',
+                company: client.company || '',
+                email: client.email || '',
+                phone: client.phone || '',
+                lead_source: client.lead_source || '',
+                address_street: client.address_street || '',
+                address_line2: client.address_line2 || '',
+                address_city: client.address_city || '',
+                address_county: client.address_county || '',
+                address_postcode: client.address_postcode || '',
+                address_country: client.address_country || ''
+            };
             
             // Load services
             const services = client.services || [];
@@ -4094,7 +4112,11 @@ if ($invoices_result) {
                     // Show success message but keep form open
                     alert('Client updated successfully!');
                     
-                    // Update the original values to reflect the current state
+                    // capture previous snapshot (so change-detection works even after we refresh the stored "originals")
+                    const _prevServices = JSON.parse(JSON.stringify(originalClientServices || []));
+                    const _prevTotalPaid = originalClientTotalPaid || 0;
+
+                    // Update the original values to reflect the current state (for future edits)
                     originalClientServices = JSON.parse(JSON.stringify(currentServices));
                     originalClientTotalPaid = currentTotalPaid;
                     
@@ -4105,9 +4127,9 @@ if ($invoices_result) {
                         .then(invoiceData => {
                             const hasExistingInvoices = invoiceData.success && invoiceData.invoices && invoiceData.invoices.length > 0;
                             
-                            // Check if services or payments changed
-                            const servicesChanged = JSON.stringify(currentServices) !== JSON.stringify(originalClientServices);
-                            const paymentsChanged = currentTotalPaid !== originalClientTotalPaid;
+                            // Check if services or payments changed (compare against previous snapshot)
+                            const servicesChanged = JSON.stringify(currentServices) !== JSON.stringify(_prevServices);
+                            const paymentsChanged = currentTotalPaid !== _prevTotalPaid;
                             
                             if (!hasExistingInvoices || servicesChanged || paymentsChanged) {
                                 // Generate invoice if no invoices exist, or if changes occurred
@@ -4121,6 +4143,40 @@ if ($invoices_result) {
                             // setupClientMode('view');
                             // Refresh the client list
                             displayExistingClients();
+
+                            // Record a "Client updated" activity so changes surface in the Activity Timeline
+                            try {
+                                const changedFields = [];
+                                if (originalClientSnapshot) {
+                                    if ((clientData.name || '') !== (originalClientSnapshot.name || '')) changedFields.push('Name');
+                                    if ((clientData.company || '') !== (originalClientSnapshot.company || '')) changedFields.push('Company');
+                                    if ((clientData.email || '') !== (originalClientSnapshot.email || '')) changedFields.push('Email');
+                                    if ((clientData.phone || '') !== (originalClientSnapshot.phone || '')) changedFields.push('Phone');
+                                    if ((clientData.lead_source || '') !== (originalClientSnapshot.lead_source || '')) changedFields.push('Lead source');
+                                    const addrFields = ['address_street','address_line2','address_city','address_county','address_postcode','address_country'];
+                                    const addrChanged = addrFields.some(f => (clientData[f] || '') !== (originalClientSnapshot[f] || ''));
+                                    if (addrChanged) changedFields.push('Address');
+                                }
+                                // services / payments handled separately above but include summary if changed
+                                const servicesChanged = JSON.stringify(currentServices) !== JSON.stringify(_prevServices);
+                                if (servicesChanged) changedFields.push('Services');
+                                const paymentsChanged = currentTotalPaid !== _prevTotalPaid;
+                                if (paymentsChanged) changedFields.push('Payments');
+
+                                if (changedFields.length > 0) {
+                                    const activityData = {
+                                        client_id: clientId,
+                                        type: 'other',
+                                        subject: 'Client updated',
+                                        description: 'Fields changed: ' + changedFields.join(', '),
+                                        activity_date: new Date().toISOString().slice(0,19).replace('T',' ')
+                                    };
+                                    fetch('api/activities.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(activityData) })
+                                        .then(r => r.json()).then(d => { if (d.success) loadClientActivities(clientId); }).catch(() => {});
+                                }
+                            } catch (e) {
+                                console.warn('Failed to log client-change activity', e);
+                            }
                         })
                         .catch(error => {
                             console.error('Error checking invoices:', error);
@@ -6517,6 +6573,8 @@ invoices.forEach(invoice => {
         let currentClientMode = 'view';
         let originalClientServices = [];
         let originalClientTotalPaid = 0;
+        // Snapshot of original client fields (used to log "changes")
+        let originalClientSnapshot = null;
         
         // Tab Switching
         function switchClientTab(tabName) {
@@ -6558,63 +6616,143 @@ invoices.forEach(invoice => {
         // ==================== Activity Functions ====================
         
         function loadClientActivities(clientId) {
-            fetch(`api/activities.php?client_id=${clientId}`)
-                .then(res => res.json())
-                .then(data => {
-                    const container = document.getElementById('client-activities-list');
-                    if (data.success && data.activities && data.activities.length > 0) {
-                        container.innerHTML = data.activities.map(activity => {
-                            // Get icon and label based on activity type
-                            const typeIcons = {
-                                'call': '📞',
-                                'email': '📧',
-                                'meeting': '👥',
-                                'note': '📝',
-                                'task': '✅',
-                                'quote_sent': '📋',
-                                'invoice_sent': '📄',
-                                'payment_received': '💰',
-                                'other': '📌'
-                            };
-                            
-                            const typeLabels = {
-                                'call': 'Phone Call',
-                                'email': 'Email',
-                                'meeting': 'Meeting',
-                                'note': 'Note',
-                                'task': 'Task',
-                                'quote_sent': 'Quote Sent',
-                                'invoice_sent': 'Invoice Sent',
-                                'payment_received': 'Payment',
-                                'other': 'Other'
-                            };
-                            
-                            const icon = typeIcons[activity.type] || '📌';
-                            const label = typeLabels[activity.type] || activity.type;
-                            
-                            return `
-                                <div class="activity-item type-${activity.type}">
-                                    <div class="activity-header">
-                                        <span class="activity-type type-${activity.type}">${icon} ${label}</span>
-                                        <a href="javascript:void(0)" class="activity-delete" onclick="deleteActivity(${activity.id})">Delete</a>
-                                    </div>
-                                    <div class="activity-subject">${escapeHtml(activity.subject || 'No Subject')}</div>
-                                    ${activity.description ? `<div class="activity-description">${escapeHtml(activity.description)}</div>` : ''}
-                                    <div class="activity-meta">
-                                        <span>📅 ${new Date(activity.activity_date).toLocaleString()}</span>
-                                        ${activity.duration_minutes ? `<span>⏱️ ${activity.duration_minutes} min</span>` : ''}
-                                        <span>👤 ${escapeHtml(activity.created_by_name || activity.created_by_username || 'System')}</span>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('');
+            // Fetch activities + invoices + notes + tasks in parallel and merge into a single timeline (newest first)
+            Promise.all([
+                fetch(`api/activities.php?client_id=${clientId}`).then(r => r.json()).catch(() => ({success: false, activities: []})),
+                fetch(`api/get_client_invoices.php?client_id=${clientId}`).then(r => r.json()).catch(() => ({success: false, invoices: []})),
+                fetch(`api/notes.php?client_id=${clientId}`).then(r => r.json()).catch(() => ({success: false, notes: []})),
+                fetch(`api/tasks.php?client_id=${clientId}`).then(r => r.json()).catch(() => ({success: false, tasks: []}))
+            ])
+            .then(([actRes, invRes, notesRes, tasksRes]) => {
+                const container = document.getElementById('client-activities-list');
+
+                const items = [];
+
+                // activities API (already contains emails, payments, changes logged etc.)
+                if (actRes && actRes.success && Array.isArray(actRes.activities)) {
+                    actRes.activities.forEach(a => {
+                        items.push({
+                            source: 'activity',
+                            id: a.id,
+                            type: a.type || 'other',
+                            date: a.activity_date || a.created_at || null,
+                            subject: a.subject,
+                            description: a.description,
+                            meta: a
+                        });
+                    });
+                }
+
+                // invoices
+                if (invRes && invRes.success && Array.isArray(invRes.invoices)) {
+                    invRes.invoices.forEach(inv => {
+                        items.push({
+                            source: 'invoice',
+                            id: inv.id,
+                            type: 'invoice',
+                            date: inv.invoice_date || inv.created_at || null,
+                            subject: inv.invoice_number || ('Invoice #' + inv.id),
+                            description: `£${parseFloat(inv.total_cost || 0).toFixed(2)} — ${inv.status || 'unknown'}`,
+                            meta: inv
+                        });
+                    });
+                }
+
+                // notes
+                if (notesRes && notesRes.success && Array.isArray(notesRes.notes)) {
+                    notesRes.notes.forEach(n => {
+                        items.push({
+                            source: 'note',
+                            id: n.id,
+                            type: 'note',
+                            date: n.created_at || n.updated_at || null,
+                            subject: (n.note_text || '').split('\n')[0].slice(0, 80) || 'Note',
+                            description: n.note_text,
+                            meta: n
+                        });
+                    });
+                }
+
+                // tasks
+                if (tasksRes && tasksRes.success && Array.isArray(tasksRes.tasks)) {
+                    tasksRes.tasks.forEach(t => {
+                        items.push({
+                            source: 'task',
+                            id: t.id,
+                            type: 'task',
+                            date: t.created_at || t.due_date || null,
+                            subject: t.title,
+                            description: t.description,
+                            meta: t
+                        });
+                    });
+                }
+
+                if (items.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><h3>No Activities Yet</h3><p>Log your first interaction with this client.</p></div>';
+                    window._clientActivities = [];
+                    return;
+                }
+
+                // sort newest first
+                items.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+                // cache for view handlers
+                window._clientActivities = items;
+
+                // render
+                container.innerHTML = items.map(item => {
+                    const iconMap = {
+                        'call': '📞', 'email': '📧', 'meeting': '👥', 'note': '📝', 'task': '✅', 'quote_sent': '📋', 'invoice_sent': '📄', 'payment_received': '💰', 'other': '📌', 'invoice': '📄'
+                    };
+                    const labelMap = {
+                        'call': 'Phone Call', 'email': 'Email', 'meeting': 'Meeting', 'note': 'Note', 'task': 'Task', 'quote_sent': 'Quote Sent', 'invoice_sent': 'Invoice Sent', 'payment_received': 'Payment', 'other': 'Other', 'invoice': 'Invoice'
+                    };
+
+                    const icon = iconMap[item.type] || '📌';
+                    const label = labelMap[item.type] || item.type;
+                    const when = item.date ? new Date(item.date).toLocaleString() : '';
+
+                    // clickable subject per-type
+                    let subjectHtml = '';
+                    if (item.source === 'invoice') {
+                        subjectHtml = `<a href="#" onclick="openInvoiceModal(${item.id}); return false;">${escapeHtml(item.subject || 'Invoice')}</a>`;
+                    } else if (item.source === 'note') {
+                        subjectHtml = `<a href="#" onclick="goToClientNote(${item.id}); return false;">${escapeHtml(item.subject || 'Note')}</a>`;
+                    } else if (item.source === 'task') {
+                        subjectHtml = `<a href="#" onclick="goToClientTask(${item.id}); return false;">${escapeHtml(item.subject || 'Task')}</a>`;
+                    } else if (item.source === 'activity') {
+                        subjectHtml = `<a href="#" onclick="viewActivity(${item.id}); return false;">${escapeHtml(item.subject || 'Activity')}</a>`;
                     } else {
-                        container.innerHTML = '<div class="empty-state"><h3>No Activities Yet</h3><p>Log your first interaction with this client.</p></div>';
+                        subjectHtml = `<span>${escapeHtml(item.subject || '')}</span>`;
                     }
-                })
-                .catch(err => {
-                    console.error('Error loading activities:', err);
-                });
+
+                    // build meta author (if available)
+                    const author = (item.meta && (item.meta.created_by_name || item.meta.created_by_username)) ? escapeHtml(item.meta.created_by_name || item.meta.created_by_username) : 'System';
+
+                    // give activity items predictable ids so view/scroll can target them
+                    const containerId = item.source === 'activity' ? `activity-${item.id}` : (item.source + `-item-${item.id}`);
+
+                    return `
+                        <div id="${containerId}" class="activity-item type-${item.type}">
+                            <div class="activity-header">
+                                <span class="activity-type type-${item.type}">${icon} ${label}</span>
+                                ${item.source === 'activity' && item.id ? `<a href="javascript:void(0)" class="activity-delete" onclick="deleteActivity(${item.id})">Delete</a>` : ''}
+                            </div>
+                            <div class="activity-subject">${subjectHtml}</div>
+                            ${item.description ? `<div class="activity-description">${escapeHtml(item.description)}</div>` : ''}
+                            <div class="activity-meta">
+                                <span>📅 ${when}</span>
+                                ${item.meta && item.meta.duration_minutes ? `<span>⏱️ ${item.meta.duration_minutes} min</span>` : ''}
+                                <span>👤 ${author}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            })
+            .catch(err => {
+                console.error('Error loading activities:', err);
+            });
         }
         
         function openLogActivityModal() {
@@ -6626,6 +6764,32 @@ invoices.forEach(invoice => {
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
             document.getElementById('activityDate').value = now.toISOString().slice(0, 16);
             document.getElementById('activityModal').style.display = 'flex';
+        }
+
+        // Jump-to / view helpers used by timeline click handlers
+        function goToClientNote(noteId) {
+            switchClientTab('notes');
+            setTimeout(() => {
+                const el = document.getElementById('client-note-' + noteId);
+                if (el) { el.scrollIntoView({behavior: 'smooth', block: 'center'}); el.classList.add('highlight'); setTimeout(() => el.classList.remove('highlight'), 1800); }
+            }, 120);
+        }
+
+        function goToClientTask(taskId) {
+            switchClientTab('tasks');
+            setTimeout(() => {
+                const el = document.getElementById('client-task-' + taskId);
+                if (el) { el.scrollIntoView({behavior: 'smooth', block: 'center'}); el.classList.add('highlight'); setTimeout(() => el.classList.remove('highlight'), 1800); }
+            }, 120);
+        }
+
+        function viewActivity(activityId) {
+            // scroll to activity entry in activities tab
+            switchClientTab('activities');
+            setTimeout(() => {
+                const el = document.getElementById('activity-' + activityId);
+                if (el) { el.scrollIntoView({behavior: 'smooth', block: 'center'}); el.classList.add('highlight'); setTimeout(() => el.classList.remove('highlight'), 1800); }
+            }, 120);
         }
         
         function closeActivityModal() {
@@ -6699,7 +6863,7 @@ invoices.forEach(invoice => {
                     const container = document.getElementById('client-notes-list');
                     if (data.success && data.notes && data.notes.length > 0) {
                         container.innerHTML = data.notes.map(note => `
-                            <div class="note-item ${note.is_important ? 'important' : ''}">
+                            <div id="client-note-${note.id}" class="note-item ${note.is_important ? 'important' : ''}">
                                 ${note.is_important ? '<span class="note-important-badge">⭐ IMPORTANT</span>' : ''}
                                 <div class="note-text">${escapeHtml(note.note_text || '')}</div>
                                 <div class="note-meta">
