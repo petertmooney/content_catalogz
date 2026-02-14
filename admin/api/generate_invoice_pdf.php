@@ -124,18 +124,18 @@ $html = '
         }
         body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
         .invoice-container { background: white; max-width: 800px; margin: 0 auto; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header { border-bottom: 3px solid #667eea; padding-bottom: 20px; margin-bottom: 30px; }
-        .header h1 { color: #667eea; margin: 0 0 10px 0; }
+        .header { border-bottom: 3px solid #DB1C56; padding-bottom: 20px; margin-bottom: 30px; }
+        .header h1 { color: #DB1C56; margin: 0 0 10px 0; }
         .header .invoice-number { color: #666; margin: 0; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th { background: #667eea; color: white; padding: 12px; text-align: left; }
+        th { background: #DB1C56; color: white; padding: 12px; text-align: left; }
         td { padding: 10px; border-bottom: 1px solid #eee; }
         .text-right { text-align: right; }
         .total-row { background: #f9f9f9; font-weight: bold; }
         .balance-row { background: #fff3cd; color: #dc3545; font-weight: bold; }
         .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; }
-        .print-btn { background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-bottom: 20px; }
-        .print-btn:hover { background: #5a67d8; }
+        .print-btn { background: #DB1C56; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-bottom: 20px; }
+        .print-btn:hover { background: #B81748; }
     </style>
 </head>
 <body>

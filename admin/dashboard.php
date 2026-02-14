@@ -1744,7 +1744,6 @@ if ($invoices_result) {
                 <div style="background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h4 style="margin: 0; color: #333;">Services & Costs (GBP)</h4>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="addServiceRow()">+ Add Service</button>
                     </div>
                     
                     <div id="servicesContainer">
@@ -3935,19 +3934,29 @@ if ($invoices_result) {
                         <option value="">-- Select Service --</option>
                         ${serviceOptions.map(option => `<option value="${option}" ${selectedOption === option ? 'selected' : ''}>${option}</option>`).join('')}
                     </select>
-                    <input type="text" class="form-control service-custom" placeholder="Enter custom service" style="margin-top: 5px; display: ${selectedOption === 'Other' ? 'block' : 'none'};" value="${customValue}">
+                    <input type="text" class="form-control service-custom" placeholder="Enter custom service" style="margin-top: 5px; display: ${selectedOption === 'Other' ? 'block' : 'none'};" value="${customValue}" onkeydown="preventFormSubmit(event)">
                 </div>
                 <div class="form-group" style="margin: 0;">
                     <label>Cost (£)</label>
                     <div style="position: relative;">
                         <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 500; color: #333;">£</span>
-                        <input type="number" class="form-control service-cost" step="0.01" min="0" placeholder="0.00" oninput="calculateTotalCost()" style="padding-left: 28px;" value="${serviceCost}">
+                        <input type="number" class="form-control service-cost" step="0.01" min="0" placeholder="0.00" oninput="calculateTotalCost()" style="padding-left: 28px;" value="${serviceCost}" onkeydown="preventFormSubmit(event)">
                     </div>
                 </div>
                 <button type="button" class="btn btn-danger btn-sm" onclick="removeServiceRow('${rowId}')" style="height: 38px;">Remove</button>
             `;
             
-            container.appendChild(row);
+            // Create add service button
+            const addButton = document.createElement('div');
+            addButton.style.cssText = 'margin-top: 10px; text-align: left;';
+            addButton.innerHTML = '<button type="button" class="btn btn-primary btn-sm" onclick="addServiceRow()">+ Add Service</button>';
+            
+            // Create a wrapper for the row and button
+            const wrapper = document.createElement('div');
+            wrapper.appendChild(row);
+            wrapper.appendChild(addButton);
+            
+            container.appendChild(wrapper);
         }
 
         function removeServiceRow(rowId) {
@@ -3967,6 +3976,13 @@ if ($invoices_result) {
             } else {
                 customInput.style.display = 'none';
                 customInput.value = '';
+            }
+        }
+
+        function preventFormSubmit(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                event.stopPropagation();
             }
         }
 
