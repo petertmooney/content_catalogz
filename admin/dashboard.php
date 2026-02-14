@@ -3897,6 +3897,11 @@ if ($invoices_result) {
 
         function addServiceRow(serviceName = '', serviceCost = 0) {
             const container = document.getElementById('servicesContainer');
+            
+            // Remove any existing add service buttons
+            const existingButtons = container.querySelectorAll('.add-service-button');
+            existingButtons.forEach(button => button.remove());
+            
             const rowId = 'service-row-' + Date.now();
             
             const row = document.createElement('div');
@@ -3946,17 +3951,26 @@ if ($invoices_result) {
                 <button type="button" class="btn btn-danger btn-sm" onclick="removeServiceRow('${rowId}')" style="height: 38px;">Remove</button>
             `;
             
-            // Create add service button
+            container.appendChild(row);
+            
+            // Add the add service button at the end
+            addServiceButton();
+        }
+
+        function addServiceButton() {
+            const container = document.getElementById('servicesContainer');
+            
+            // Remove any existing add service buttons
+            const existingButtons = container.querySelectorAll('.add-service-button');
+            existingButtons.forEach(button => button.remove());
+            
+            // Create and add the add service button
             const addButton = document.createElement('div');
+            addButton.className = 'add-service-button';
             addButton.style.cssText = 'margin-top: 10px; text-align: left;';
             addButton.innerHTML = '<button type="button" class="btn btn-primary btn-sm" onclick="addServiceRow()">+ Add Service</button>';
             
-            // Create a wrapper for the row and button
-            const wrapper = document.createElement('div');
-            wrapper.appendChild(row);
-            wrapper.appendChild(addButton);
-            
-            container.appendChild(wrapper);
+            container.appendChild(addButton);
         }
 
         function removeServiceRow(rowId) {
@@ -3964,6 +3978,8 @@ if ($invoices_result) {
             if (row) {
                 row.remove();
                 calculateTotalCost();
+                // Reposition the add service button
+                addServiceButton();
             }
         }
 
