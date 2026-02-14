@@ -3671,6 +3671,8 @@ if ($invoices_result) {
                 services.forEach(service => {
                     addServiceRow(service.name, service.cost);
                 });
+                // Add the button after loading all services
+                addServiceButton();
             }
             
             calculateTotalCost();
