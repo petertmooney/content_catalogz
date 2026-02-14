@@ -3530,11 +3530,20 @@ if ($invoices_result) {
 
             container.appendChild(row);
 
-            // Set values after DOM insertion to avoid escaping issues
+            // Set values after DOM insertion without triggering events
             const nameInput = row.querySelector('.service-name');
             const costInput = row.querySelector('.service-cost');
-            if (nameInput) nameInput.value = serviceName;
-            if (costInput) costInput.value = serviceCost;
+            if (nameInput && serviceName) {
+                nameInput.value = serviceName;
+            }
+            if (costInput && serviceCost) {
+                // Temporarily remove event listener to prevent triggering calculation
+                const originalOnInput = costInput.oninput;
+                costInput.oninput = null;
+                costInput.value = serviceCost;
+                // Restore event listener
+                setTimeout(() => { costInput.oninput = originalOnInput; }, 0);
+            }
         }
 
         function removeInvoiceServiceRow(rowId) {
@@ -6984,6 +6993,8 @@ invoices.forEach(invoice => {
                         
                         // Populate financial information
                         document.getElementById('totalPaid').value = parseFloat(invoice.total_paid || 0).toFixed(2);
+                        
+                        // Calculate totals once after everything is loaded
                         calculateInvoiceTotalCost();
                         
                         document.getElementById('invoiceModal').classList.add('show');
