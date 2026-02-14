@@ -65,6 +65,18 @@ if ($isPaymentOnly) {
     $company = isset($data['company']) ? trim($data['company']) : null;
     $email = isset($data['email']) ? trim($data['email']) : null;
     $phone = isset($data['phone']) ? trim($data['phone']) : null;
+    
+    // Validate required fields
+    if (empty($name)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Name is required']);
+        exit;
+    }
+    if (empty($email)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Email is required']);
+        exit;
+    }
     $addressStreet = isset($data['address_street']) ? trim($data['address_street']) : null;
     $addressLine2 = isset($data['address_line2']) ? trim($data['address_line2']) : null;
     $addressCity = isset($data['address_city']) ? trim($data['address_city']) : null;
