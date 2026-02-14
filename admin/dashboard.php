@@ -3729,7 +3729,8 @@ if ($invoices_result) {
                 })
                 .catch(error => {
                     console.error('Error loading clients:', error);
-                    document.getElementById('existing-clients-list').innerHTML = '<div class="empty-state"><h3>Error Loading Clients</h3><p>Network error: ' + error.message + '</p></div>';
+                    document.getElementById('existing-clients-list').innerHTML = '<div class="empty-state"><h3>Error Loading Clients</h3><p>Network error: ' + (error && error.message ? error.message : error) + '</p></div>';
+                    alert('Failed to load clients: ' + (error && error.message ? error.message : error));
                 });
         }
 
@@ -3809,6 +3810,7 @@ if ($invoices_result) {
 
         // View client details (reuse quote modal)
         function viewClientDetails(clientId, mode = 'view') {
+            console.log('Fetching client details for id=' + clientId);
             // Fetch client data (with defensive checks for auth/HTML responses)
             fetch('api/get_client.php?id=' + clientId)
                 .then(response => {
@@ -3841,12 +3843,13 @@ if ($invoices_result) {
                 })
                 .catch(error => {
                     console.error('Error loading client details:', error);
-                    alert('Failed to load client details — you may need to sign in again.');
+                    alert('Failed to load client details: ' + (error && error.message ? error.message : error) + '\n(You may need to sign in again.)');
                 });
         }
 
         // Print client details directly from table (without opening modal)
         function printClientFromTable(clientId) {
+            console.log('Printing client from table — fetching id=' + clientId);
             // Fetch client data for printing (defensive checks)
             fetch('api/get_client.php?id=' + clientId)
                 .then(response => {
@@ -3872,7 +3875,7 @@ if ($invoices_result) {
                 })
                 .catch(error => {
                     console.error('Error loading client for print:', error);
-                    alert('Failed to load client details — you may need to sign in again.');
+                    alert('Failed to load client details: ' + (error && error.message ? error.message : error) + '\n(You may need to sign in again.)');
                 });
         }
 
