@@ -3822,22 +3822,37 @@ if ($invoices_result) {
                 if (data.success) {
                     alert('Client updated successfully');
                     
-                    // Check if services or payments changed to auto-generate invoice
-                    const servicesChanged = JSON.stringify(currentServices) !== JSON.stringify(originalClientServices);
-                    const paymentsChanged = currentTotalPaid !== originalClientTotalPaid;
-                    
-                    if (servicesChanged || paymentsChanged) {
-                        // Auto-generate invoice
-                        if (totalCost > 0) {
-                            generateInvoiceForClient(totalCost);
-                        }
-                    }
-                    
-                    // Switch back to view mode
-                    currentClientMode = 'view';
-                    setupClientMode('view');
-                    // Refresh the client list
-                    displayExistingClients();
+                    // Check if we need to generate an invoice
+                    // Check for existing invoices first
+                    fetch('api/get_client_invoices.php?client_id=' + clientId)
+                        .then(response => response.json())
+                        .then(invoiceData => {
+                            const hasExistingInvoices = invoiceData.success && invoiceData.invoices && invoiceData.invoices.length > 0;
+                            
+                            // Check if services or payments changed
+                            const servicesChanged = JSON.stringify(currentServices) !== JSON.stringify(originalClientServices);
+                            const paymentsChanged = currentTotalPaid !== originalClientTotalPaid;
+                            
+                            if (!hasExistingInvoices || servicesChanged || paymentsChanged) {
+                                // Generate invoice if no invoices exist, or if changes occurred
+                                if (totalCost > 0) {
+                                    generateInvoiceForClient(totalCost);
+                                }
+                            }
+                            
+                            // Switch back to view mode
+                            currentClientMode = 'view';
+                            setupClientMode('view');
+                            // Refresh the client list
+                            displayExistingClients();
+                        })
+                        .catch(error => {
+                            console.error('Error checking invoices:', error);
+                            // Switch back to view mode anyway
+                            currentClientMode = 'view';
+                            setupClientMode('view');
+                            displayExistingClients();
+                        });
                 } else {
                     alert('Error updating client: ' + data.message);
                 }
@@ -4130,8 +4145,26 @@ if ($invoices_result) {
             .then(data => {
                 if (data.success) {
                     alert('Client information updated successfully!');
-                    closeClientModal();
-                    loadExistingClients(); // Refresh the clients list
+                    
+                    // Check if client has any invoices, and generate one if not
+                    const clientId = document.getElementById('clientId').value;
+                    fetch('api/get_client_invoices.php?client_id=' + clientId)
+                        .then(response => response.json())
+                        .then(invoiceData => {
+                            if (invoiceData.success && (!invoiceData.invoices || invoiceData.invoices.length === 0)) {
+                                // No existing invoices, generate new one
+                                generateInvoiceForClient();
+                            }
+                            // Close modal and refresh after invoice check/generation
+                            closeClientModal();
+                            loadExistingClients(); // Refresh the clients list
+                        })
+                        .catch(error => {
+                            console.error('Error checking invoices:', error);
+                            // Still close modal even if invoice check fails
+                            closeClientModal();
+                            loadExistingClients(); // Refresh the clients list
+                        });
                 } else {
                     alert('Error: ' + (data.message || 'Unknown error'));
                 }
