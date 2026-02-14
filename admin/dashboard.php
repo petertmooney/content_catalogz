@@ -1077,7 +1077,7 @@ if ($invoices_result) {
                     <input type="text" id="searchClients" placeholder="Search by name, email, company..." style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ddd; width: 250px; font-size: 13px;" onkeyup="loadExistingClients()" autocomplete="off">
                 </div>
 
-                <div id="existing-clients-list">
+                <div id="existing-clients-list" style="width: 100%;">
                     <div class="empty-state">
                         <h3>No Active Clients Yet</h3>
                         <p>Clients with active quotes will appear here automatically.</p>
