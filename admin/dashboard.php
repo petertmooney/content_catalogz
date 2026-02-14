@@ -3433,16 +3433,19 @@ if ($invoices_result) {
 
         function updateInvoice(event) {
             event.preventDefault();
-            
-            const invoiceId = document.getElementById('invoiceId').value;
-            const clientId = document.getElementById('clientId').value;
-            const invoiceNumber = document.getElementById('invoiceNumber').value;
-            const invoiceDate = document.getElementById('invoiceDate').value;
-            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
-            
+
+            const modal = document.getElementById('invoiceModal');
+            if (!modal) return;
+
+            const invoiceId = (modal.querySelector('#invoiceId') || {}).value || '';
+            const clientId = (modal.querySelector('#clientId') || {}).value || '';
+            const invoiceNumber = (modal.querySelector('#invoiceNumber') || {}).value || '';
+            const invoiceDate = (modal.querySelector('#invoiceDate') || {}).value || '';
+            const totalPaid = parseFloat((modal.querySelector('#totalPaid') || {}).value) || 0;
+
             // Collect services
             const services = [];
-            const serviceRows = document.querySelectorAll('#invoiceServicesContainer .service-row');
+            const serviceRows = modal.querySelectorAll('#invoiceServicesContainer .service-row');
             serviceRows.forEach(row => {
                 const nameInput = row.querySelector('.service-name');
                 const costInput = row.querySelector('.service-cost');
@@ -3454,11 +3457,11 @@ if ($invoices_result) {
                     }
                 }
             });
-            
+
             // Calculate total cost
             const totalCost = services.reduce((sum, service) => sum + service.cost, 0);
             const totalRemaining = totalCost - totalPaid;
-            
+
             const invoiceData = {
                 id: invoiceId,
                 client_id: clientId,
@@ -3533,9 +3536,12 @@ if ($invoices_result) {
         }
 
         function calculateInvoiceTotalCost() {
-            const serviceRows = document.querySelectorAll('#invoiceServicesContainer .service-row');
+            const modal = document.getElementById('invoiceModal');
+            if (!modal) return;
+
+            const serviceRows = modal.querySelectorAll('#invoiceServicesContainer .service-row');
             let totalCost = 0;
-            
+
             serviceRows.forEach(row => {
                 const costInput = row.querySelector('.service-cost');
                 if (costInput) {
@@ -3543,13 +3549,14 @@ if ($invoices_result) {
                     totalCost += cost;
                 }
             });
-            
-            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
+
+            const totalPaidEl = modal.querySelector('#totalPaid');
+            const totalPaid = totalPaidEl ? (parseFloat(totalPaidEl.value) || 0) : 0;
             const totalRemaining = totalCost - totalPaid;
-            
-            document.getElementById('totalCost').value = totalCost.toFixed(2);
-            document.getElementById('totalPaidDisplay').value = totalPaid.toFixed(2);
-            document.getElementById('totalRemaining').value = totalRemaining.toFixed(2);
+
+            const totalCostEl = modal.querySelector('#totalCost'); if (totalCostEl) totalCostEl.value = totalCost.toFixed(2);
+            const totalPaidDisplayEl = modal.querySelector('#totalPaidDisplay'); if (totalPaidDisplayEl) totalPaidDisplayEl.value = totalPaid.toFixed(2);
+            const totalRemainingEl = modal.querySelector('#totalRemaining'); if (totalRemainingEl) totalRemainingEl.value = totalRemaining.toFixed(2);
         }
         // Add a service row to the invoice modal
         function addInvoiceServiceRow(serviceName = '', serviceCost = 0, triggerCalculation = true) {
@@ -3614,16 +3621,19 @@ if ($invoices_result) {
 
         function updateInvoice(event) {
             event.preventDefault();
-            
-            const invoiceId = document.getElementById('invoiceId').value;
-            const clientId = document.getElementById('clientId').value;
-            const invoiceNumber = document.getElementById('invoiceNumber').value;
-            const invoiceDate = document.getElementById('invoiceDate').value;
-            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
-            
+
+            const modal = document.getElementById('invoiceModal');
+            if (!modal) return;
+
+            const invoiceId = (modal.querySelector('#invoiceId') || {}).value || '';
+            const clientId = (modal.querySelector('#clientId') || {}).value || '';
+            const invoiceNumber = (modal.querySelector('#invoiceNumber') || {}).value || '';
+            const invoiceDate = (modal.querySelector('#invoiceDate') || {}).value || '';
+            const totalPaid = parseFloat((modal.querySelector('#totalPaid') || {}).value) || 0;
+
             // Collect services
             const services = [];
-            const serviceRows = document.querySelectorAll('#invoiceServicesContainer .service-row');
+            const serviceRows = modal.querySelectorAll('#invoiceServicesContainer .service-row');
             serviceRows.forEach(row => {
                 const nameInput = row.querySelector('.service-name');
                 const costInput = row.querySelector('.service-cost');
@@ -3635,11 +3645,11 @@ if ($invoices_result) {
                     }
                 }
             });
-            
+
             // Calculate total cost
             const totalCost = services.reduce((sum, service) => sum + service.cost, 0);
             const totalRemaining = totalCost - totalPaid;
-            
+
             const invoiceData = {
                 id: invoiceId,
                 client_id: clientId,
@@ -3650,7 +3660,7 @@ if ($invoices_result) {
                 total_remaining: totalRemaining,
                 services: services
             };
-            
+
             fetch('api/update_invoice.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -4729,31 +4739,34 @@ if ($invoices_result) {
         }
 
         async function printInvoice() {
-            // Get current client data from the form
-            const clientId = document.getElementById('clientId').value;
-            const clientName = document.getElementById('clientName').textContent;
-            const clientCompany = document.getElementById('clientCompany').textContent;
-            const clientEmail = document.getElementById('clientEmail').textContent;
-            const clientPhone = document.getElementById('clientPhone').textContent;
-            
-            // Get structured address
-            const addressStreet = document.getElementById('clientAddressStreet').value || '';
-            const addressLine2 = document.getElementById('clientAddressLine2').value || '';
-            const addressCity = document.getElementById('clientAddressCity').value || '';
-            const addressCounty = document.getElementById('clientAddressCounty').value || '';
-            const addressPostcode = document.getElementById('clientAddressPostcode').value || '';
-            const addressCountry = document.getElementById('clientAddressCountry').value || 'United Kingdom';
-            
+            const modal = document.getElementById('invoiceModal');
+            if (!modal) return;
+
+            // Get current client data from the invoice modal
+            const clientId = (modal.querySelector('#clientId') || {}).value || '';
+            const clientName = (modal.querySelector('#clientName') || {}).textContent || '';
+            const clientCompany = (modal.querySelector('#clientCompany') || {}).textContent || '';
+            const clientEmail = (modal.querySelector('#clientEmail') || {}).textContent || '';
+            const clientPhone = (modal.querySelector('#clientPhone') || {}).textContent || '';
+
+            // Get structured address from invoice modal
+            const addressStreet = (modal.querySelector('#clientAddressStreet') || {}).value || '';
+            const addressLine2 = (modal.querySelector('#clientAddressLine2') || {}).value || '';
+            const addressCity = (modal.querySelector('#clientAddressCity') || {}).value || '';
+            const addressCounty = (modal.querySelector('#clientAddressCounty') || {}).value || '';
+            const addressPostcode = (modal.querySelector('#clientAddressPostcode') || {}).value || '';
+            const addressCountry = (modal.querySelector('#clientAddressCountry') || {}).value || 'United Kingdom';
+
             // Fetch payment history
             let paymentsHTML = '';
             try {
                 const response = await fetch('api/activities.php?client_id=' + clientId);
                 const data = await response.json();
                 const payments = data.activities ? data.activities.filter(a => a.type === 'payment_received') : [];
-                
+
                 if (payments.length > 0) {
                     payments.sort((a, b) => new Date(b.activity_date) - new Date(a.activity_date));
-                    
+
                     paymentsHTML = `
                         <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">Payment History</h3>
                         <table style="margin-bottom: 30px;">
@@ -4766,7 +4779,7 @@ if ($invoices_result) {
                             </thead>
                             <tbody>
                     `;
-                    
+
                     payments.forEach(payment => {
                         const date = new Date(payment.activity_date);
                         const dateStr = date.toLocaleDateString('en-GB', { 
@@ -4774,10 +4787,10 @@ if ($invoices_result) {
                             month: 'short', 
                             year: 'numeric' 
                         });
-                        
+
                         const amountMatch = payment.subject.match(/£([\\d,]+\\.\\d{2})/);
                         const amount = amountMatch ? amountMatch[1] : '0.00';
-                        
+
                         paymentsHTML += `
                             <tr>
                                 <td style="padding: 12px; border-bottom: 1px solid #ddd;">${dateStr}</td>
@@ -4786,13 +4799,13 @@ if ($invoices_result) {
                             </tr>
                         `;
                     });
-                    
+
                     paymentsHTML += '</tbody></table>';
                 }
             } catch (error) {
                 console.error('Error fetching payment history:', error);
             }
-            
+
             // Format address
             let formattedAddress = '';
             if (addressStreet) formattedAddress += addressStreet + '<br>';
@@ -4806,22 +4819,21 @@ if ($invoices_result) {
             }
             if (addressCountry) formattedAddress += addressCountry;
             if (!formattedAddress) formattedAddress = 'N/A';
-            
-            const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
-            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
-            const totalRemaining = parseFloat(document.getElementById('totalRemaining').value) || 0;
-            
+
+            const totalCost = parseFloat((modal.querySelector('#totalCost') || {}).value) || 0;
+            const totalPaid = parseFloat((modal.querySelector('#totalPaid') || {}).value) || 0;
+            const totalRemaining = parseFloat((modal.querySelector('#totalRemaining') || {}).value) || 0;
+
             // Collect services
             const services = [];
-            const serviceRows = document.querySelectorAll('.service-row');
+            const serviceRows = modal.querySelectorAll('#invoiceServicesContainer .service-row');
             serviceRows.forEach(row => {
-                const name = row.querySelector('.service-name').value.trim();
-                const cost = parseFloat(row.querySelector('.service-cost').value) || 0;
+                const name = (row.querySelector('.service-name') || {}).value ? row.querySelector('.service-name').value.trim() : '';
+                const cost = parseFloat((row.querySelector('.service-cost') || {}).value) || 0;
                 if (name) {
                     services.push({ name, cost });
                 }
-            });
-            
+            });            
             // Generate invoice HTML
             const invoiceDate = new Date().toLocaleDateString('en-GB');
             const invoiceNumber = 'INV-' + Date.now();
@@ -5900,6 +5912,8 @@ invoices.forEach(invoice => {
 
         // ==================== Invoice Modal Handlers ====================
         function openInvoiceModal(invoiceId) {
+            const modal = document.getElementById('invoiceModal');
+
             fetch('api/get_invoice.php?id=' + invoiceId)
                 .then(response => {
                     if (!response.ok) {
@@ -5911,41 +5925,43 @@ invoices.forEach(invoice => {
                     if (data.success) {
                         const invoice = data.invoice;
 
-                        // Populate client information
-                        document.getElementById('clientId').value = invoice.client_id;
-                        document.getElementById('clientName').textContent = invoice.name;
-                        document.getElementById('clientCompany').textContent = invoice.company || 'N/A';
-                        document.getElementById('clientEmail').textContent = invoice.email;
-                        document.getElementById('clientPhone').textContent = invoice.phone || 'N/A';
+                        // Populate client information (scoped to invoice modal)
+                        (modal.querySelector('#clientId') || modal.querySelector('[name="client_id"]')).value = invoice.client_id;
+                        const modalClientName = modal.querySelector('#clientName'); if (modalClientName) modalClientName.textContent = invoice.name || '';
+                        const modalClientCompany = modal.querySelector('#clientCompany'); if (modalClientCompany) modalClientCompany.textContent = invoice.company || 'N/A';
+                        const modalClientEmail = modal.querySelector('#clientEmail'); if (modalClientEmail) modalClientEmail.textContent = invoice.email || '';
+                        const modalClientPhone = modal.querySelector('#clientPhone'); if (modalClientPhone) modalClientPhone.textContent = invoice.phone || 'N/A';
 
-                        // Populate address
-                        document.getElementById('clientAddressStreet').value = invoice.address_street || '';
-                        document.getElementById('clientAddressLine2').value = invoice.address_line2 || '';
-                        document.getElementById('clientAddressCity').value = invoice.address_city || '';
-                        document.getElementById('clientAddressCounty').value = invoice.address_county || '';
-                        document.getElementById('clientAddressPostcode').value = invoice.address_postcode || '';
-                        document.getElementById('clientAddressCountry').value = invoice.address_country || '';
+                        // Populate address (scoped)
+                        const aStreet = modal.querySelector('#clientAddressStreet'); if (aStreet) aStreet.value = invoice.address_street || '';
+                        const aLine2  = modal.querySelector('#clientAddressLine2'); if (aLine2) aLine2.value = invoice.address_line2 || '';
+                        const aCity   = modal.querySelector('#clientAddressCity'); if (aCity) aCity.value = invoice.address_city || '';
+                        const aCounty = modal.querySelector('#clientAddressCounty'); if (aCounty) aCounty.value = invoice.address_county || '';
+                        const aPost   = modal.querySelector('#clientAddressPostcode'); if (aPost) aPost.value = invoice.address_postcode || '';
+                        const aCountry= modal.querySelector('#clientAddressCountry'); if (aCountry) aCountry.value = invoice.address_country || '';
 
-                        // Populate invoice details
-                        document.getElementById('invoiceId').value = invoice.id;
-                        document.getElementById('invoiceNumber').value = invoice.invoice_number;
-                        document.getElementById('invoiceDate').value = invoice.invoice_date;
-                        document.getElementById('invoiceDueDate').value = invoice.due_date || '';
-                        
-                        // Populate invoice status with color
-                        const statusElement = document.getElementById('invoiceStatus');
-                        const statusText = invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1);
-                        const statusColor = invoice.status === 'paid' ? '#28a745' : (invoice.status === 'overdue' ? '#dc3545' : '#ffc107');
-                        statusElement.value = statusText;
-                        statusElement.style.color = statusColor;
-                        statusElement.style.borderColor = statusColor;
+                        // Populate invoice details (scoped)
+                        const invIdEl = modal.querySelector('#invoiceId'); if (invIdEl) invIdEl.value = invoice.id;
+                        const invNumEl = modal.querySelector('#invoiceNumber'); if (invNumEl) invNumEl.value = invoice.invoice_number || '';
+                        const invDateEl = modal.querySelector('#invoiceDate'); if (invDateEl) invDateEl.value = invoice.invoice_date || '';
+                        const invDueEl = modal.querySelector('#invoiceDueDate'); if (invDueEl) invDueEl.value = invoice.due_date || '';
 
-                        // Load services
+                        // Populate invoice status with color (scoped)
+                        const statusElement = modal.querySelector('#invoiceStatus');
+                        if (statusElement) {
+                            const statusText = (invoice.status || '').charAt(0).toUpperCase() + (invoice.status || '').slice(1);
+                            const statusColor = invoice.status === 'paid' ? '#28a745' : (invoice.status === 'overdue' ? '#dc3545' : '#ffc107');
+                            statusElement.value = statusText;
+                            statusElement.style.color = statusColor;
+                            statusElement.style.borderColor = statusColor;
+                        }
+
+                        // Load services into invoice modal
                         const services = invoice.services || [];
-                        const servicesContainer = document.getElementById('invoiceServicesContainer');
-                        servicesContainer.innerHTML = '';
+                        const servicesContainer = modal.querySelector('#invoiceServicesContainer');
+                        if (servicesContainer) servicesContainer.innerHTML = '';
 
-                        if (services.length === 0) {
+                        if (!services || services.length === 0) {
                             addInvoiceServiceRow();
                         } else {
                             services.forEach(service => {
@@ -5953,9 +5969,9 @@ invoices.forEach(invoice => {
                             });
                         }
 
-                        // Populate financial information
-                        document.getElementById('totalPaid').value = parseFloat(invoice.total_paid || 0).toFixed(2);
-                        
+                        // Populate financial information (scoped)
+                        const totalPaidEl = modal.querySelector('#totalPaid'); if (totalPaidEl) totalPaidEl.value = parseFloat(invoice.total_paid || 0).toFixed(2);
+
                         // Calculate totals once after everything is loaded
                         setTimeout(() => {
                             calculateInvoiceTotalCost();
@@ -5964,7 +5980,7 @@ invoices.forEach(invoice => {
                         // Load payment history for this invoice's client
                         loadInvoicePayments(invoice.client_id);
 
-                        document.getElementById('invoiceModal').classList.add('show');
+                        modal.classList.add('show');
                     } else {
                         alert('Error loading invoice: ' + (data.message || 'Unknown error'));
                     }
