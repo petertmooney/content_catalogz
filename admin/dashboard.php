@@ -1676,6 +1676,18 @@ if ($invoices_result) {
                             <strong>Phone:</strong><br>
                             <span id="clientPhone"></span>
                         </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="clientLeadSource">Lead Source</label>
+                            <select id="clientLeadSource" name="lead_source" class="form-control">
+                                <option value="">-- Select Lead Source --</option>
+                                <option value="Website">Website</option>
+                                <option value="Referral">Referral</option>
+                                <option value="Social Media">Social Media</option>
+                                <option value="Email Marketing">Email Marketing</option>
+                                <option value="Direct Contact">Direct Contact</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -3608,6 +3620,9 @@ if ($invoices_result) {
             document.getElementById('clientEmail').textContent = client.email;
             document.getElementById('clientPhone').textContent = client.phone || 'N/A';
             
+            // Load lead source
+            document.getElementById('clientLeadSource').value = client.lead_source || '';
+            
             // Load address fields
             document.getElementById('clientAddressStreet').value = client.address_street || '';
             document.getElementById('clientAddressLine2').value = client.address_line2 || '';
@@ -3836,6 +3851,7 @@ if ($invoices_result) {
             const addressCountry = document.getElementById('clientAddressCountry').value;
             const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
             const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
+            const leadSource = document.getElementById('clientLeadSource').value;
             
             // Collect services
             const services = [];
@@ -3865,6 +3881,7 @@ if ($invoices_result) {
                 address_county: addressCounty,
                 address_postcode: addressPostcode,
                 address_country: addressCountry,
+                lead_source: leadSource,
                 services: services,
                 total_cost: totalCost,
                 total_paid: totalPaid
