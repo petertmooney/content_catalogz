@@ -20,6 +20,14 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 $invoiceId = (int)$_GET['id'];
 
 try {
+    // First, update any overdue invoices
+    $updateOverdueSql = "UPDATE invoices 
+                        SET status = 'overdue' 
+                        WHERE status != 'paid' 
+                        AND status != 'overdue' 
+                        AND created_at < DATE_SUB(NOW(), INTERVAL 30 DAY)";
+    $conn->query($updateOverdueSql);
+    
     // Get invoice details with client information
     $sql = "SELECT i.*, q.name, q.company, q.email, q.phone,
                    q.address_street, q.address_line2, q.address_city,

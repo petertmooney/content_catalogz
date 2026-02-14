@@ -20,8 +20,18 @@ if (!isset($_GET['client_id']) || empty($_GET['client_id'])) {
 $clientId = (int)$_GET['client_id'];
 
 try {
+    // First, update any overdue invoices
+    $updateOverdueSql = "UPDATE invoices 
+                        SET status = 'overdue' 
+                        WHERE status != 'paid' 
+                        AND status != 'overdue' 
+                        AND created_at < DATE_SUB(NOW(), INTERVAL 30 DAY)";
+    $conn->query($updateOverdueSql);
+    
     // Get all invoices for this client
-    $sql = "SELECT i.*, q.name, q.company, q.email, q.phone
+    $sql = "SELECT i.*, q.name, q.company, q.email, q.phone,
+                   q.address_street, q.address_line2, q.address_city,
+                   q.address_county, q.address_postcode, q.address_country
             FROM invoices i
             LEFT JOIN quotes q ON i.client_id = q.id
             WHERE i.client_id = ?
