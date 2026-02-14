@@ -61,6 +61,10 @@ if ($isPaymentOnly) {
     $stmt->bind_param("ddi", $totalPaid, $totalRemaining, $clientId);
 } else {
     // Full update: update all fields
+    $name = isset($data['name']) ? trim($data['name']) : null;
+    $company = isset($data['company']) ? trim($data['company']) : null;
+    $email = isset($data['email']) ? trim($data['email']) : null;
+    $phone = isset($data['phone']) ? trim($data['phone']) : null;
     $addressStreet = isset($data['address_street']) ? trim($data['address_street']) : null;
     $addressLine2 = isset($data['address_line2']) ? trim($data['address_line2']) : null;
     $addressCity = isset($data['address_city']) ? trim($data['address_city']) : null;
@@ -96,14 +100,14 @@ if ($isPaymentOnly) {
     }
 
     // Update the client information
-    $stmt = $conn->prepare("UPDATE quotes SET address_street = ?, address_line2 = ?, address_city = ?, address_county = ?, address_postcode = ?, address_country = ?, lead_source = ?, services = ?, total_cost = ?, total_paid = ?, total_remaining = ? WHERE id = ?");
+    $stmt = $conn->prepare("UPDATE quotes SET name = ?, company = ?, email = ?, phone = ?, address_street = ?, address_line2 = ?, address_city = ?, address_county = ?, address_postcode = ?, address_country = ?, lead_source = ?, services = ?, total_cost = ?, total_paid = ?, total_remaining = ? WHERE id = ?");
     if (!$stmt) {
         http_response_code(500);
         echo json_encode(['success' => false, 'message' => 'Database prepare error: ' . $conn->error]);
         exit;
     }
 
-    $stmt->bind_param("ssssssssdddi", $addressStreet, $addressLine2, $addressCity, $addressCounty, $addressPostcode, $addressCountry, $leadSource, $servicesJson, $totalCost, $totalPaid, $totalRemaining, $clientId);
+    $stmt->bind_param("sssssssssssssdddi", $name, $company, $email, $phone, $addressStreet, $addressLine2, $addressCity, $addressCounty, $addressPostcode, $addressCountry, $leadSource, $servicesJson, $totalCost, $totalPaid, $totalRemaining, $clientId);
 }
 
 if ($stmt->execute()) {
@@ -126,7 +130,7 @@ if ($stmt->execute()) {
             
             // Log the activity
             $userId = $_SESSION['user_id'] ?? 1;
-            $activityStmt = $conn->prepare("INSERT INTO activities (client_id, activity_type, subject, description, activity_date, created_by) VALUES (?, 'note', ?, ?, NOW(), ?)");
+            $activityStmt = $conn->prepare("INSERT INTO activities (client_id, type, subject, description, activity_date, created_by) VALUES (?, 'note', ?, ?, NOW(), ?)");
             $activitySubject = "Services Updated";
             $activityStmt->bind_param("issi", $clientId, $activitySubject, $activityDescription, $userId);
             $activityStmt->execute();

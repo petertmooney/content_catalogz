@@ -4096,6 +4096,10 @@ if ($invoices_result) {
             
             const data = {
                 id: clientId,
+                name: name,
+                company: company,
+                email: email,
+                phone: phone,
                 address_street: addressStreet,
                 address_line2: addressLine2,
                 address_city: addressCity,
