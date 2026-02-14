@@ -1660,21 +1660,21 @@ if ($invoices_result) {
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
                     <h4 style="margin-bottom: 15px; color: #333;">Contact Information</h4>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div>
-                            <strong>Name:</strong><br>
-                            <span id="clientName"></span>
+                        <div class="form-group">
+                            <label for="clientNameInput">Name</label>
+                            <input type="text" id="clientNameInput" name="name" class="form-control" required>
                         </div>
-                        <div>
-                            <strong>Company:</strong><br>
-                            <span id="clientCompany"></span>
+                        <div class="form-group">
+                            <label for="clientCompanyInput">Company</label>
+                            <input type="text" id="clientCompanyInput" name="company" class="form-control">
                         </div>
-                        <div>
-                            <strong>Email:</strong><br>
-                            <span id="clientEmail"></span>
+                        <div class="form-group">
+                            <label for="clientEmailInput">Email</label>
+                            <input type="email" id="clientEmailInput" name="email" class="form-control" required>
                         </div>
-                        <div>
-                            <strong>Phone:</strong><br>
-                            <span id="clientPhone"></span>
+                        <div class="form-group">
+                            <label for="clientPhoneInput">Phone</label>
+                            <input type="tel" id="clientPhoneInput" name="phone" class="form-control">
                         </div>
                         <div class="form-group" style="grid-column: 1 / -1;">
                             <label for="clientLeadSource">Lead Source</label>
@@ -3615,10 +3615,11 @@ if ($invoices_result) {
             // Set client name in modal header
             document.getElementById('clientModalName').textContent = client.name;
             
-            document.getElementById('clientName').textContent = client.name;
-            document.getElementById('clientCompany').textContent = client.company || 'N/A';
-            document.getElementById('clientEmail').textContent = client.email;
-            document.getElementById('clientPhone').textContent = client.phone || 'N/A';
+            // Populate contact information fields
+            document.getElementById('clientNameInput').value = client.name;
+            document.getElementById('clientCompanyInput').value = client.company || '';
+            document.getElementById('clientEmailInput').value = client.email;
+            document.getElementById('clientPhoneInput').value = client.phone || '';
             
             // Load lead source
             document.getElementById('clientLeadSource').value = client.lead_source || '';
@@ -3843,6 +3844,10 @@ if ($invoices_result) {
             event.preventDefault();
             
             const clientId = document.getElementById('clientId').value;
+            const name = document.getElementById('clientNameInput').value.trim();
+            const company = document.getElementById('clientCompanyInput').value.trim();
+            const email = document.getElementById('clientEmailInput').value.trim();
+            const phone = document.getElementById('clientPhoneInput').value.trim();
             const addressStreet = document.getElementById('clientAddressStreet').value;
             const addressLine2 = document.getElementById('clientAddressLine2').value;
             const addressCity = document.getElementById('clientAddressCity').value;
