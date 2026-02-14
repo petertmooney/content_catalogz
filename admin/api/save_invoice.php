@@ -53,6 +53,7 @@ $invoiceNumber = trim($data['invoice_number']);
 $invoiceDate = isset($data['invoice_date']) ? $data['invoice_date'] : date('Y-m-d');
 $totalCost = isset($data['total_cost']) ? floatval($data['total_cost']) : 0.00;
 $totalPaid = isset($data['total_paid']) ? floatval($data['total_paid']) : 0.00;
+$services = isset($data['services']) ? $data['services'] : [];
 $totalRemaining = $totalCost - $totalPaid;
 
 // Check if an invoice for this client and date already exists
@@ -78,10 +79,26 @@ $stmt = $conn->prepare("INSERT INTO invoices (invoice_number, client_id, invoice
 $stmt->bind_param("sisssdddd", $invoiceNumber, $clientId, $invoiceDate, $invoiceDate, $dueDate, $totalCost, $totalCost, $totalPaid, $totalRemaining);
 
 if ($stmt->execute()) {
+    $invoiceId = $conn->insert_id;
+    
+    // Save services if provided
+    if (!empty($services) && is_array($services)) {
+        $serviceStmt = $conn->prepare("INSERT INTO invoice_services (invoice_id, description, quantity, unit_price, total_cost) VALUES (?, ?, 1, ?, ?)");
+        foreach ($services as $service) {
+            if (isset($service['name']) && isset($service['cost'])) {
+                $serviceName = trim($service['name']);
+                $serviceCost = floatval($service['cost']);
+                $serviceStmt->bind_param("isdd", $invoiceId, $serviceName, $serviceCost, $serviceCost);
+                $serviceStmt->execute();
+            }
+        }
+        $serviceStmt->close();
+    }
+    
     echo json_encode([
         'success' => true, 
         'message' => 'Invoice saved successfully',
-        'invoice_id' => $conn->insert_id
+        'invoice_id' => $invoiceId
     ]);
 } else {
     http_response_code(500);

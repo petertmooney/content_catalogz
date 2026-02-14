@@ -4115,6 +4115,26 @@ if ($invoices_result) {
                 return;
             }
             
+            // Collect services from the form
+            const services = [];
+            const serviceRows = document.querySelectorAll('.service-row');
+            serviceRows.forEach(row => {
+                const select = row.querySelector('.service-select');
+                const customInput = row.querySelector('.service-custom');
+                const cost = parseFloat(row.querySelector('.service-cost').value) || 0;
+                
+                let name = '';
+                if (select && select.value === 'Other') {
+                    name = customInput ? customInput.value.trim() : '';
+                } else if (select) {
+                    name = select.value;
+                }
+                
+                if (name && cost > 0) {
+                    services.push({ name, cost });
+                }
+            });
+            
             const invoiceDate = new Date().toISOString().split('T')[0];
             // Deterministic invoice number: INV-<YEAR>-<CLIENTID>-<DATE>
             const invoiceNumber = `INV-${new Date().getFullYear()}-${clientId}-${invoiceDate.replace(/-/g, '')}`;
@@ -4129,7 +4149,8 @@ if ($invoices_result) {
                     invoice_number: invoiceNumber,
                     invoice_date: invoiceDate,
                     total_cost: totalCost,
-                    total_paid: totalPaid
+                    total_paid: totalPaid,
+                    services: services
                 })
             })
             .then(response => {
@@ -4155,6 +4176,8 @@ if ($invoices_result) {
                         alert('Invoice already exists for this client');
                     } else {
                         alert('Invoice ' + invoiceNumber + ' created successfully for ' + clientName + '!');
+                        // Open PDF view in new window
+                        window.open('api/generate_invoice_pdf.php?id=' + data.invoice_id, '_blank');
                         // Reload invoice stats
                         loadInvoiceStats();
                         loadDashboardStats();
