@@ -425,6 +425,12 @@ if ($invoices_result) {
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
+        .readonly-field {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
         .close-btn {
             float: right;
             font-size: 28px;
@@ -1658,27 +1664,34 @@ if ($invoices_result) {
                 
                 <!-- Client Information -->
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
-                    <h4 style="margin-bottom: 15px; color: #333;">Contact Information</h4>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h4 style="margin: 0; color: #333;">Contact Information</h4>
+                        <div id="editModeControls" style="display: none;">
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="toggleEditMode()" id="editModeBtn">✏️ Edit</button>
+                            <button type="button" class="btn btn-sm btn-success" onclick="saveClientChanges()" id="saveBtn" style="display: none;">💾 Save</button>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEditMode()" id="cancelBtn" style="display: none;">❌ Cancel</button>
+                        </div>
+                    </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div class="form-group">
                             <label for="clientNameInput">Name</label>
-                            <input type="text" id="clientNameInput" name="name" class="form-control" required>
+                            <input type="text" id="clientNameInput" name="name" class="form-control" readonly>
                         </div>
                         <div class="form-group">
                             <label for="clientCompanyInput">Company</label>
-                            <input type="text" id="clientCompanyInput" name="company" class="form-control">
+                            <input type="text" id="clientCompanyInput" name="company" class="form-control" readonly>
                         </div>
                         <div class="form-group">
                             <label for="clientEmailInput">Email</label>
-                            <input type="email" id="clientEmailInput" name="email" class="form-control" required>
+                            <input type="email" id="clientEmailInput" name="email" class="form-control" readonly>
                         </div>
                         <div class="form-group">
                             <label for="clientPhoneInput">Phone</label>
-                            <input type="tel" id="clientPhoneInput" name="phone" class="form-control">
+                            <input type="tel" id="clientPhoneInput" name="phone" class="form-control" readonly>
                         </div>
                         <div class="form-group" style="grid-column: 1 / -1;">
                             <label for="clientLeadSource">Lead Source</label>
-                            <select id="clientLeadSource" name="lead_source" class="form-control">
+                            <select id="clientLeadSource" name="lead_source" class="form-control" disabled>
                                 <option value="">-- Select Lead Source --</option>
                                 <option value="Website">Website</option>
                                 <option value="Referral">Referral</option>
@@ -3558,8 +3571,8 @@ if ($invoices_result) {
                     <td style="padding: 8px 12px; font-size: 13px;">${clientDate}</td>
                     <td style="padding: 8px 12px;">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 3px; width: fit-content;">
-                            <button class="btn btn-primary btn-sm" onclick="viewClientDetails(${client.id})" style="padding: 5px 8px; font-size: 11px; text-align: center;" title="View Details">👁️ View</button>
-                            <button class="btn btn-secondary btn-sm" onclick="viewClientDetails(${client.id})" style="padding: 5px 8px; font-size: 11px; text-align: center;" title="Edit Client">✏️ Edit</button>
+                            <button class="btn btn-primary btn-sm" onclick="viewClientDetails(${client.id}, 'view')" style="padding: 5px 8px; font-size: 11px; text-align: center;" title="View Details">👁️ View</button>
+                            <button class="btn btn-secondary btn-sm" onclick="viewClientDetails(${client.id}, 'edit')" style="padding: 5px 8px; font-size: 11px; text-align: center;" title="Edit Client">✏️ Edit</button>
                             <button class="btn btn-secondary btn-sm" onclick="printClientFromTable(${client.id})" style="padding: 5px 8px; font-size: 11px; text-align: center;" title="Print Client Details">🖨️ Print</button>
                             <a href="mailto:${escapeHtml(client.email)}" class="btn btn-secondary btn-sm" style="padding: 5px 8px; font-size: 11px; text-align: center; text-decoration: none; display: inline-block;" title="Send Email">📧 Email</a>
                         </div>
@@ -3572,13 +3585,13 @@ if ($invoices_result) {
         }
 
         // View client details (reuse quote modal)
-        function viewClientDetails(clientId) {
+        function viewClientDetails(clientId, mode = 'view') {
             // Fetch client data
             fetch('api/get_client.php?id=' + clientId)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        openClientModal(data.client);
+                        openClientModal(data.client, mode);
                     } else {
                         alert('Error loading client details: ' + data.message);
                     }
@@ -3607,9 +3620,12 @@ if ($invoices_result) {
                 });
         }
 
-        function openClientModal(client) {
+        function openClientModal(client, mode = 'view') {
             // Set current client ID for CRM functions
             currentClientId = client.id;
+            
+            // Set the current mode
+            currentClientMode = mode;
             
             document.getElementById('clientId').value = client.id;
             
@@ -3669,7 +3685,102 @@ if ($invoices_result) {
             // Load payment history
             loadClientPayments(currentClientId);
             
+            // Set up view/edit mode
+            setupClientMode(mode);
+            
             document.getElementById('clientModal').classList.add('show');
+        }
+
+        function setupClientMode(mode) {
+            const editControls = document.getElementById('editControls');
+            const contactFields = ['clientNameInput', 'clientCompanyInput', 'clientEmailInput', 'clientPhoneInput'];
+            
+            if (mode === 'edit') {
+                // Show edit controls
+                editControls.style.display = 'block';
+                // Make contact fields editable
+                contactFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    field.removeAttribute('readonly');
+                    field.classList.remove('readonly-field');
+                });
+            } else {
+                // Hide edit controls
+                editControls.style.display = 'none';
+                // Make contact fields read-only
+                contactFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    field.setAttribute('readonly', 'readonly');
+                    field.classList.add('readonly-field');
+                });
+            }
+        }
+
+        function toggleEditMode() {
+            const contactFields = ['clientNameInput', 'clientCompanyInput', 'clientEmailInput', 'clientPhoneInput'];
+            const editControls = document.getElementById('editControls');
+            
+            if (currentClientMode === 'view') {
+                // Switch to edit mode
+                currentClientMode = 'edit';
+                editControls.style.display = 'block';
+                contactFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    field.removeAttribute('readonly');
+                    field.classList.remove('readonly-field');
+                });
+            } else {
+                // Switch to view mode
+                currentClientMode = 'view';
+                editControls.style.display = 'none';
+                contactFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    field.setAttribute('readonly', 'readonly');
+                    field.classList.add('readonly-field');
+                });
+            }
+        }
+
+        function saveClientChanges() {
+            const clientId = document.getElementById('clientId').value;
+            const clientData = {
+                id: clientId,
+                name: document.getElementById('clientNameInput').value,
+                company: document.getElementById('clientCompanyInput').value,
+                email: document.getElementById('clientEmailInput').value,
+                phone: document.getElementById('clientPhoneInput').value
+            };
+            
+            fetch('api/update_client.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(clientData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Client updated successfully');
+                    // Switch back to view mode
+                    currentClientMode = 'view';
+                    setupClientMode('view');
+                    // Refresh the client list
+                    displayExistingClients();
+                } else {
+                    alert('Error updating client: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to update client');
+            });
+        }
+
+        function cancelEditMode() {
+            // Revert to view mode without saving
+            currentClientMode = 'view';
+            setupClientMode('view');
         }
 
         function closeClientModal() {
@@ -5961,6 +6072,7 @@ invoices.forEach(invoice => {
         // ==================== CRM Functions ====================
         
         let currentClientId = null;
+        let currentClientMode = 'view';
         
         // Tab Switching
         function switchClientTab(tabName) {
