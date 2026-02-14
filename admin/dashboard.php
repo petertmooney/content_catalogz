@@ -3558,10 +3558,10 @@ if ($invoices_result) {
                     <td style="padding: 8px 12px; font-size: 13px;">${clientDate}</td>
                     <td style="padding: 8px 12px;">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 3px; width: fit-content;">
-                            <button class="btn btn-primary btn-sm" onclick="viewClientDetails(${client.id})" style="padding: 3px 6px; font-size: 10px;" title="View Details">👁️ View</button>
-                            <button class="btn btn-secondary btn-sm" onclick="viewClientDetails(${client.id})" style="padding: 3px 6px; font-size: 10px;" title="Edit Client">✏️ Edit</button>
-                            <button class="btn btn-secondary btn-sm" onclick="printClientFromTable(${client.id})" style="padding: 3px 6px; font-size: 10px;" title="Print Client Details">🖨️ Print</button>
-                            <a href="mailto:${escapeHtml(client.email)}" class="btn btn-secondary btn-sm" style="padding: 3px 6px; font-size: 10px; text-decoration: none; display: inline-block;" title="Send Email">📧 Email</a>
+                            <button class="btn btn-primary btn-sm" onclick="viewClientDetails(${client.id})" style="padding: 5px 8px; font-size: 11px; text-align: center;" title="View Details">👁️ View</button>
+                            <button class="btn btn-secondary btn-sm" onclick="viewClientDetails(${client.id})" style="padding: 5px 8px; font-size: 11px; text-align: center;" title="Edit Client">✏️ Edit</button>
+                            <button class="btn btn-secondary btn-sm" onclick="printClientFromTable(${client.id})" style="padding: 5px 8px; font-size: 11px; text-align: center;" title="Print Client Details">🖨️ Print</button>
+                            <a href="mailto:${escapeHtml(client.email)}" class="btn btn-secondary btn-sm" style="padding: 5px 8px; font-size: 11px; text-align: center; text-decoration: none; display: inline-block;" title="Send Email">📧 Email</a>
                         </div>
                     </td>
                 </tr>`;
