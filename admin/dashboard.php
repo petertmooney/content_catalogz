@@ -1694,18 +1694,6 @@ if ($invoices_result) {
                             <label for="clientPhoneInput">Phone</label>
                             <input type="tel" id="clientPhoneInput" name="phone" class="form-control" readonly>
                         </div>
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <label for="clientLeadSource">Lead Source</label>
-                            <select id="clientLeadSource" name="lead_source" class="form-control" disabled>
-                                <option value="">-- Select Lead Source --</option>
-                                <option value="Website">Website</option>
-                                <option value="Referral">Referral</option>
-                                <option value="Social Media">Social Media</option>
-                                <option value="Email Marketing">Email Marketing</option>
-                                <option value="Direct Contact">Direct Contact</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
                     </div>
                 </div>
 
@@ -1737,6 +1725,23 @@ if ($invoices_result) {
                             <label for="clientAddressCountry">Country</label>
                             <input type="text" id="clientAddressCountry" name="address_country" class="form-control" value="United Kingdom" readonly>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Lead Source -->
+                <div style="background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 15px; color: #333;">Lead Source</h4>
+                    <div class="form-group">
+                        <label for="clientLeadSource">How did this client find us?</label>
+                        <select id="clientLeadSource" name="lead_source" class="form-control" disabled>
+                            <option value="">-- Select Lead Source --</option>
+                            <option value="Website">Website</option>
+                            <option value="Referral">Referral</option>
+                            <option value="Social Media">Social Media</option>
+                            <option value="Email Marketing">Email Marketing</option>
+                            <option value="Direct Contact">Direct Contact</option>
+                            <option value="Other">Other</option>
+                        </select>
                     </div>
                 </div>
 
@@ -4007,7 +4012,12 @@ if ($invoices_result) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Client updated successfully');
+                    // Show success message but keep form open
+                    alert('Client updated successfully!');
+                    
+                    // Update the original values to reflect the current state
+                    originalClientServices = JSON.parse(JSON.stringify(currentServices));
+                    originalClientTotalPaid = currentTotalPaid;
                     
                     // Check if we need to generate an invoice
                     // Check for existing invoices first
@@ -4027,17 +4037,15 @@ if ($invoices_result) {
                                 }
                             }
                             
-                            // Switch back to view mode
-                            currentClientMode = 'view';
-                            setupClientMode('view');
+                            // Stay in edit mode - don't switch back to view mode
+                            // currentClientMode = 'view';
+                            // setupClientMode('view');
                             // Refresh the client list
                             displayExistingClients();
                         })
                         .catch(error => {
                             console.error('Error checking invoices:', error);
-                            // Switch back to view mode anyway
-                            currentClientMode = 'view';
-                            setupClientMode('view');
+                            // Stay in edit mode
                             displayExistingClients();
                         });
                 } else {
@@ -5035,273 +5043,7 @@ if ($invoices_result) {
         }
 
         // Print client details
-        function printClientDetails() {
-            const clientName = document.getElementById('clientName').textContent;
-            const clientCompany = document.getElementById('clientCompany').textContent;
-            const clientEmail = document.getElementById('clientEmail').textContent;
-            const clientPhone = document.getElementById('clientPhone').textContent;
-            
-            // Get address information
-            const addressStreet = document.getElementById('clientAddressStreet').value || '';
-            const addressLine2 = document.getElementById('clientAddressLine2').value || '';
-            const addressCity = document.getElementById('clientAddressCity').value || '';
-            const addressCounty = document.getElementById('clientAddressCounty').value || '';
-            const addressPostcode = document.getElementById('clientAddressPostcode').value || '';
-            const addressCountry = document.getElementById('clientAddressCountry').value || 'United Kingdom';
-            
-            // Format address
-            let formattedAddress = '';
-            if (addressStreet) formattedAddress += addressStreet + '<br>';
-            if (addressLine2) formattedAddress += addressLine2 + '<br>';
-            if (addressCity || addressCounty || addressPostcode) {
-                let cityLine = '';
-                if (addressCity) cityLine += addressCity;
-                if (addressCounty) cityLine += (cityLine ? ', ' : '') + addressCounty;
-                if (addressPostcode) cityLine += (cityLine ? ', ' : '') + addressPostcode;
-                formattedAddress += cityLine + '<br>';
-            }
-            if (addressCountry) formattedAddress += addressCountry;
-            if (!formattedAddress) formattedAddress = 'N/A';
-            
-            // Get financial information
-            const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
-            const totalPaid = parseFloat(document.getElementById('totalPaid').value) || 0;
-            const totalRemaining = parseFloat(document.getElementById('totalRemaining').value) || 0;
-            
-            // Collect services
-            const services = [];
-            const serviceRows = document.querySelectorAll('.service-row');
-            serviceRows.forEach(row => {
-                const name = row.querySelector('.service-name').value.trim();
-                const cost = parseFloat(row.querySelector('.service-cost').value) || 0;
-                if (name) {
-                    services.push({ name, cost });
-                }
-            });
-            
-            let servicesHTML = '';
-            if (services.length > 0) {
-                services.forEach(service => {
-                    servicesHTML += `
-                        <tr>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${escapeHtml(service.name)}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">£${service.cost.toFixed(2)}</td>
-                        </tr>
-                    `;
-                });
-            } else {
-                servicesHTML = '<tr><td colspan="2" style="padding: 8px; text-align: center; color: #666;">No services recorded</td></tr>';
-            }
-            
-            const printDate = new Date().toLocaleDateString('en-GB');
-            
-            const clientDetailsHTML = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Client Details - ${clientName}</title>
-                    <style>
-                        @media print {
-                            body { margin: 0; }
-                            .no-print { display: none; }
-                        }
-                        body {
-                            font-family: Arial, sans-serif;
-                            max-width: 800px;
-                            margin: 20px auto;
-                            padding: 20px;
-                            color: #333;
-                            line-height: 1.6;
-                        }
-                        .header {
-                            text-align: center;
-                            margin-bottom: 30px;
-                            padding-bottom: 20px;
-                            border-bottom: 3px solid #ff69b4;
-                        }
-                        .header h1 {
-                            margin: 0;
-                            color: #ff69b4;
-                            font-size: 28px;
-                        }
-                        .header p {
-                            margin: 5px 0;
-                            color: #666;
-                        }
-                        .section {
-                            margin-bottom: 25px;
-                            background: #f8f9fa;
-                            padding: 20px;
-                            border-radius: 8px;
-                        }
-                        .section h3 {
-                            margin-top: 0;
-                            color: #333;
-                            border-bottom: 2px solid #ff69b4;
-                            padding-bottom: 8px;
-                        }
-                        .info-grid {
-                            display: grid;
-                            grid-template-columns: 1fr 1fr;
-                            gap: 15px;
-                            margin-bottom: 15px;
-                        }
-                        .info-item {
-                            background: white;
-                            padding: 12px;
-                            border-radius: 4px;
-                            border: 1px solid #ddd;
-                        }
-                        .info-item strong {
-                            display: block;
-                            color: #666;
-                            font-size: 12px;
-                            text-transform: uppercase;
-                            margin-bottom: 4px;
-                        }
-                        table {
-                            width: 100%;
-                            border-collapse: collapse;
-                            margin-top: 15px;
-                            background: white;
-                        }
-                        th {
-                            background: #ff69b4;
-                            color: white;
-                            padding: 10px;
-                            text-align: left;
-                        }
-                        td {
-                            padding: 8px;
-                            border-bottom: 1px solid #ddd;
-                        }
-                        .financial-summary {
-                            background: white;
-                            padding: 15px;
-                            border-radius: 4px;
-                            border: 1px solid #ddd;
-                            margin-top: 15px;
-                        }
-                        .financial-grid {
-                            display: grid;
-                            grid-template-columns: repeat(3, 1fr);
-                            gap: 15px;
-                        }
-                        .financial-item {
-                            text-align: center;
-                            padding: 10px;
-                            background: #f8f9fa;
-                            border-radius: 4px;
-                        }
-                        .financial-item .amount {
-                            font-size: 18px;
-                            font-weight: bold;
-                            display: block;
-                        }
-                        .total-cost .amount { color: #333; }
-                        .total-paid .amount { color: #28a745; }
-                        .balance-due .amount { color: #dc3545; }
-                        .print-btn {
-                            background: #ff69b4;
-                            color: white;
-                            border: none;
-                            padding: 12px 24px;
-                            border-radius: 4px;
-                            cursor: pointer;
-                            font-size: 16px;
-                            margin-bottom: 20px;
-                        }
-                        .print-btn:hover {
-                            background: #ff85c1;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <button class="print-btn no-print" onclick="window.print()">🖨️ Print Client Details</button>
-                    
-                    <div class="header">
-                        <img src="/assets/images/LogoPink.png" alt="Content Catalogz" style="height: 60px; margin-bottom: 10px;">
-                        <h1>Client Details</h1>
-                        <p>Generated on ${printDate}</p>
-                    </div>
-                    
-                    <div class="section">
-                        <h3>📋 Contact Information</h3>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <strong>Client Name</strong>
-                                ${clientName}
-                            </div>
-                            <div class="info-item">
-                                <strong>Company</strong>
-                                ${clientCompany}
-                            </div>
-                            <div class="info-item">
-                                <strong>Email Address</strong>
-                                ${clientEmail}
-                            </div>
-                            <div class="info-item">
-                                <strong>Phone Number</strong>
-                                ${clientPhone}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="section">
-                        <h3>🏠 Address Information</h3>
-                        <div class="info-item" style="grid-column: 1 / -1;">
-                            <strong>Full Address</strong>
-                            ${formattedAddress}
-                        </div>
-                    </div>
-                    
-                    <div class="section">
-                        <h3>💼 Services & Pricing</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Service Description</th>
-                                    <th style="text-align: right;">Cost (GBP)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${servicesHTML}
-                            </tbody>
-                        </table>
-                        
-                        <div class="financial-summary">
-                            <h4 style="margin-top: 0; margin-bottom: 15px;">Financial Summary</h4>
-                            <div class="financial-grid">
-                                <div class="financial-item total-cost">
-                                    <span class="amount">£${totalCost.toFixed(2)}</span>
-                                    <strong>Total Cost</strong>
-                                </div>
-                                <div class="financial-item total-paid">
-                                    <span class="amount">£${totalPaid.toFixed(2)}</span>
-                                    <strong>Total Paid</strong>
-                                </div>
-                                <div class="financial-item balance-due">
-                                    <span class="amount">£${totalRemaining.toFixed(2)}</span>
-                                    <strong>Balance Due</strong>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666; font-size: 12px;">
-                        <p>Content Catalogz - Professional Content Services</p>
-                        <p>Client details generated from admin dashboard</p>
-                    </div>
-                </body>
-                </html>
-            `;
-            
-            // Open client details in new window
-            const detailsWindow = window.open('', '_blank');
-            detailsWindow.document.write(clientDetailsHTML);
-            detailsWindow.document.close();
-        }
+
 
         // Print client details from data object (used by table print button)
         function printClientDetailsFromData(client) {
