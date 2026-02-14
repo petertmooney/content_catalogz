@@ -3504,7 +3504,7 @@ if ($invoices_result) {
             document.getElementById('totalRemaining').value = totalRemaining.toFixed(2);
         }
         // Add a service row to the invoice modal
-        function addInvoiceServiceRow(serviceName = '', serviceCost = 0) {
+        function addInvoiceServiceRow(serviceName = '', serviceCost = 0, triggerCalculation = true) {
             const container = document.getElementById('invoiceServicesContainer');
             const rowId = 'invoice-service-row-' + Date.now();
 
@@ -3530,19 +3530,27 @@ if ($invoices_result) {
 
             container.appendChild(row);
 
-            // Set values after DOM insertion without triggering events
+            // Set values after DOM insertion
             const nameInput = row.querySelector('.service-name');
             const costInput = row.querySelector('.service-cost');
             if (nameInput && serviceName) {
                 nameInput.value = serviceName;
             }
             if (costInput && serviceCost) {
-                // Temporarily remove event listener to prevent triggering calculation
+                // Temporarily remove event listener to prevent triggering calculation during programmatic setting
                 const originalOnInput = costInput.oninput;
                 costInput.oninput = null;
                 costInput.value = serviceCost;
                 // Restore event listener
-                setTimeout(() => { costInput.oninput = originalOnInput; }, 0);
+                setTimeout(() => { 
+                    costInput.oninput = originalOnInput;
+                    if (triggerCalculation) {
+                        calculateInvoiceTotalCost();
+                    }
+                }, 0);
+            } else if (triggerCalculation) {
+                // Trigger calculation if no cost was set but we should trigger
+                setTimeout(() => { calculateInvoiceTotalCost(); }, 0);
             }
         }
 
@@ -6144,13 +6152,17 @@ invoices.forEach(invoice => {
                             addInvoiceServiceRow();
                         } else {
                             services.forEach(service => {
-                                addInvoiceServiceRow(service.description, service.unit_price);
+                                addInvoiceServiceRow(service.description, service.unit_price, false); // Don't trigger calculation during loading
                             });
                         }
 
                         // Populate financial information
                         document.getElementById('totalPaid').value = parseFloat(invoice.total_paid || 0).toFixed(2);
-                        calculateInvoiceTotalCost();
+                        
+                        // Calculate totals once after everything is loaded
+                        setTimeout(() => {
+                            calculateInvoiceTotalCost();
+                        }, 100);
 
                         document.getElementById('invoiceModal').classList.add('show');
                     } else {
