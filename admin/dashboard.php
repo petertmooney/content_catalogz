@@ -1068,10 +1068,13 @@ if ($invoices_result) {
 
                 <div style="margin-bottom: 15px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                     <input type="text" id="searchClients" placeholder="Search by name, email, company..." style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ddd; width: 250px; font-size: 13px;" onkeyup="loadExistingClients()" autocomplete="off">
-                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 13px;" onclick="loadExistingClients()">Refresh</button>
-                    <button class="btn btn-outline" style="padding: 6px 12px; font-size: 13px;" onclick="filterExistingClients('all')">Show All</button>
-                    <button class="btn btn-outline" style="padding: 6px 12px; font-size: 13px;" onclick="printAllClients()">🖨️ Print All Clients</button>
-                    <button class="btn btn-primary" style="padding: 6px 12px; font-size: 13px;" onclick="openAddClientModal()">+ Add New Client</button>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; max-width: 400px;">
+                    <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 13px;" onclick="loadExistingClients()">🔄 Refresh</button>
+                    <button class="btn btn-outline" style="padding: 8px 12px; font-size: 13px;" onclick="filterExistingClients('all')">📋 Show All</button>
+                    <button class="btn btn-outline" style="padding: 8px 12px; font-size: 13px;" onclick="printAllClients()">🖨️ Print All Clients</button>
+                    <button class="btn btn-primary" style="padding: 8px 12px; font-size: 13px;" onclick="openAddClientModal()">➕ Add New Client</button>
                 </div>
 
                 <div id="existing-clients-list">
