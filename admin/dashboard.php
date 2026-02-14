@@ -3542,12 +3542,13 @@ if ($invoices_result) {
             html += '<th style="padding: 8px 12px;">Name</th><th style="padding: 8px 12px;">Company</th><th style="padding: 8px 12px;">Email</th><th style="padding: 8px 12px;">Phone</th><th style="padding: 8px 12px;">Service</th><th style="padding: 8px 12px;">Status</th><th style="padding: 8px 12px;">Date</th><th style="padding: 8px 12px; min-width: 220px;">Actions</th>';
             html += '</tr></thead><tbody>';
             
-            clients.forEach(client => {
+            clients.forEach((client, index) => {
                 const clientDate = new Date(client.updated_at || client.created_at).toLocaleDateString();
                 const statusColor = statusColors[client.status] || '#666';
                 const statusLabel = client.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                const rowBackground = index % 2 === 0 ? '#ffffff' : '#f8f9fa';
                 
-                html += `<tr style="height: 50px;">
+                html += `<tr style="height: 50px; background-color: ${rowBackground};">
                     <td style="padding: 8px 12px;"><strong style="font-size: 13px;">${escapeHtml(client.name)}</strong></td>
                     <td style="padding: 8px 12px; font-size: 13px;">${client.company ? escapeHtml(client.company) : '<em>N/A</em>'}</td>
                     <td style="padding: 8px 12px; font-size: 13px;"><a href="mailto:${escapeHtml(client.email)}" style="color: #007bff; text-decoration: none;">${escapeHtml(client.email)}</a></td>
