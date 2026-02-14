@@ -965,11 +965,11 @@ if ($invoices_result) {
                     </div>
                     <div class="chart-card" style="background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #333; font-size: 12px; margin-bottom: 4px;">Lead Sources</h4>
-                        <canvas id="leadSourceChart" width="100" height="60"></canvas>
+                        <canvas id="leadSourceChart" width="100" height="120"></canvas>
                     </div>
                     <div class="chart-card" style="background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #333; font-size: 12px; margin-bottom: 4px;">Monthly Revenue Trends</h4>
-                        <canvas id="revenueChart" width="100" height="60"></canvas>
+                        <canvas id="revenueChart" width="100" height="120"></canvas>
                     </div>
                     <div class="chart-card" style="background: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <h4 style="color: #333; font-size: 12px; margin-bottom: 4px;">Task Priority Distribution</h4>
@@ -5653,13 +5653,40 @@ invoices.forEach(invoice => {
                                     datasets: [{
                                         label: 'Leads',
                                         data: leadCounts,
-                                        backgroundColor: '#007bff',
-                                        borderColor: '#0056b3',
-                                        borderWidth: 1
+                                        backgroundColor: [
+                                            '#FF6B6B', // Red
+                                            '#4ECDC4', // Teal
+                                            '#45B7D1', // Blue
+                                            '#FFA07A', // Light Salmon
+                                            '#98D8C8', // Mint
+                                            '#F7DC6F', // Yellow
+                                            '#BB8FCE', // Light Purple
+                                            '#85C1E9', // Light Blue
+                                            '#F8C471', // Orange
+                                            '#82E0AA'  // Light Green
+                                        ],
+                                        borderColor: [
+                                            '#E74C3C', // Dark Red
+                                            '#16A085', // Dark Teal
+                                            '#2980B9', // Dark Blue
+                                            '#E67E22', // Dark Orange
+                                            '#27AE60', // Dark Green
+                                            '#F39C12', // Dark Yellow
+                                            '#8E44AD', // Dark Purple
+                                            '#3498DB', // Dark Light Blue
+                                            '#D68910', // Dark Orange
+                                            '#2ECC71'  // Dark Light Green
+                                        ],
+                                        borderWidth: 2
                                     }]
                                 },
                                 options: {
                                     responsive: true,
+                                    plugins: {
+                                        legend: {
+                                            display: false
+                                        }
+                                    },
                                     scales: {
                                         y: {
                                             beginAtZero: true,
@@ -5728,6 +5755,11 @@ invoices.forEach(invoice => {
                                 },
                                 options: {
                                     responsive: true,
+                                    plugins: {
+                                        legend: {
+                                            display: false
+                                        }
+                                    },
                                     scales: {
                                         y: {
                                             beginAtZero: true,
