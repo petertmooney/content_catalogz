@@ -3550,8 +3550,10 @@ if ($invoices_result) {
                 }
             });
 
-            const totalPaidEl = modal.querySelector('#totalPaid');
-            const totalPaid = totalPaidEl ? (parseFloat(totalPaidEl.value) || 0) : 0;
+            // read total paid from either editable `#totalPaid` (if present) or the invoice modal's readonly `#totalPaidDisplay`
+            const paidSourceEl = modal.querySelector('#totalPaid') || modal.querySelector('#totalPaidDisplay');
+            const paidRaw = paidSourceEl ? (paidSourceEl.value ?? paidSourceEl.textContent) : '0';
+            const totalPaid = parseFloat(paidRaw) || 0;
             const totalRemaining = totalCost - totalPaid;
 
             const totalCostEl = modal.querySelector('#totalCost'); if (totalCostEl) totalCostEl.value = totalCost.toFixed(2);
@@ -4821,7 +4823,9 @@ if ($invoices_result) {
             if (!formattedAddress) formattedAddress = 'N/A';
 
             const totalCost = parseFloat((modal.querySelector('#totalCost') || {}).value) || 0;
-            const totalPaid = parseFloat((modal.querySelector('#totalPaid') || {}).value) || 0;
+            // prefer editable `#totalPaid`, fall back to readonly `#totalPaidDisplay` (invoice modal may not include `#totalPaid`)
+            const _paidEl = modal.querySelector('#totalPaid') || modal.querySelector('#totalPaidDisplay');
+            const totalPaid = parseFloat((_paidEl && (_paidEl.value ?? _paidEl.textContent)) || 0) || 0;
             const totalRemaining = parseFloat((modal.querySelector('#totalRemaining') || {}).value) || 0;
 
             // Collect services
@@ -5970,6 +5974,10 @@ invoices.forEach(invoice => {
                         }
 
                         // Populate financial information (scoped)
+                        // invoice modal shows paid amount in `#totalPaidDisplay` (client modal uses `#totalPaid`)
+                        const totalPaidDisplayEl = modal.querySelector('#totalPaidDisplay');
+                        if (totalPaidDisplayEl) totalPaidDisplayEl.value = parseFloat(invoice.total_paid || 0).toFixed(2);
+                        // also set hidden/editable #totalPaid if present for compatibility
                         const totalPaidEl = modal.querySelector('#totalPaid'); if (totalPaidEl) totalPaidEl.value = parseFloat(invoice.total_paid || 0).toFixed(2);
 
                         // Calculate totals once after everything is loaded
