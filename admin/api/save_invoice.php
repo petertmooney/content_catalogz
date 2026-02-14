@@ -56,21 +56,6 @@ $totalPaid = isset($data['total_paid']) ? floatval($data['total_paid']) : 0.00;
 $services = isset($data['services']) ? $data['services'] : [];
 $totalRemaining = $totalCost - $totalPaid;
 
-// Check if an invoice for this client and date already exists
-$checkStmt = $conn->prepare("SELECT id FROM invoices WHERE client_id = ? AND invoice_date = ?");
-$checkStmt->bind_param("is", $clientId, $invoiceDate);
-$checkStmt->execute();
-$result = $checkStmt->get_result();
-
-if ($result->num_rows > 0) {
-    // Invoice already exists for this client and date
-    echo json_encode(['success' => true, 'message' => 'Invoice already exists for this client and date', 'exists' => true]);
-    $checkStmt->close();
-    $conn->close();
-    exit;
-}
-$checkStmt->close();
-
 // Calculate due date (30 days from invoice date)
 $dueDate = date('Y-m-d', strtotime($invoiceDate . ' + 30 days'));
 

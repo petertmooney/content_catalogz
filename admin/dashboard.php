@@ -4116,7 +4116,7 @@ if ($invoices_result) {
             }
             
             // Collect services from the form
-            const services = [];
+            const currentServices = [];
             const serviceRows = document.querySelectorAll('.service-row');
             serviceRows.forEach(row => {
                 const select = row.querySelector('.service-select');
@@ -4131,13 +4131,82 @@ if ($invoices_result) {
                 }
                 
                 if (name && cost > 0) {
-                    services.push({ name, cost });
+                    currentServices.push({ name, cost });
                 }
             });
             
+            // Check for existing invoices
+            fetch('api/get_client_invoices.php?client_id=' + clientId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.invoices && data.invoices.length > 0) {
+                        // Check if the latest invoice has the same services and payment amount
+                        const latestInvoice = data.invoices[0];
+                        const existingServices = latestInvoice.services || [];
+                        const existingTotalPaid = parseFloat(latestInvoice.total_paid) || 0;
+                        
+                        // Compare services (normalize for comparison)
+                        const currentServicesNormalized = currentServices.map(s => ({
+                            name: s.name.trim().toLowerCase(),
+                            cost: parseFloat(s.cost)
+                        })).sort((a, b) => a.name.localeCompare(b.name));
+                        
+                        const existingServicesNormalized = existingServices.map(s => ({
+                            name: (s.description || s.name || '').trim().toLowerCase(),
+                            cost: parseFloat(s.unit_price || s.cost || 0)
+                        })).sort((a, b) => a.name.localeCompare(b.name));
+                        
+                        const servicesChanged = JSON.stringify(currentServicesNormalized) !== JSON.stringify(existingServicesNormalized);
+                        const paymentsChanged = Math.abs(currentTotalPaid - existingTotalPaid) > 0.01; // Allow for small floating point differences
+                        
+                        if (servicesChanged || paymentsChanged) {
+                            // Services or payments changed, generate new invoice
+                            generateNewInvoice(clientId, clientName, totalCost, totalPaid, currentServices);
+                        } else {
+                            // No changes, just open existing invoice
+                            alert('No changes detected. Opening existing invoice.');
+                            window.open('api/generate_invoice_pdf.php?id=' + latestInvoice.id, '_blank');
+                        }
+                    } else {
+                        // No existing invoices, generate new one
+                        generateNewInvoice(clientId, clientName, totalCost, totalPaid, currentServices);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking existing invoices:', error);
+                    // If we can't check, generate new invoice
+                    generateNewInvoice(clientId, clientName, totalCost, totalPaid, currentServices);
+                });
+        }
+
+        function printClientInvoice() {
+            const clientId = document.getElementById('clientId').value;
+            
+            // First check if an invoice already exists for this client
+            fetch('api/get_client_invoices.php?client_id=' + clientId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.invoices && data.invoices.length > 0) {
+                        // Open the most recent invoice PDF
+                        const latestInvoice = data.invoices[0];
+                        window.open('api/generate_invoice_pdf.php?id=' + latestInvoice.id, '_blank');
+                    } else {
+                        // No invoice exists, generate one first
+                        generateInvoiceForClient();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking for existing invoices:', error);
+                    // If we can't check, just try to generate
+                    generateInvoiceForClient();
+                });
+        }
+
+        function generateNewInvoice(clientId, clientName, totalCost, totalPaid, services) {
             const invoiceDate = new Date().toISOString().split('T')[0];
-            // Deterministic invoice number: INV-<YEAR>-<CLIENTID>-<DATE>
-            const invoiceNumber = `INV-${new Date().getFullYear()}-${clientId}-${invoiceDate.replace(/-/g, '')}`;
+            // Create invoice number with timestamp to ensure uniqueness
+            const timestamp = new Date().getTime();
+            const invoiceNumber = `INV-${new Date().getFullYear()}-${clientId}-${timestamp}`;
             
             fetch('api/save_invoice.php', {
                 method: 'POST',
@@ -4172,16 +4241,12 @@ if ($invoices_result) {
             })
             .then(data => {
                 if (data.success) {
-                    if (data.exists) {
-                        alert('Invoice already exists for this client');
-                    } else {
-                        alert('Invoice ' + invoiceNumber + ' created successfully for ' + clientName + '!');
-                        // Open PDF view in new window
-                        window.open('api/generate_invoice_pdf.php?id=' + data.invoice_id, '_blank');
-                        // Reload invoice stats
-                        loadInvoiceStats();
-                        loadDashboardStats();
-                    }
+                    alert('Invoice ' + invoiceNumber + ' created successfully for ' + clientName + '!');
+                    // Open PDF view in new window
+                    window.open('api/generate_invoice_pdf.php?id=' + data.invoice_id, '_blank');
+                    // Reload invoice stats
+                    loadInvoiceStats();
+                    loadDashboardStats();
                 } else {
                     alert('Failed to generate invoice: ' + (data.message || 'Unknown error'));
                 }
@@ -4190,29 +4255,6 @@ if ($invoices_result) {
                 console.error('Error:', error);
                 alert('Failed to generate invoice: ' + error.message);
             });
-        }
-
-        function printClientInvoice() {
-            const clientId = document.getElementById('clientId').value;
-            
-            // First check if an invoice already exists for this client
-            fetch('api/get_client_invoices.php?client_id=' + clientId)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.invoices && data.invoices.length > 0) {
-                        // Open the most recent invoice PDF
-                        const latestInvoice = data.invoices[0];
-                        window.open('api/generate_invoice_pdf.php?id=' + latestInvoice.id, '_blank');
-                    } else {
-                        // No invoice exists, generate one first
-                        generateInvoiceForClient();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error checking for existing invoices:', error);
-                    // If we can't check, just try to generate
-                    generateInvoiceForClient();
-                });
         }
 
         async function printInvoice() {
