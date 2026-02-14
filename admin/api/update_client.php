@@ -72,7 +72,6 @@ if ($isPaymentOnly) {
         echo json_encode(['success' => false, 'message' => 'Name is required']);
         exit;
     }
-    /*
     if (empty($email)) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'Email is required']);
@@ -85,7 +84,6 @@ if ($isPaymentOnly) {
         echo json_encode(['success' => false, 'message' => 'Invalid email format']);
         exit;
     }
-    */
     $addressStreet = isset($data['address_street']) ? trim($data['address_street']) : null;
     $addressLine2 = isset($data['address_line2']) ? trim($data['address_line2']) : null;
     $addressCity = isset($data['address_city']) ? trim($data['address_city']) : null;
@@ -148,7 +146,7 @@ if ($isPaymentOnly) {
         exit;
     }
 
-    $stmt->bind_param("sssssssssssssdddi", $name, $company, $email, $phone, $addressStreet, $addressLine2, $addressCity, $addressCounty, $addressPostcode, $addressCountry, $leadSource, $servicesJson, $totalCost, $totalPaid, $totalRemaining, $clientId);
+    $stmt->bind_param("ssssssssssssdddi", $name, $company, $email, $phone, $addressStreet, $addressLine2, $addressCity, $addressCounty, $addressPostcode, $addressCountry, $leadSource, $servicesJson, $totalCost, $totalPaid, $totalRemaining, $clientId);
 
     if (!$stmt->execute()) {
         http_response_code(500);
@@ -157,7 +155,6 @@ if ($isPaymentOnly) {
     }
     
     // Log activity if services changed (only for full updates)
-    /*
     if (!$isPaymentOnly) {
         try {
             $servicesChanged = false;
@@ -190,7 +187,6 @@ if ($isPaymentOnly) {
             error_log("Activity logging error: " . $e->getMessage());
         }
     }
-    */
     
     echo json_encode([
         'success' => true, 
